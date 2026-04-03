@@ -685,7 +685,7 @@ export default function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("https://french-academy-backend-six.vercel.app/api/enroll", {
+      const res = await fetch(process.env.REACT_APP_API_URL || "https://french-academy-backend-six.vercel.app/api/enroll", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -738,6 +738,7 @@ export default function App() {
             </div>
           </li>
           <li><a className="nav-cta-btn" onClick={() => scroll("contact")}>{t.nav.enroll}</a></li>
+<li><a href="https://french-academy-backend-six.vercel.app/admin" target="_blank" rel="noopener noreferrer" style={{color:"#4ade80",fontSize:"0.72rem",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid rgba(74,222,128,0.4)",padding:"0.3rem 0.75rem",borderRadius:"4px",transition:"all 0.25s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(74,222,128,0.15)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}>⚙ Admin</a></li>
         </ul>
 
         <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
@@ -752,6 +753,7 @@ export default function App() {
             {t.nav[id === "cert" ? "certifications" : id === "contact" ? "enroll" : id]}
           </a>
         ))}
+        <a href="https://french-academy-backend-six.vercel.app/admin" target="_blank" rel="noopener noreferrer" style={{color:"#4ade80",fontSize:"0.85rem",border:"1px solid rgba(74,222,128,0.4)",padding:"0.4rem 1.2rem",borderRadius:"4px"}}>⚙ Admin Portal</a>
         <div className="mobile-lang">
           <button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")}>EN</button>
           <button className={lang === "fr" ? "active" : ""} onClick={() => setLang("fr")}>FR</button>

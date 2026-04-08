@@ -728,7 +728,7 @@ export default function App() {
         </div>
 
         <ul className="nav-links">
-          {["about","vision","method","cert","why","pricing","place"].map(id => (
+          {["about","vision","method","cert","why","pricing","place","books"].map(id => (
             <li key={id}><a onClick={() => scroll(id)}>{t.nav[id === "cert" ? "certifications" : id === "pricing" ? (lang==="en"?"Pricing":"Tarifs") : id]}</a></li>
           ))}
           <li>
@@ -1266,6 +1266,100 @@ export default function App() {
               </div>
             </FadeIn>
           </div>
+        </div>
+      </section>
+
+      {/* BOOKSHOP */}
+      <section id="books" style={{background:"#fff",padding:"5.5rem 2rem"}}>
+        <div className="container">
+          <FadeIn>
+            <div style={{textAlign:"center",marginBottom:"3rem"}}>
+              <div className="eyebrow" style={{justifyContent:"center"}}>📚 Our Publications</div>
+              <h2 className="sec-title">French Exam Study Guides</h2>
+              <p style={{color:"var(--text-light)",fontSize:"0.9rem",maxWidth:"520px",margin:"0 auto"}}>Professional study guides written by our expert trainer Erick Ruhingana to help you pass your French certification exams.</p>
+            </div>
+          </FadeIn>
+
+          {/* MAIN BOOKS */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"2rem",marginBottom:"3rem"}}>
+            {[
+              {img:"book1.jpeg",title:"The TCF Canada",subtitle:"Complete Preparation Guide",author:"Erick Ruhingana",price:"25,000 RWF",desc:"A comprehensive guide to prepare for the TCF Canada exam. Covers all sections: reading, listening, writing and speaking with practice exercises.",tags:["TCF Canada","Immigration","B1–C2"]},
+              {img:"book2.jpeg",title:"Préparation au TEF Canada",subtitle:"Guide Complet de Préparation",author:"Erick R.",price:"25,000 RWF",desc:"Le guide complet pour réussir le TEF Canada. Couvre toutes les compétences avec des exercices pratiques et des conseils d'experts.",tags:["TEF Canada","Immigration","B1–C2"]},
+            ].map((book,i)=>(
+              <FadeIn key={i} delay={i*100}>
+                <div style={{borderRadius:"16px",overflow:"hidden",border:"1px solid var(--cream-dark)",boxShadow:"0 4px 24px rgba(13,27,42,0.08)",transition:"all 0.3s",background:"var(--cream)"}} onMouseEnter={e=>e.currentTarget.style.transform="translateY(-6px)"} onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>
+                  <div style={{position:"relative",paddingTop:"70%",overflow:"hidden",background:"var(--navy)"}}>
+                    <img src={book.img} alt={book.title} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+                    <div style={{position:"absolute",top:"1rem",right:"1rem",background:"var(--gold)",color:"var(--navy)",padding:"0.4rem 0.8rem",borderRadius:"20px",fontSize:"0.75rem",fontWeight:700}}>{book.price}</div>
+                  </div>
+                  <div style={{padding:"1.5rem"}}>
+                    <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:"1.2rem",color:"var(--text-dark)",marginBottom:"0.25rem"}}>{book.title}</h3>
+                    <p style={{fontSize:"0.8rem",color:"var(--gold)",fontWeight:600,marginBottom:"0.5rem"}}>{book.subtitle}</p>
+                    <p style={{fontSize:"0.8rem",color:"var(--text-light)",marginBottom:"0.75rem"}}>by {book.author}</p>
+                    <p style={{fontSize:"0.85rem",color:"var(--text-mid)",lineHeight:1.6,marginBottom:"1rem"}}>{book.desc}</p>
+                    <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap",marginBottom:"1.2rem"}}>
+                      {book.tags.map((t,j)=><span key={j} style={{fontSize:"0.7rem",background:"var(--navy)",color:"#fff",padding:"0.2rem 0.6rem",borderRadius:"4px",fontWeight:600}}>{t}</span>)}
+                    </div>
+                    <div style={{background:"var(--navy)",borderRadius:"10px",padding:"1rem",marginBottom:"1rem"}}>
+                      <p style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.5)",marginBottom:"0.3rem",textTransform:"uppercase",letterSpacing:"0.1em"}}>Payment via Bank Transfer</p>
+                      <p style={{fontSize:"0.85rem",color:"var(--gold)",fontWeight:600}}>Access Bank</p>
+                      <p style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.7)"}}>Account: 8002580203050001</p>
+                      <p style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.7)"}}>Name: Erick Ruhingana</p>
+                    </div>
+                    <div style={{display:"flex",gap:"0.75rem"}}>
+                      <a href="https://wa.me/250785302957?text=Hello%2C%20I%20want%20to%20order%20the%20book%3A%20" target="_blank" rel="noopener noreferrer" style={{flex:1,textDecoration:"none"}}>
+                        <button style={{width:"100%",background:"#25D366",color:"#fff",border:"none",padding:"0.75rem",borderRadius:"8px",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:"0.82rem",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:"6px"}}>
+                          💬 Order via WhatsApp
+                        </button>
+                      </a>
+                    </div>
+                    <p style={{fontSize:"0.72rem",color:"var(--text-light)",textAlign:"center",marginTop:"0.5rem"}}>📱 Digital PDF · 🏢 Pickup at Academy</p>
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+
+          {/* LEVEL GUIDES */}
+          <FadeIn>
+            <div style={{background:"linear-gradient(135deg,var(--navy),var(--deep-blue))",borderRadius:"16px",padding:"2rem",marginBottom:"2rem"}}>
+              <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:"1.4rem",color:"#fff",marginBottom:"0.5rem",textAlign:"center"}}>Standard French Level Guides</h3>
+              <p style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.5)",textAlign:"center",marginBottom:"1.5rem"}}>Individual study guides for each CEFR level — perfect for structured learning</p>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:"1rem"}}>
+                {["A1","A2","B1","B2","C1","C2"].map((level,i)=>(
+                  <div key={i} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"10px",padding:"1.2rem",textAlign:"center",transition:"all 0.3s",cursor:"default"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(201,168,76,0.1)";e.currentTarget.style.borderColor="var(--gold)";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.05)";e.currentTarget.style.borderColor="rgba(201,168,76,0.2)";}}>
+                    <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.8rem",color:"var(--gold)",fontWeight:700,marginBottom:"0.3rem"}}>{level}</div>
+                    <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.5)",marginBottom:"0.5rem"}}>French Guide</div>
+                    <div style={{fontSize:"0.85rem",color:"var(--gold)",fontWeight:600,marginBottom:"0.75rem"}}>25,000 RWF</div>
+                    <a href={`https://wa.me/250785302957?text=Hello%2C%20I%20want%20to%20order%20the%20French%20${level}%20Guide`} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none"}}>
+                      <button style={{width:"100%",background:"var(--gold)",color:"var(--navy)",border:"none",padding:"0.5rem",borderRadius:"6px",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:"0.75rem",cursor:"pointer"}}>Order →</button>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* HOW TO ORDER */}
+          <FadeIn>
+            <div style={{background:"var(--cream-dark)",borderRadius:"16px",padding:"2rem",textAlign:"center"}}>
+              <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:"1.2rem",marginBottom:"1rem",color:"var(--text-dark)"}}>How to Order</h3>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:"1rem"}}>
+                {[
+                  {ico:"💳",step:"1",title:"Pay via Bank Transfer",desc:"Transfer 25,000 RWF to Access Bank account 8002580203050001 (Erick Ruhingana)"},
+                  {ico:"💬",step:"2",title:"Send Proof on WhatsApp",desc:"Send your payment screenshot to +250 785 302 957 via WhatsApp"},
+                  {ico:"📱",step:"3",title:"Receive Your Guide",desc:"Get your digital PDF instantly or pick up your physical copy at the academy"},
+                ].map((s,i)=>(
+                  <div key={i} style={{background:"#fff",borderRadius:"10px",padding:"1.2rem",border:"1px solid var(--cream-dark)"}}>
+                    <div style={{fontSize:"1.5rem",marginBottom:"0.5rem"}}>{s.ico}</div>
+                    <div style={{fontSize:"0.7rem",color:"var(--gold)",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.3rem"}}>Step {s.step}</div>
+                    <h4 style={{fontSize:"0.9rem",color:"var(--text-dark)",marginBottom:"0.4rem",fontFamily:"'Playfair Display',serif"}}>{s.title}</h4>
+                    <p style={{fontSize:"0.8rem",color:"var(--text-light)",lineHeight:1.5}}>{s.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </FadeIn>
         </div>
       </section>
 

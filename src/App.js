@@ -1274,9 +1274,9 @@ export default function App() {
         <div className="container">
           <FadeIn>
             <div style={{textAlign:"center",marginBottom:"3rem"}}>
-              <div className="eyebrow" style={{justifyContent:"center"}}>📚 Our Publications</div>
-              <h2 className="sec-title">French Exam Study Guides</h2>
-              <p style={{color:"var(--text-light)",fontSize:"0.9rem",maxWidth:"520px",margin:"0 auto"}}>Professional study guides written by our expert trainer Erick Ruhingana to help you pass your French certification exams.</p>
+              <div className="eyebrow" style={{justifyContent:"center"}}>📚 {lang === "fr" ? "Nos Publications" : "Our Publications"}</div>
+              <h2 className="sec-title">{lang === "fr" ? "Guides d'Examen de Français" : "French Exam Study Guides"}</h2>
+              <p style={{color:"var(--text-light)",fontSize:"0.9rem",maxWidth:"520px",margin:"0 auto"}}>{lang === "fr" ? "Guides professionnels écrits par notre formateur expert Erick Ruhingana pour vous aider à réussir vos examens." : "Professional study guides written by our expert trainer Erick Ruhingana to help you pass your French certification exams."}</p>
             </div>
           </FadeIn>
 
@@ -1323,16 +1323,16 @@ export default function App() {
           {/* LEVEL GUIDES */}
           <FadeIn>
             <div style={{background:"linear-gradient(135deg,var(--navy),var(--deep-blue))",borderRadius:"16px",padding:"2rem",marginBottom:"2rem"}}>
-              <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:"1.4rem",color:"#fff",marginBottom:"0.5rem",textAlign:"center"}}>Standard French Level Guides</h3>
-              <p style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.5)",textAlign:"center",marginBottom:"1.5rem"}}>Individual study guides for each CEFR level — perfect for structured learning</p>
+              <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:"1.4rem",color:"#fff",marginBottom:"0.5rem",textAlign:"center"}}>{lang === "fr" ? "Guides de Niveau Français" : "Standard French Level Guides"}</h3>
+              <p style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.5)",textAlign:"center",marginBottom:"1.5rem"}}>{lang === "fr" ? "Guides individuels pour chaque niveau CECR — parfaits pour un apprentissage structuré" : "Individual study guides for each CEFR level — perfect for structured learning"}</p>
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:"1rem"}}>
                 {["A1","A2","B1","B2","C1","C2"].map((level,i)=>(
                   <div key={i} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"10px",padding:"1.2rem",textAlign:"center",transition:"all 0.3s",cursor:"default"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(201,168,76,0.1)";e.currentTarget.style.borderColor="var(--gold)";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.05)";e.currentTarget.style.borderColor="rgba(201,168,76,0.2)";}}>
                     <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.8rem",color:"var(--gold)",fontWeight:700,marginBottom:"0.3rem"}}>{level}</div>
-                    <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.5)",marginBottom:"0.5rem"}}>French Guide</div>
+                    <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.5)",marginBottom:"0.5rem"}}>{lang === "fr" ? "Guide Français" : "French Guide"}</div>
                     <div style={{fontSize:"0.85rem",color:"var(--gold)",fontWeight:600,marginBottom:"0.75rem"}}>25,000 RWF</div>
                     <a href={`https://wa.me/250785302957?text=Hello%2C%20I%20want%20to%20order%20the%20French%20${level}%20Guide`} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none"}}>
-                      <button style={{width:"100%",background:"var(--gold)",color:"var(--navy)",border:"none",padding:"0.5rem",borderRadius:"6px",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:"0.75rem",cursor:"pointer"}}>Order →</button>
+                      <button style={{width:"100%",background:"var(--gold)",color:"var(--navy)",border:"none",padding:"0.5rem",borderRadius:"6px",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:"0.75rem",cursor:"pointer"}}>{lang === "fr" ? "Commander →" : "Order →"}</button>
                     </a>
                   </div>
                 ))}
@@ -1340,7 +1340,7 @@ export default function App() {
             </div>
           </FadeIn>
 
-          {/* HOW TO ORDER */}
+          {/* {lang === "fr" ? "Comment Commander" : "How to Order"} */}
           <FadeIn>
             <div style={{background:"var(--cream-dark)",borderRadius:"16px",padding:"2rem",textAlign:"center"}}>
               <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:"1.2rem",marginBottom:"1rem",color:"var(--text-dark)"}}>How to Order</h3>

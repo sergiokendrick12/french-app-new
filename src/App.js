@@ -159,7 +159,7 @@ const T = {
       },
     },
     footer: {
-      copy: "© 2026 International French Academy. Kigali, Rwanda.",
+      copy: "© 2026 International French Academy · Kigali, Rwanda.",
       tagline: "Le savoir d'aujourd'hui construit le succès de demain",
     },
   },

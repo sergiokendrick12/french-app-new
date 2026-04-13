@@ -684,6 +684,7 @@ export default function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.firstName || !formData.email) return;
     try {
       const res = await fetch(process.env.REACT_APP_API_URL || "https://french-academy-backend-six.vercel.app/api/enroll", {
         method: "POST",
@@ -700,7 +701,7 @@ export default function App() {
       const data = await res.json();
       if (data.success) {
         setSubmitted(true);
-        setTimeout(() => setSubmitted(false), 4000);
+        setFormData({ firstName: '', lastName: '', email: '', phone: '', certificate: 'TCF Québec', message: '' });
       }
     } catch (error) {
       console.error("Enrollment error:", error);
@@ -1243,6 +1244,21 @@ export default function App() {
 
             <FadeIn delay={120}>
               <div className="c-form">
+                {submitted ? (
+                  <div style={{textAlign:"center",padding:"2rem 1rem"}}>
+                    <div style={{fontSize:"3.5rem",marginBottom:"1rem"}}>🎉</div>
+                    <h3 style={{fontFamily:"'Playfair Display',serif",color:"var(--gold)",fontSize:"1.4rem",marginBottom:"0.75rem"}}>{lang==="fr"?"Demande Envoyée !":"Request Sent!"}</h3>
+                    <p style={{color:"rgba(255,255,255,0.6)",fontSize:"0.9rem",lineHeight:1.7,marginBottom:"0.5rem"}}>{lang==="fr"?"Merci ! Nous vous contacterons très bientôt.":"Thank you! We will contact you very soon."}</p>
+                    <p style={{color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",marginBottom:"2rem"}}>{lang==="fr"?"Vérifiez votre WhatsApp et email.":"Check your WhatsApp and email."}</p>
+                    <div style={{background:"rgba(201,168,76,0.08)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"10px",padding:"1rem",marginBottom:"1.5rem"}}>
+                      <p style={{color:"rgba(255,255,255,0.5)",fontSize:"0.78rem",marginBottom:"0.3rem",textTransform:"uppercase",letterSpacing:"0.1em"}}>Next Step</p>
+                      <p style={{color:"var(--gold-light)",fontSize:"0.88rem"}}>📞 We'll call you within 24 hours</p>
+                    </div>
+                    <a href="https://wa.me/250785302957" target="_blank" rel="noopener noreferrer" style={{display:"inline-block",background:"#25D366",color:"#fff",padding:"0.75rem 1.5rem",borderRadius:"6px",textDecoration:"none",fontWeight:700,fontSize:"0.85rem",marginBottom:"0.75rem",width:"100%",textAlign:"center"}}>💬 {lang==="fr"?"Nous écrire sur WhatsApp":"Chat with us on WhatsApp"}</a>
+                    <button onClick={()=>setSubmitted(false)} style={{background:"none",border:"1px solid rgba(255,255,255,0.15)",color:"rgba(255,255,255,0.5)",padding:"0.6rem 1.2rem",borderRadius:"6px",cursor:"pointer",fontSize:"0.8rem",width:"100%",fontFamily:"'DM Sans',sans-serif"}}>{lang==="fr"?"Soumettre une autre demande":"Submit another request"}</button>
+                  </div>
+                ) : (
+                  <>
                 <h3>{t.contact.form.title}</h3>
                 <div className="form-row">
                   <div className="fg"><label>{t.contact.form.first}</label><input placeholder={t.contact.form.firstPh} value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} /></div>
@@ -1261,8 +1277,10 @@ export default function App() {
                   className={`f-submit${submitted ? " sent" : ""}`}
                   onClick={handleSubmit}
                 >
-                  {submitted ? t.contact.form.sent : t.contact.form.submit}
+                  {t.contact.form.submit}
                 </button>
+                  </>
+                )}
               </div>
             </FadeIn>
           </div>

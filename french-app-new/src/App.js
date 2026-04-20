@@ -900,7 +900,7 @@ export default function App() {
               <h2 className="sec-title">{t.cert.title}</h2>
               <p className="sec-sub">{t.cert.sub}</p>
               <div className="cert-tags">
-                {certs.map(c => <span key={c} className="cert-tag">{c}</span>)}
+                {certs.map(c => <span key={c} className="cert-tag" style={{cursor:"pointer"}} onClick={()=>{ setFormData(f=>({...f,certificate:c})); scroll("contact"); }}>{c}</span>)}
               </div>
             </FadeIn>
             <FadeIn delay={100}>

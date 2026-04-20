@@ -529,7 +529,7 @@ const styles = `
   #cert { background: #fff; }
   .cert-top { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; margin-bottom: 3.5rem; }
   .cert-tags { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1.8rem; }
-  .cert-tag { background: linear-gradient(135deg, var(--navy), var(--mid-blue)); color: #fff; padding: 0.55rem 1.2rem; border-radius: 6px; font-weight: 700; font-size: 0.82rem; letter-spacing: 0.08em; transition: all 0.25s; cursor: default; }
+  .cert-tag { background: linear-gradient(135deg, var(--navy), var(--mid-blue)); color: #fff; padding: 0.55rem 1.2rem; border-radius: 6px; font-weight: 700; font-size: 0.82rem; letter-spacing: 0.08em; transition: all 0.25s; cursor: pointer; }
   .cert-tag:hover { transform: translateY(-3px); background: linear-gradient(135deg, var(--mid-blue), var(--gold)); box-shadow: 0 6px 18px rgba(13,27,42,0.2); }
   .benefits-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem; }
   .b-card { background: linear-gradient(160deg, var(--navy), var(--deep-blue)); border-radius: 10px; padding: 1.8rem; text-align: center; border: 1px solid rgba(201,168,76,0.08); transition: all 0.3s; }
@@ -900,7 +900,7 @@ export default function App() {
               <h2 className="sec-title">{t.cert.title}</h2>
               <p className="sec-sub">{t.cert.sub}</p>
               <div className="cert-tags">
-                {certs.map(c => <span key={c} className="cert-tag" style={{cursor:"pointer"}} onClick={()=>{ setFormData(f=>({...f,certificate:c})); scroll("contact"); }}>{c}</span>)}
+                {certs.map(c => <span key={c} className="cert-tag" style={{cursor:"pointer"}} onClick={()=>{ setFormData(f=>({...f,certificate:c})); document.getElementById("contact").scrollIntoView({behavior:"smooth"}); }}>{c}</span>)}
               </div>
             </FadeIn>
             <FadeIn delay={100}>

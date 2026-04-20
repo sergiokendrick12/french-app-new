@@ -899,10 +899,10 @@ export default function App() {
               <div className="eyebrow">{t.cert.eyebrow}</div>
               <h2 className="sec-title">{t.cert.title}</h2>
               <p className="sec-sub">{t.cert.sub}</p>
-              <div className="cert-tags">
-                {certs.map(c => <span key={c} className="cert-tag" style={{cursor:"pointer"}} onClick={()=>{ setFormData(f=>({...f,certificate:c})); document.getElementById("contact").scrollIntoView({behavior:"smooth"}); }}>{c}</span>)}
-              </div>
             </FadeIn>
+            <div className="cert-tags">
+              {certs.map(c => <span key={c} className="cert-tag" style={{cursor:"pointer"}} onClick={()=>{ setFormData(f=>({...f,certificate:c})); document.getElementById("contact").scrollIntoView({behavior:"smooth"}); }}>{c}</span>)}
+            </div>
             <FadeIn delay={100}>
               <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", marginBottom: "1.3rem", color: "var(--text-dark)" }}>{t.cert.whyTitle}</h3>
               <div className="benefits-grid">

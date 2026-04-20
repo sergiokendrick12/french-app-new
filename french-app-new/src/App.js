@@ -901,7 +901,7 @@ export default function App() {
               <p className="sec-sub">{t.cert.sub}</p>
             </FadeIn>
             <div className="cert-tags">
-              {certs.map(c => <span key={c} className="cert-tag" style={{cursor:"pointer"}} onClick={()=>{ setFormData(f=>({...f,certificate:c})); document.getElementById("contact").scrollIntoView({behavior:"smooth"}); }}>{c}</span>)}
+              {certs.map(c => <span key={c} className="cert-tag" style={{cursor:"pointer"}} onClick={()=>{ setFormData(f=>({...f,certificate:c})); setTimeout(()=>{ const el = document.getElementById("contact"); if(el) el.scrollIntoView({behavior:"smooth", block:"start"}); }, 100); }}>{c}</span>)}
             </div>
             <FadeIn delay={100}>
               <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", marginBottom: "1.3rem", color: "var(--text-dark)" }}>{t.cert.whyTitle}</h3>

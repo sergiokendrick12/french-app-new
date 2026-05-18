@@ -1143,6 +1143,7 @@ export default function App() {
               {name:"Kabandana Ghislaine",role:lang==="en"?"Reception & Media Library Assistant":"Chargée d'Accueil & Assistante médiathèque",photo:"staff-ghislaine.jpeg",featured:false},
               {name:"Iragi Michaël",role:lang==="en"?"Cooperation Attaché & Legal Advisor":"Attaché de Coopération & Conseillé Juridique",photo:"staff-iragi.jpeg",featured:false},
               {name:"Joas Irahoza",role:lang==="en"?"Multi-skilled Agent":"Agent polyvalent",photo:"staff-joas.jpeg",featured:false},
+{name:"Serges Ndinda",role:lang==="en"?"Software Engineer":"Ingénieur Logiciel",photo:"staff-serges.jpeg",featured:false},
             ].map((m,i)=>(
               <FadeIn key={i} delay={i*80}>
                 <div style={{background:m.featured?"var(--navy)":"var(--cream)",borderRadius:"16px",overflow:"hidden",border:m.featured?"2px solid var(--gold)":"1px solid var(--cream-dark)",transition:"all 0.3s",textAlign:"center"}} onMouseEnter={e=>e.currentTarget.style.transform="translateY(-6px)"} onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>

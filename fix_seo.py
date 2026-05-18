@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿content = """<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -31,3 +31,8 @@
     <div id="root"></div>
   </body>
 </html>
+"""
+f = open('public/index.html', 'w', encoding='utf-8')
+f.write(content)
+f.close()
+print('Done!')

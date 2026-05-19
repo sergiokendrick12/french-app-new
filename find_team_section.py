@@ -1,0 +1,6 @@
+﻿f = open('src/App.js', 'r', encoding='utf-8')
+c = f.read()
+f.close()
+
+idx = c.find('Meet Our Team')
+print(repr(c[idx-200:idx+50]))

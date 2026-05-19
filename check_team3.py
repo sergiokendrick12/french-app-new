@@ -1,0 +1,5 @@
+﻿f = open('src/App.js', 'r', encoding='utf-8')
+c = f.read()
+f.close()
+idx = c.find('onMouseEnter={e=>e.c')
+print(repr(c[idx:idx+800]))

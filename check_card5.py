@@ -1,0 +1,5 @@
+﻿f = open('src/App.js', 'r', encoding='utf-8')
+c = f.read()
+f.close()
+idx = c.find('m.featured?"var(--navy)"')
+print(repr(c[idx+1400:idx+1900]))

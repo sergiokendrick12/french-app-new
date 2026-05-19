@@ -1137,16 +1137,16 @@ export default function App() {
           </FadeIn>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:"1.5rem"}}>
             {[
-              {name:"KWIBUKA Erick",role:lang==="en"?"Certification Manager & Head of Pedagogy":"Responsable de la Certification & Chargé Pédagogique",photo:"staff-erick.jpeg",featured:true,pos:"center 20%"},
-              {name:"Banda Clément",role:lang==="en"?"Lead Teacher & Sound Technician":"Professeur Titulaire & Technicien de son",photo:"staff-banda.jpeg",featured:false},
-              {name:"Ingabire Germaine",role:lang==="en"?"Secretary General & Communications":"Secrétaire Générale & Chargée de la communication",photo:"staff-germaine.jpeg",featured:false},
-              {name:"Kabandana Ghislaine",role:lang==="en"?"Reception & Media Library Assistant":"Chargée d'Accueil & Assistante médiathèque",photo:"staff-ghislaine.jpeg",featured:false},
+              {name:"KWIBUKA Erick",role:lang==="en"?"Certification Manager & Head of Pedagogy":"Responsable de la Certification & Chargé Pédagogique",photo:"staff-erick.jpeg",featured:true,pos:"center 20%",linkedin:"https://linkedin.com/in/kwibuka-ruhingana-erick-6b08952a8/"},
+              {name:"Banda Clément",role:lang==="en"?"Lead Teacher & Sound Technician":"Professeur Titulaire & Technicien de son",photo:"staff-banda.jpeg",featured:false,linkedin:"https://www.linkedin.com/in/clement-banda-53b3b561/"},
+              {name:"Ingabire Germaine",role:lang==="en"?"Secretary General & Communications":"Secrétaire Générale & Chargée de la communication",photo:"staff-germaine.jpeg",featured:false,linkedin:"https://www.linkedin.com/in/germaine-ingabire-39bb5340b/"},
+              {name:"Kabandana Ghislaine",role:lang==="en"?"Reception & Media Library Assistant":"Chargée d'Accueil & Assistante médiathèque",photo:"staff-ghislaine.jpeg",featured:false,linkedin:"https://www.linkedin.com/in/gyslaine-kabandana-803010273/"},
               {name:"Iragi Michaël",role:lang==="en"?"Cooperation Attaché & Legal Advisor":"Attaché de Coopération & Conseillé Juridique",photo:"staff-iragi.jpeg",featured:false},
-              {name:"Joas Irahoza",role:lang==="en"?"Multi-skilled Agent":"Agent polyvalent",photo:"staff-joas.jpeg",featured:false},
-{name:"Serges Ndinda",role:lang==="en"?"Software Engineer":"Ingénieur Logiciel",photo:"staff-serges.jpeg",featured:false},
+              {name:"Joas Irahoza",role:lang==="en"?"Multi-skilled Agent":"Agent polyvalent",photo:"staff-joas.jpeg",featured:false,linkedin:"https://www.linkedin.com/in/joas-irahoza-464589339/"},
+{name:"Serges Ndinda",role:lang==="en"?"Software Engineer":"Ingénieur Logiciel",photo:"staff-serges.jpeg",featured:false,linkedin:"https://www.linkedin.com/in/serges-ndinda/"},
             ].map((m,i)=>(
               <FadeIn key={i} delay={i*80}>
-                <div style={{background:m.featured?"var(--navy)":"var(--cream)",borderRadius:"16px",overflow:"hidden",border:m.featured?"2px solid var(--gold)":"1px solid var(--cream-dark)",transition:"all 0.3s",textAlign:"center"}} onMouseEnter={e=>e.currentTarget.style.transform="translateY(-6px)"} onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>
+                <div style={{background:m.featured?"var(--navy)":"var(--cream)",borderRadius:"16px",overflow:"hidden",border:m.featured?"2px solid var(--gold)":"1px solid var(--cream-dark)",transition:"all 0.3s",textAlign:"center",position:"relative"}} onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-8px)";e.currentTarget.style.boxShadow="0 20px 40px rgba(0,0,0,0.15)";const btn=e.currentTarget.querySelector(".linkedin-btn");if(btn)btn.style.opacity="1";btn&&(btn.style.transform="translateY(0)");}} onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="none";const btn=e.currentTarget.querySelector(".linkedin-btn");if(btn)btn.style.opacity="0";btn&&(btn.style.transform="translateY(10px)");}}>
                   <div style={{position:"relative",paddingTop:"100%",overflow:"hidden"}}>
                     <img src={m.photo} alt={m.name} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:m.pos||"center top"}} />
                     {m.featured && <div style={{position:"absolute",top:"0.75rem",right:"0.75rem",background:"var(--gold)",color:"var(--navy)",padding:"0.25rem 0.7rem",borderRadius:"20px",fontSize:"0.65rem",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Director</div>}
@@ -1154,6 +1154,7 @@ export default function App() {
                   <div style={{padding:"1.4rem 1.2rem"}}>
                     <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:"1rem",color:m.featured?"#fff":"var(--text-dark)",marginBottom:"0.35rem",fontWeight:700}}>{m.name}</h3>
                     <p style={{fontSize:"0.78rem",color:m.featured?"rgba(255,255,255,0.6)":"var(--text-light)",lineHeight:1.5}}>{m.role}</p>
+                    {m.linkedin&&<div style={{padding:"0.5rem 0 1rem"}}><a href={m.linkedin} target="_blank" rel="noopener noreferrer" className="linkedin-btn" style={{display:"inline-flex",alignItems:"center",gap:"6px",background:"#0077b5",color:"#fff",padding:"6px 14px",borderRadius:"20px",fontSize:"0.75rem",fontWeight:600,textDecoration:"none",opacity:0,transform:"translateY(10px)",transition:"all 0.3s ease"}}><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.736 1.75-1.736 1.75.79 1.75 1.764-.783 1.736-1.75 1.736zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>LinkedIn</a></div>}
                   </div>
                 </div>
               </FadeIn>

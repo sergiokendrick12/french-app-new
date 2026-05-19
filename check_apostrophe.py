@@ -1,0 +1,10 @@
+﻿f = open('src/App.js', 'r', encoding='utf-8')
+c = f.read()
+f.close()
+# Check for apostrophe issues in the new code
+idx = c.find("Vivez l")
+print(repr(c[idx:idx+50]))
+idx2 = c.find("d'Accueil")
+print(repr(c[idx2:idx2+50]))
+idx3 = c.find("l'expérience")
+print(repr(c[idx3:idx3+50]))

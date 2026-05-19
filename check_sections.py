@@ -1,0 +1,7 @@
+﻿f = open('src/App.js', 'r', encoding='utf-8')
+c = f.read()
+f.close()
+idx = c.find('Experience IFA')
+print('Found at:', idx)
+idx2 = c.find('Meet Our Team')
+print('Team at:', idx2)

@@ -1401,7 +1401,7 @@ export default function App() {
 
       {/* FOOTER */}
       <footer>
-        <div style={{maxWidth:"1080px",margin:"0 auto",padding:"3rem 2rem 1.5rem",display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:"2rem",flexWrap:"wrap"}}>
+        <div style={{maxWidth:"1080px",margin:"0 auto",padding:"3rem 2rem 1.5rem",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:"1.5rem",flexWrap:"wrap"}}>
           <div>
             <div className="f-logo" style={{marginBottom:"0.8rem"}}>International <span>French Academy</span></div>
             <p style={{color:"rgba(255,255,255,0.35)",fontSize:"0.8rem",lineHeight:1.7,maxWidth:"260px",fontStyle:"italic"}}>{t.footer.tagline}</p>

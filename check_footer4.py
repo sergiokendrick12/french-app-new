@@ -1,0 +1,5 @@
+﻿f = open('src/App.js', 'r', encoding='utf-8')
+c = f.read()
+f.close()
+idx = c.find('Quick Links')
+print(repr(c[idx-1000:idx-600]))

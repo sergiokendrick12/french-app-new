@@ -1,0 +1,5 @@
+﻿f = open('src/App.js', 'r', encoding='utf-8')
+c = f.read()
+f.close()
+idx = c.find('footer')
+print(repr(c[idx:idx+300]))

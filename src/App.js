@@ -475,7 +475,7 @@ const styles = `
   .container { max-width: 1080px; margin: 0 auto; }
   .eyebrow { font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.6rem; }
   .eyebrow::before { content: ''; width: 22px; height: 1.5px; background: var(--gold); display: inline-block; }
-  .sec-title { font-family: 'Playfair Display', serif; font-size: clamp(1.7rem, 3.5vw, 2.8rem); font-weight: 700; line-height: 1.15; margin-bottom: 1.1rem; }
+  .team-card { transition: transform 0.3s, box-shadow 0.3s; } .team-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); } .team-card:hover .linkedin-btn { opacity: 1 !important; } .sec-title { font-family: 'Playfair Display', serif; font-size: clamp(1.7rem, 3.5vw, 2.8rem); font-weight: 700; line-height: 1.15; margin-bottom: 1.1rem; }
   .sec-title.light { color: #fff; }
   .sec-sub { font-size: 1rem; color: var(--text-mid); line-height: 1.8; max-width: 580px; }
 
@@ -1162,7 +1162,7 @@ export default function App() {
 {name:"Serges Ndinda",role:lang==="en"?"Software Engineer":"Ingénieur Logiciel",photo:"staff-serges.jpeg",featured:false,linkedin:"https://www.linkedin.com/in/serges-ndinda/"},
             ].map((m,i)=>(
               <FadeIn key={i} delay={i*80}>
-                <div style={{background:m.featured?"var(--navy)":"var(--cream)",borderRadius:"16px",overflow:"hidden",border:m.featured?"2px solid var(--gold)":"1px solid var(--cream-dark)",transition:"all 0.3s",textAlign:"center",position:"relative"}} onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-8px)";e.currentTarget.style.boxShadow="0 20px 40px rgba(0,0,0,0.15)";const b=e.currentTarget.querySelector("a");if(b)b.style.opacity="1";}} onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="none";const b=e.currentTarget.querySelector("a");if(b)b.style.opacity="0";}}>
+                <div style={{background:m.featured?"var(--navy)":"var(--cream)",borderRadius:"16px",overflow:"hidden",border:m.featured?"2px solid var(--gold)":"1px solid var(--cream-dark)",transition:"all 0.3s",textAlign:"center",position:"relative"}} className="team-card">
                   <div style={{position:"relative",paddingTop:"100%",overflow:"hidden"}}>
                     <img src={m.photo} alt={m.name} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:m.pos||"center top"}} />
                     {m.featured && <div style={{position:"absolute",top:"0.75rem",right:"0.75rem",background:"var(--gold)",color:"var(--navy)",padding:"0.25rem 0.7rem",borderRadius:"20px",fontSize:"0.65rem",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Director</div>}

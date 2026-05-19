@@ -1128,7 +1128,7 @@ export default function App() {
       {/* VIDEO */}
       <section style={{background:"var(--navy)",padding:"5rem 2rem",textAlign:"center"}}>
         <div className="container">
-          <FadeIn>
+          <div>
             <div className="eyebrow" style={{justifyContent:"center",marginBottom:"1rem"}}>{lang==="en"?"See Our Academy":"Découvrez Notre Académie"}</div>
             <h2 className="sec-title" style={{color:"#fff",marginBottom:"0.75rem"}}>{lang==="en"?"Experience IFA":"Vivez l'expérience IFA"}</h2>
             <p style={{color:"rgba(255,255,255,0.6)",fontSize:"0.95rem",marginBottom:"2.5rem",maxWidth:"520px",margin:"0 auto 2.5rem"}}>{lang==="en"?"Take a look inside the International French Academy":"Découvrez l'International French Academy de l'intérieur"}</p>
@@ -1137,7 +1137,7 @@ export default function App() {
                 <source src="https://res.cloudinary.com/dpwqj15y7/video/upload/ifa_kg8pbs.mp4" type="video/mp4"/>
               </video>
             </div>
-          </FadeIn>
+          </div>
         </div>
       </section>
 

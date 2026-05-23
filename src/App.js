@@ -1154,8 +1154,8 @@ export default function App() {
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:"1.5rem"}}>
             {[
               {name:"KWIBUKA Erick",role:lang==="en"?"Certification Manager & Head of Pedagogy":"Responsable de la Certification & Chargé Pédagogique",photo:"staff-erick.jpeg",featured:true,pos:"center 20%",linkedin:"https://linkedin.com/in/kwibuka-ruhingana-erick-6b08952a8/"},
-                            {name:"Ingabire Germaine",role:lang==="en"?"Secretary General & Communications":"Secrétaire Générale & Chargée de la communication",photo:"staff-germaine.jpeg",featured:false,linkedin:"https://www.linkedin.com/in/germaine-ingabire-39bb5340b/"},
-                                          {name:"Serges Ndinda",role:lang==="en"?"Software Engineer":"Ingénieur Logiciel",photo:"staff-serges.jpeg",featured:false,linkedin:"https://www.linkedin.com/in/serges-ndinda/"},
+                            {name:"Ingabire Germaine",role:lang==="en"?"Secretary General & Communications":"Secrétaire Générale & Chargée de la communication",photo:"staff-germaine.jpeg",featured:true,linkedin:"https://www.linkedin.com/in/germaine-ingabire-39bb5340b/"},
+                                          {name:"Serges Ndinda",role:lang==="en"?"Software Engineer":"Ingénieur Logiciel",photo:"staff-serges.jpeg",featured:true,linkedin:"https://www.linkedin.com/in/serges-ndinda/"},
             ].map((m,i)=>(
               <FadeIn key={i} delay={i*80}>
                 <div style={{background:m.featured?"var(--navy)":"var(--cream)",borderRadius:"16px",overflow:"hidden",border:m.featured?"2px solid var(--gold)":"1px solid var(--cream-dark)",transition:"all 0.3s",textAlign:"center",position:"relative"}} className="team-card">

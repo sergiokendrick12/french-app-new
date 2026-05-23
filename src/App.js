@@ -1161,7 +1161,7 @@ export default function App() {
                 <div style={{background:m.featured?"var(--navy)":"var(--cream)",borderRadius:"16px",overflow:"hidden",border:m.featured?"2px solid var(--gold)":"1px solid var(--cream-dark)",transition:"all 0.3s",textAlign:"center",position:"relative"}} className="team-card">
                   <div style={{position:"relative",paddingTop:"100%",overflow:"hidden"}}>
                     <img src={m.photo} alt={m.name} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:m.pos||"center top"}} />
-                    {m.featured && <div style={{position:"absolute",top:"0.75rem",right:"0.75rem",background:"var(--gold)",color:"var(--navy)",padding:"0.25rem 0.7rem",borderRadius:"20px",fontSize:"0.65rem",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>{m.badge===false?null:"Director"}</div>}
+                    {m.featured && m.badge!==false && <div style={{position:"absolute",top:"0.75rem",right:"0.75rem",background:"var(--gold)",color:"var(--navy)",padding:"0.25rem 0.7rem",borderRadius:"20px",fontSize:"0.65rem",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Director</div>}
                   </div>
                   <div style={{padding:"1.4rem 1.2rem"}}>
                     <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:"1rem",color:m.featured?"#fff":"var(--text-dark)",marginBottom:"0.35rem",fontWeight:700}}>{m.name}</h3>

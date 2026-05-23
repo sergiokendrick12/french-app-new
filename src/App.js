@@ -1241,7 +1241,7 @@ export default function App() {
                     <div className="c-icon">📞</div>
                     <div className="c-text">
                       <strong>Phone / WhatsApp</strong>
-                      <a href="tel:+250785632172">+250 785 302 957</a>
+                      <a href="tel:+250785632172">+250 785 632 172</a>
                     </div>
                   </div>
                   <div className="c-item">
@@ -1379,7 +1379,7 @@ export default function App() {
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:"1rem"}}>
                 {[
                   {ico:"💳",step:"1",title:"Pay via Bank Transfer",desc:"Transfer 25,000 RWF to Access Bank account 8002580203050001 (Erick Ruhingana)"},
-                  {ico:"💬",step:"2",title:"Send Proof on WhatsApp",desc:"Send your payment screenshot to +250 785 302 957 via WhatsApp"},
+                  {ico:"💬",step:"2",title:"Send Proof on WhatsApp",desc:"Send your payment screenshot to +250 785 632 172 via WhatsApp"},
                   {ico:"📱",step:"3",title:"Receive Your Guide",desc:"Get your digital PDF instantly or pick up your physical copy at the academy"},
                 ].map((s,i)=>(
                   <div key={i} style={{background:"#fff",borderRadius:"10px",padding:"1.2rem",border:"1px solid var(--cream-dark)"}}>
@@ -1423,7 +1423,7 @@ export default function App() {
           </div>
           <div>
             <div style={{color:"rgba(255,255,255,0.9)",fontSize:"0.8rem",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem"}}>Contact</div>
-            {[{ico:"📧",text:"frenchacademyinternational@gmail.com"},{ico:"📞",text:"+250 785 302 957"},{ico:"📍",text:"Norrsken House, Kigali"},{ico:"📍",text:"Sainte Famille, Kigali"}].map((c,i)=>(
+            {[{ico:"📧",text:"frenchacademyinternational@gmail.com"},{ico:"📞",text:"+250 785 632 172"},{ico:"📍",text:"Norrsken House, Kigali"},{ico:"📍",text:"Sainte Famille, Kigali"}].map((c,i)=>(
               <div key={i} style={{display:"flex",gap:"0.5rem",marginBottom:"0.7rem",alignItems:"flex-start"}}>
                 <span style={{fontSize:"0.85rem"}}>{c.ico}</span>
                 <span style={{color:"rgba(255,255,255,0.4)",fontSize:"0.78rem",lineHeight:1.5}}>{c.text}</span>

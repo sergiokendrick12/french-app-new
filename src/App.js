@@ -708,7 +708,7 @@ export default function App() {
     }
   };
 
-  const certs = ["TCF Québec", "TEF Québec", "TCF Canada", "TEF Canada", "DELF A1", "DELF A2", "DILF", "DALF C1", "DALF C2", "DFP"];
+  const certs = ["TCF Québec", "TEF Québec", "TCF Canada", "TEF Canada", "DELF A1", "DELF A2", "DELF B1", "DELF B2", "DILF", "DALF C1", "DALF C2", "DFP"];
 
   return (
     <>

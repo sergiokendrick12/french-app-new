@@ -1155,7 +1155,7 @@ export default function App() {
             {[
               {name:"KWIBUKA Erick",role:lang==="en"?"Certification Manager & Head of Pedagogy":"Responsable de la Certification & Chargé Pédagogique",photo:"staff-erick.jpeg",featured:true,pos:"center 20%",linkedin:"https://linkedin.com/in/kwibuka-ruhingana-erick-6b08952a8/"},
                             {name:"Ingabire Germaine",role:lang==="en"?"Secretary General & Communications":"Secrétaire Générale & Chargée de la communication",photo:"staff-germaine.jpeg",featured:true,badge:false,linkedin:"https://www.linkedin.com/in/germaine-ingabire-39bb5340b/"},
-                                          {name:"Serges Ndinda",role:lang==="en"?"Software Engineer":"Ingénieur Logiciel",photo:"staff-serges.jpeg",featured:true,badge:false,linkedin:"https://www.linkedin.com/in/serges-ndinda/"},
+                                          {name:"Serges Ndinda",role:lang==="en"?"Software Engineer":"Ingénieur Logiciel",photo:"staff-serges.jpeg",featured:true,badge:true,badgeText:lang==="en"?"Tech Team":"Équipe Tech",linkedin:"https://www.linkedin.com/in/serges-ndinda/"},
               {name:"Banda Clément",role:lang==="en"?"Lead Teacher & Sound Technician":"Enseignant Principal & Technicien du Son",photo:"staff-clement.jpeg",featured:true,badge:false},
               {name:"ALEX BAHIRWE Peter",role:lang==="en"?"Quality & Compliance Manager":"Responsable Qualité & Conformité",photo:"staff-alex.jpeg",featured:true,badge:false},
               {name:"Kabandana Ghislaine",role:lang==="en"?"Reception & Media Library Assistant":"Assistante Réception & Médiathèque",photo:"staff-ghislaine.jpeg",featured:true,badge:false},
@@ -1168,7 +1168,7 @@ export default function App() {
                 <div style={{background:m.featured?"var(--navy)":"var(--cream)",borderRadius:"16px",overflow:"hidden",border:m.featured?"2px solid var(--gold)":"1px solid var(--cream-dark)",transition:"all 0.3s",textAlign:"center",position:"relative"}} className="team-card">
                   <div style={{position:"relative",paddingTop:"100%",overflow:"hidden"}}>
                     <img src={m.photo} alt={m.name} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:m.pos||"center top"}} />
-                    {m.featured && m.badge!==false && <div style={{position:"absolute",top:"0.75rem",right:"0.75rem",background:"var(--gold)",color:"var(--navy)",padding:"0.25rem 0.7rem",borderRadius:"20px",fontSize:"0.65rem",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Director</div>}
+              {m.featured && m.badge!==false && <div style={{position:"absolute",top:"0.75rem",right:"0.75rem",background:"var(--gold)",color:"var(--navy)",padding:"0.25rem 0.7rem",borderRadius:"20px",fontSize:"0.65rem",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>{m.badgeText || "Director"}</div>}
                   </div>
                   <div style={{padding:"1.4rem 1.2rem"}}>
                     <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:"1rem",color:m.featured?"#fff":"var(--text-dark)",marginBottom:"0.35rem",fontWeight:700}}>{m.name}</h3>

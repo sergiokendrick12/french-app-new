@@ -1156,6 +1156,13 @@ export default function App() {
               {name:"KWIBUKA Erick",role:lang==="en"?"Certification Manager & Head of Pedagogy":"Responsable de la Certification & Chargé Pédagogique",photo:"staff-erick.jpeg",featured:true,pos:"center 20%",linkedin:"https://linkedin.com/in/kwibuka-ruhingana-erick-6b08952a8/"},
                             {name:"Ingabire Germaine",role:lang==="en"?"Secretary General & Communications":"Secrétaire Générale & Chargée de la communication",photo:"staff-germaine.jpeg",featured:true,badge:false,linkedin:"https://www.linkedin.com/in/germaine-ingabire-39bb5340b/"},
                                           {name:"Serges Ndinda",role:lang==="en"?"Software Engineer":"Ingénieur Logiciel",photo:"staff-serges.jpeg",featured:true,badge:false,linkedin:"https://www.linkedin.com/in/serges-ndinda/"},
+              {name:"Banda Clément",role:lang==="en"?"Lead Teacher & Sound Technician":"Enseignant Principal & Technicien du Son",photo:"staff-clement.jpeg",featured:true,badge:false},
+              {name:"ALEX BAHIRWE Peter",role:lang==="en"?"Quality & Compliance Manager":"Responsable Qualité & Conformité",photo:"staff-alex.jpeg",featured:true,badge:false},
+              {name:"Kabandana Ghislaine",role:lang==="en"?"Reception & Media Library Assistant":"Assistante Réception & Médiathèque",photo:"staff-ghislaine.jpeg",featured:true,badge:false},
+              {name:"Iragi Michaël",role:lang==="en"?"Cooperation Attaché & Legal Advisor":"Attaché de Coopération & Conseiller Juridique",photo:"staff-michael.jpeg",featured:true,badge:false},
+              {name:"Joas Irahoza",role:lang==="en"?"Multi-skilled Agent":"Agent Polyvalent",photo:"staff-joas.jpeg",featured:true,badge:false,linkedin:"https://www.linkedin.com/in/joas-irahoza-873870208/"},
+              {name:"DELPHIN KAHETO Josué",role:lang==="en"?"Teacher & Exam Supervisor":"Professeur et Surveillant d'examen",photo:"staff-josue.jpeg",featured:true,badge:false},
+              {name:"PRIMO Akila",role:lang==="en"?"Teacher & Guidance Coordinator":"Professeur et Responsable d'Orientation",photo:"staff-akila.jpeg",featured:true,badge:false},
             ].map((m,i)=>(
               <FadeIn key={i} delay={i*80}>
                 <div style={{background:m.featured?"var(--navy)":"var(--cream)",borderRadius:"16px",overflow:"hidden",border:m.featured?"2px solid var(--gold)":"1px solid var(--cream-dark)",transition:"all 0.3s",textAlign:"center",position:"relative"}} className="team-card">

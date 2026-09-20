@@ -12,6 +12,7 @@ const T = {
       why: "Why Us",
       place: "Our Place",
       enroll: "Enroll Now",
+      student: "Student Portal",
     },
     hero: {
       badge: "Professional French Language Academy",
@@ -173,6 +174,7 @@ const T = {
       why: "Pourquoi Nous",
       place: "Notre Lieu",
       enroll: "S'inscrire",
+      student: "Espace étudiant",
     },
     hero: {
       badge: "Académie Professionnelle de Langue Française",
@@ -403,6 +405,18 @@ const styles = `
   .nav-links a:hover { color: var(--gold-light); }
   .nav-cta-btn { background: var(--gold) !important; color: var(--navy) !important; padding: 0.45rem 1.1rem !important; border-radius: 3px !important; font-weight: 700 !important; }
   .nav-cta-btn:hover { background: var(--gold-light) !important; }
+  .nav-student-btn {
+    border: 1px solid rgba(201,168,76,0.65) !important;
+    color: var(--gold-light) !important;
+    padding: 0.4rem 0.85rem !important;
+    border-radius: 4px !important;
+    font-weight: 700 !important;
+    transition: all 0.25s !important;
+  }
+  .nav-student-btn:hover {
+    background: var(--gold) !important;
+    color: var(--navy) !important;
+  }
   .lang-toggle {
     display: flex; align-items: center; gap: 0; border: 1.5px solid rgba(201,168,76,0.35); border-radius: 20px; overflow: hidden; margin-left: 0.5rem;
   }
@@ -733,6 +747,7 @@ export default function Home({ lang, setLang }) {
             <li key={id}><a onClick={() => scroll(id)}>{t.nav[id === "cert" ? "certifications" : id === "pricing" ? (lang==="en"?"Pricing":"Tarifs") : id]}</a></li>
           ))}
           <li><Link to="/tests">{lang === "en" ? "Level Test" : "Test de Niveau"}</Link></li>
+          <li><Link to="/student-login" className="nav-student-btn">{t.nav.student}</Link></li>
           <li>
             <div className="lang-toggle">
               <button className={`lang-btn${lang === "en" ? " active" : ""}`} onClick={() => setLang("en")}>EN</button>
@@ -756,6 +771,7 @@ export default function Home({ lang, setLang }) {
           </a>
         ))}
         <Link to="/tests" onClick={() => setMenuOpen(false)} style={{color:"var(--gold)"}}>{lang === "en" ? "Level Test" : "Test de Niveau"}</Link>
+        <Link to="/student-login" onClick={() => setMenuOpen(false)} style={{color:"var(--gold)"}}>{t.nav.student}</Link>
         <a href="https://portal.internationalfrenchacademy.org/admin" target="_blank" rel="noopener noreferrer" style={{color:"#4ade80",fontSize:"0.85rem",border:"1px solid rgba(74,222,128,0.4)",padding:"0.4rem 1.2rem",borderRadius:"4px"}}>⚙ Admin Portal</a>
         <div className="mobile-lang">
           <button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")}>EN</button>

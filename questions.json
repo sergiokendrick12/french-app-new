@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "level": "A1",
+    "audioText": "Bonjour, je m'appelle Marie. J'habite à Kigali.",
+    "question": "Comment s'appelle la personne ?",
+    "choices": ["Marie", "Sophie", "Claire", "Julie"],
+    "correctAnswer": "Marie",
+    "filename": "q1_marie.mp3"
+  },
+  {
+    "id": 2,
+    "level": "A1",
+    "audioText": "J'ai deux enfants, un garçon et une fille.",
+    "question": "Combien d'enfants a la personne ?",
+    "choices": ["Un", "Deux", "Trois", "Quatre"],
+    "correctAnswer": "Deux",
+    "filename": "q2_enfants.mp3"
+  },
+  {
+    "id": 3,
+    "level": "A1",
+    "audioText": "Le magasin ouvre à neuf heures du matin.",
+    "question": "À quelle heure ouvre le magasin ?",
+    "choices": ["7h00", "8h00", "9h00", "10h00"],
+    "correctAnswer": "9h00",
+    "filename": "q3_magasin.mp3"
+  },
+  {
+    "id": 4,
+    "level": "A1",
+    "audioText": "Ma sœur aime beaucoup les pommes rouges.",
+    "question": "Qu'est-ce que la sœur aime ?",
+    "choices": ["Les bananes", "Les pommes rouges", "Les oranges", "Les fraises"],
+    "correctAnswer": "Les pommes rouges",
+    "filename": "q4_pommes.mp3"
+  },
+  {
+    "id": 5,
+    "level": "A2",
+    "audioText": "Je vais au marché tous les samedis pour acheter des légumes frais.",
+    "question": "Quand va-t-elle au marché ?",
+    "choices": ["Tous les lundis", "Tous les samedis", "Tous les dimanches", "Tous les jours"],
+    "correctAnswer": "Tous les samedis",
+    "filename": "q5_marche.mp3"
+  },
+  {
+    "id": 6,
+    "level": "A2",
+    "audioText": "Mon frère travaille dans un hôpital comme infirmier.",
+    "question": "Où travaille le frère ?",
+    "choices": ["Dans une école", "Dans un hôpital", "Dans un magasin", "Dans une banque"],
+    "correctAnswer": "Dans un hôpital",
+    "filename": "q6_hopital.mp3"
+  },
+  {
+    "id": 7,
+    "level": "A2",
+    "audioText": "Il pleut aujourd'hui, alors je prends mon parapluie.",
+    "question": "Quel temps fait-il aujourd'hui ?",
+    "choices": ["Il fait soleil", "Il neige", "Il pleut", "Il fait du vent"],
+    "correctAnswer": "Il pleut",
+    "filename": "q7_pluie.mp3"
+  },
+  {
+    "id": 8,
+    "level": "A2",
+    "audioText": "Nous partons en voyage la semaine prochaine pour visiter nos grands-parents.",
+    "question": "Qui vont-ils visiter ?",
+    "choices": ["Leurs amis", "Leurs grands-parents", "Leurs cousins", "Leurs voisins"],
+    "correctAnswer": "Leurs grands-parents",
+    "filename": "q8_voyage.mp3"
+  },
+  {
+    "id": 9,
+    "level": "B1",
+    "audioText": "Après avoir terminé mes études, j'ai décidé de chercher un emploi dans le domaine de la comptabilité.",
+    "question": "Dans quel domaine cherche-t-elle un emploi ?",
+    "choices": ["L'enseignement", "La comptabilité", "La médecine", "Le commerce"],
+    "correctAnswer": "La comptabilité",
+    "filename": "q9_emploi.mp3"
+  },
+  {
+    "id": 10,
+    "level": "B1",
+    "audioText": "Bien que le trajet soit long, je préfère prendre le bus plutôt que le train.",
+    "question": "Quel moyen de transport préfère la personne ?",
+    "choices": ["Le train", "Le bus", "La voiture", "Le vélo"],
+    "correctAnswer": "Le bus",
+    "filename": "q10_transport.mp3"
+  },
+  {
+    "id": 11,
+    "level": "B1",
+    "audioText": "Le directeur a annoncé une réunion importante pour discuter des résultats du trimestre.",
+    "question": "De quoi va-t-on discuter lors de la réunion ?",
+    "choices": ["Des vacances", "Des résultats du trimestre", "Du budget de l'année prochaine", "Du recrutement"],
+    "correctAnswer": "Des résultats du trimestre",
+    "filename": "q11_reunion.mp3"
+  },
+  {
+    "id": 12,
+    "level": "B1",
+    "audioText": "Selon les prévisions météorologiques, il fera très chaud ce week-end dans tout le pays.",
+    "question": "Que disent les prévisions météorologiques ?",
+    "choices": ["Il fera froid", "Il pleuvra", "Il fera très chaud", "Il y aura du vent"],
+    "correctAnswer": "Il fera très chaud",
+    "filename": "q12_meteo.mp3"
+  },
+  {
+    "id": 13,
+    "level": "B2",
+    "audioText": "Malgré les difficultés économiques, l'entreprise a réussi à augmenter ses ventes de dix pour cent cette année.",
+    "question": "Qu'est-ce que l'entreprise a réussi à faire ?",
+    "choices": ["Réduire ses coûts", "Augmenter ses ventes de dix pour cent", "Fermer certains magasins", "Licencier des employés"],
+    "correctAnswer": "Augmenter ses ventes de dix pour cent",
+    "filename": "q13_entreprise.mp3"
+  },
+  {
+    "id": 14,
+    "level": "B2",
+    "audioText": "À mon avis, il est essentiel que les jeunes générations s'impliquent davantage dans la protection de l'environnement.",
+    "question": "Quelle est l'opinion exprimée ?",
+    "choices": ["Les jeunes ne s'intéressent pas à l'environnement", "Il faut que les jeunes s'impliquent plus dans l'environnement", "L'environnement n'est pas important", "Seuls les adultes doivent protéger l'environnement"],
+    "correctAnswer": "Il faut que les jeunes s'impliquent plus dans l'environnement",
+    "filename": "q14_opinion.mp3"
+  },
+  {
+    "id": 15,
+    "level": "B2",
+    "audioText": "Le journal a rapporté que le gouvernement envisage de construire de nouvelles routes pour améliorer les transports dans la région.",
+    "question": "Que rapporte le journal ?",
+    "choices": ["Une nouvelle école va être construite", "De nouvelles routes vont être construites", "Le gouvernement va augmenter les impôts", "Une nouvelle loi va être votée"],
+    "correctAnswer": "De nouvelles routes vont être construites",
+    "filename": "q15_actualite.mp3"
+  },
+  {
+    "id": 16,
+    "level": "C1",
+    "audioText": "Il est indéniable que la transformation numérique a bouleversé la manière dont les entreprises interagissent avec leurs clients.",
+    "question": "Qu'est-ce qui a été bouleversé ?",
+    "choices": ["Les habitudes alimentaires", "La manière dont les entreprises interagissent avec leurs clients", "Le système éducatif", "Les transports publics"],
+    "correctAnswer": "La manière dont les entreprises interagissent avec leurs clients",
+    "filename": "q16_numerique.mp3"
+  },
+  {
+    "id": 17,
+    "level": "C1",
+    "audioText": "Si nous avions anticipé les conséquences de cette décision, nous aurions certainement agi différemment.",
+    "question": "Que suggère cette phrase ?",
+    "choices": ["La décision a été prise sans regret", "Les gens regrettent de ne pas avoir anticipé les conséquences", "La décision a été un succès total", "Personne n'a pris de décision"],
+    "correctAnswer": "Les gens regrettent de ne pas avoir anticipé les conséquences",
+    "filename": "q17_regret.mp3"
+  },
+  {
+    "id": 18,
+    "level": "C1",
+    "audioText": "Nonobstant les critiques formulées par certains experts, le projet a été approuvé à l'unanimité par le conseil.",
+    "question": "Comment le projet a-t-il été approuvé ?",
+    "choices": ["Rejeté par le conseil", "Approuvé à l'unanimité malgré les critiques", "Reporté à l'année suivante", "Approuvé avec des réserves"],
+    "correctAnswer": "Approuvé à l'unanimité malgré les critiques",
+    "filename": "q18_projet.mp3"
+  },
+  {
+    "id": 19,
+    "level": "C2",
+    "audioText": "L'ambiguïté de cette clause contractuelle a suscité une controverse quant à son interprétation juridique exacte.",
+    "question": "Qu'est-ce qui a suscité une controverse ?",
+    "choices": ["Le prix du contrat", "L'ambiguïté d'une clause contractuelle", "La durée du contrat", "La signature du contrat"],
+    "correctAnswer": "L'ambiguïté d'une clause contractuelle",
+    "filename": "q19_clause.mp3"
+  },
+  {
+    "id": 20,
+    "level": "C2",
+    "audioText": "Loin de se laisser décourager par l'ampleur de la tâche, elle a redoublé d'efforts pour mener à bien ce projet ambitieux.",
+    "question": "Quelle est l'attitude de la personne face à la tâche ?",
+    "choices": ["Elle a abandonné le projet", "Elle a redoublé d'efforts malgré la difficulté", "Elle a confié le projet à quelqu'un d'autre", "Elle a demandé plus de temps"],
+    "correctAnswer": "Elle a redoublé d'efforts malgré la difficulté",
+    "filename": "q20_effort.mp3"
+  }
+]

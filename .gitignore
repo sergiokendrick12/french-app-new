@@ -23,3 +23,12 @@ yarn-debug.log*
 yarn-error.log*
 
 .vercel
+
+# Local development files
+.vscode/
+french_app/
+*.py
+*.pdf
+
+
+supabase/.temp/

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 
@@ -318,7 +318,6 @@ export default function WrittenTest() {
 
   const [answers, setAnswers] = useState({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
-
   const [timeLeft, setTimeLeft] = useState(TEST_DURATION);
 
   const [loading, setLoading] = useState(true);
@@ -329,15 +328,44 @@ export default function WrittenTest() {
 
   const [studentId, setStudentId] = useState(null);
 
+  // Security states
+  const [tabSwitches, setTabSwitches] = useState(0);
+  const [terminationReason, setTerminationReason] = useState(null);
+  const [serverAttemptId, setServerAttemptId] = useState(null);
+
+  // Security refs
+  const attemptRef = useRef(null);
+  const tabSwitchProcessingRef = useRef(false);
+  const accessCheckStartedRef = useRef(false);
+  const submitStartedRef = useRef(false);
+
   const question = questions[currentQuestion];
 
   const answeredCount = useMemo(() => {
     return Object.keys(answers).length;
   }, [answers]);
 
+  /*
+   * -------------------------------------------------------
+   * ACCESS CHECK
+   * -------------------------------------------------------
+   */
+
   useEffect(() => {
+    if (accessCheckStartedRef.current) {
+      return;
+    }
+
+    accessCheckStartedRef.current = true;
+
     checkAccess();
   }, []);
+
+  /*
+   * -------------------------------------------------------
+   * TIMER
+   * -------------------------------------------------------
+   */
 
   useEffect(() => {
     if (loading || completed || submitting) {
@@ -345,12 +373,18 @@ export default function WrittenTest() {
     }
 
     if (timeLeft <= 0) {
-      handleSubmit(true);
+      handleSubmit(true, "time");
       return;
     }
 
     const timer = setInterval(() => {
-      setTimeLeft((current) => current - 1);
+      setTimeLeft((current) => {
+        if (current <= 1) {
+          return 0;
+        }
+
+        return current - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
@@ -360,6 +394,70 @@ export default function WrittenTest() {
     submitting,
     timeLeft,
   ]);
+
+  /*
+   * -------------------------------------------------------
+   * TAB SWITCH SECURITY
+   * -------------------------------------------------------
+   */
+
+  useEffect(() => {
+    if (
+      loading ||
+      completed ||
+      submitting ||
+      !serverAttemptId
+    ) {
+      return;
+    }
+
+    function handleVisibilityChange() {
+      if (!document.hidden) {
+        return;
+      }
+
+      if (tabSwitchProcessingRef.current) {
+        return;
+      }
+
+      const attempt = attemptRef.current;
+
+      if (!attempt) {
+        return;
+      }
+
+      tabSwitchProcessingRef.current = true;
+
+      processTabSwitch(attempt).finally(() => {
+        setTimeout(() => {
+          tabSwitchProcessingRef.current = false;
+        }, 500);
+      });
+    }
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
+
+    return () => {
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
+    };
+  }, [
+    loading,
+    completed,
+    submitting,
+    serverAttemptId,
+  ]);
+
+  /*
+   * -------------------------------------------------------
+   * CHECK ACCESS + SERVER ATTEMPT
+   * -------------------------------------------------------
+   */
 
   async function checkAccess() {
     setLoading(true);
@@ -378,12 +476,14 @@ export default function WrittenTest() {
         return;
       }
 
-      const { data: student, error: studentError } =
-        await supabase
-          .from("student_profiles")
-          .select("id, status, payment_status")
-          .eq("id", user.id)
-          .maybeSingle();
+      const {
+        data: student,
+        error: studentError,
+      } = await supabase
+        .from("student_profiles")
+        .select("id, status, payment_status")
+        .eq("id", user.id)
+        .maybeSingle();
 
       if (studentError) {
         console.error(
@@ -409,6 +509,7 @@ export default function WrittenTest() {
         setMessage(
           "Votre compte doit être approuvé par l'administration avant de passer ce test."
         );
+
         setLoading(false);
         return;
       }
@@ -417,25 +518,35 @@ export default function WrittenTest() {
         setMessage(
           "Le paiement doit être confirmé par l'administration avant de passer ce test."
         );
+
         setLoading(false);
         return;
       }
 
       setStudentId(student.id);
 
+      /*
+       * Check actual result first.
+       */
+
       const {
         data: existingResult,
         error: existingError,
       } = await supabase
         .from("test_results")
-        .select("id, score, total_questions, percentage")
+        .select(
+          "id, score, total_questions, percentage"
+        )
         .eq("student_id", student.id)
-        .eq("test_type", "comprehension_ecrite")
+        .eq(
+          "test_type",
+          "comprehension_ecrite"
+        )
         .maybeSingle();
 
       if (existingError) {
         console.error(
-          "CHECK WRITTEN TEST ERROR:",
+          "CHECK WRITTEN TEST RESULT ERROR:",
           existingError
         );
 
@@ -450,6 +561,255 @@ export default function WrittenTest() {
       if (existingResult) {
         setCompleted(true);
         setLoading(false);
+        return;
+      }
+
+      /*
+       * Check server-side attempt.
+       */
+
+      const {
+        data: existingAttempt,
+        error: attemptError,
+      } = await supabase
+        .from("written_test_attempts")
+        .select(
+          "id, status, started_at, finished_at, tab_switches, termination_reason"
+        )
+        .eq("student_id", student.id)
+        .maybeSingle();
+
+      if (attemptError) {
+        console.error(
+          "CHECK WRITTEN ATTEMPT ERROR:",
+          attemptError
+        );
+
+        setMessage(
+          "Impossible de vérifier votre tentative de test."
+        );
+
+        setLoading(false);
+        return;
+      }
+
+      /*
+       * Finished attempt = no retake.
+       */
+
+      if (
+        existingAttempt &&
+        existingAttempt.status === "finished"
+      ) {
+        setTabSwitches(
+          existingAttempt.tab_switches || 0
+        );
+
+        setTerminationReason(
+          existingAttempt.termination_reason || null
+        );
+
+        setCompleted(true);
+        setLoading(false);
+        return;
+      }
+
+      let activeAttempt = existingAttempt;
+
+      /*
+       * Create attempt if needed.
+       */
+
+      if (!activeAttempt) {
+        const {
+          data: newAttempt,
+          error: createAttemptError,
+        } = await supabase
+          .from("written_test_attempts")
+          .insert({
+            student_id: student.id,
+            status: "in_progress",
+            tab_switches: 0,
+          })
+          .select(
+            "id, status, started_at, finished_at, tab_switches, termination_reason"
+          )
+          .single();
+
+        if (createAttemptError) {
+          /*
+           * Another request may have created the
+           * unique attempt at the same time.
+           */
+
+          if (
+            createAttemptError.code ===
+            "23505"
+          ) {
+            const {
+              data: raceAttempt,
+              error: raceError,
+            } = await supabase
+              .from("written_test_attempts")
+              .select(
+                "id, status, started_at, finished_at, tab_switches, termination_reason"
+              )
+              .eq(
+                "student_id",
+                student.id
+              )
+              .maybeSingle();
+
+            if (
+              raceError ||
+              !raceAttempt
+            ) {
+              console.error(
+                "RACE ATTEMPT ERROR:",
+                raceError
+              );
+
+              setMessage(
+                "Impossible de récupérer votre tentative."
+              );
+
+              setLoading(false);
+              return;
+            }
+
+            activeAttempt = raceAttempt;
+          } else {
+            console.error(
+              "CREATE WRITTEN ATTEMPT ERROR:",
+              createAttemptError
+            );
+
+            setMessage(
+              "Impossible de démarrer votre tentative."
+            );
+
+            setLoading(false);
+            return;
+          }
+        } else {
+          activeAttempt = newAttempt;
+        }
+      }
+
+      /*
+       * Check again if finished.
+       */
+
+      if (
+        activeAttempt.status === "finished"
+      ) {
+        setTabSwitches(
+          activeAttempt.tab_switches || 0
+        );
+
+        setTerminationReason(
+          activeAttempt.termination_reason || null
+        );
+
+        setCompleted(true);
+        setLoading(false);
+        return;
+      }
+
+      /*
+       * Save active attempt.
+       */
+
+      attemptRef.current = activeAttempt;
+
+      setServerAttemptId(activeAttempt.id);
+
+      setTabSwitches(
+        activeAttempt.tab_switches || 0
+      );
+
+      /*
+       * ---------------------------------------------------
+       * SERVER-AUTHORITATIVE TIMER
+       * ---------------------------------------------------
+       */
+
+      const {
+        data: serverTime,
+        error: serverTimeError,
+      } = await supabase.rpc(
+        "get_server_time"
+      );
+
+      if (serverTimeError) {
+        console.error(
+          "SERVER TIME ERROR:",
+          serverTimeError
+        );
+
+        setMessage(
+          "Impossible de vérifier l'heure du serveur."
+        );
+
+        setLoading(false);
+        return;
+      }
+
+      const startedAt = new Date(
+        activeAttempt.started_at
+      ).getTime();
+
+      const serverNow = new Date(
+        serverTime
+      ).getTime();
+
+      const elapsedSeconds = Math.floor(
+        (serverNow - startedAt) / 1000
+      );
+
+      const remainingSeconds =
+        Math.min(
+          TEST_DURATION,
+          Math.max(
+            0,
+            TEST_DURATION -
+              elapsedSeconds
+          )
+        );
+
+      /*
+       * For a brand-new attempt, display
+       * the complete 30:00 immediately.
+       *
+       * Resumed attempts use the actual
+       * server-calculated remaining time.
+       */
+
+      const isBrandNewAttempt =
+        !existingAttempt;
+
+      setTimeLeft(
+        isBrandNewAttempt
+          ? TEST_DURATION
+          : remainingSeconds
+      );
+
+      /*
+       * If the server says an existing
+       * attempt has already expired,
+       * automatically submit it.
+       */
+
+      if (
+        !isBrandNewAttempt &&
+        remainingSeconds <= 0
+      ) {
+        setLoading(false);
+
+        setTimeout(() => {
+          handleSubmit(true, "time");
+        }, 0);
+
         return;
       }
 
@@ -468,16 +828,199 @@ export default function WrittenTest() {
     }
   }
 
-  function handleAnswer(choiceIndex) {
-    setAnswers((current) => ({
-      ...current,
-      [question.id]: choiceIndex,
-    }));
+  /*
+   * -------------------------------------------------------
+   * TAB SWITCH PROCESSING
+   * -------------------------------------------------------
+   */
+
+  async function processTabSwitch(
+    attempt
+  ) {
+    const currentSwitches =
+      attempt.tab_switches || 0;
+
+    const newSwitchCount =
+      currentSwitches + 1;
+
+    /*
+     * FIRST SWITCH = WARNING
+     */
+
+    if (newSwitchCount === 1) {
+      const {
+        data: updatedAttempt,
+        error: updateError,
+      } = await supabase
+        .from("written_test_attempts")
+        .update({
+          tab_switches: 1,
+        })
+        .eq("id", attempt.id)
+        .eq(
+          "status",
+          "in_progress"
+        )
+        .select(
+          "id, status, started_at, finished_at, tab_switches, termination_reason"
+        )
+        .single();
+
+      if (updateError) {
+        console.error(
+          "FIRST TAB SWITCH UPDATE ERROR:",
+          updateError
+        );
+
+        setTabSwitches(1);
+
+        attemptRef.current = {
+          ...attempt,
+          tab_switches: 1,
+        };
+
+        return;
+      }
+
+      attemptRef.current =
+        updatedAttempt;
+
+      setTabSwitches(1);
+
+      return;
+    }
+
+    /*
+     * SECOND SWITCH = TERMINATE
+     */
+
+    setTabSwitches(2);
+    setTerminationReason(
+      "tab_switch"
+    );
+
+    /*
+     * Save zero result.
+     */
+
+    const {
+      error: resultError,
+    } = await supabase
+      .from("test_results")
+      .insert({
+        student_id: studentId,
+        score: 0,
+        total_questions:
+          questions.length,
+        percentage: 0,
+        test_type:
+          "comprehension_ecrite",
+      });
+
+    if (
+      resultError &&
+      resultError.code !== "23505"
+    ) {
+      console.error(
+        "TAB SWITCH RESULT INSERT ERROR:",
+        resultError
+      );
+    }
+
+    /*
+     * Finish server attempt.
+     */
+
+    const {
+      data: finishedAttempt,
+      error: finishError,
+    } = await supabase
+      .from("written_test_attempts")
+      .update({
+        status: "finished",
+        finished_at:
+          new Date().toISOString(),
+        tab_switches: 2,
+        termination_reason:
+          "tab_switch",
+      })
+      .eq("id", attempt.id)
+      .eq(
+        "status",
+        "in_progress"
+      )
+      .select(
+        "id, status, started_at, finished_at, tab_switches, termination_reason"
+      )
+      .single();
+
+    if (finishError) {
+      console.error(
+        "TAB SWITCH ATTEMPT FINISH ERROR:",
+        finishError
+      );
+    } else {
+      attemptRef.current =
+        finishedAttempt;
+    }
+
+    setAnswers({});
+    setCompleted(true);
   }
+
+  /*
+   * -------------------------------------------------------
+   * ANSWERS
+   * -------------------------------------------------------
+   *
+   * IMPORTANT:
+   * Once an answer is selected, it is locked.
+   * The student cannot change it.
+   */
+
+  function handleAnswer(
+    choiceIndex
+  ) {
+    setAnswers((current) => {
+      /*
+       * Answer already exists = LOCKED.
+       */
+      if (
+        Object.prototype.hasOwnProperty.call(
+          current,
+          question.id
+        )
+      ) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [question.id]:
+          choiceIndex,
+      };
+    });
+  }
+
+  /*
+   * -------------------------------------------------------
+   * NAVIGATION
+   * -------------------------------------------------------
+   *
+   * There is intentionally NO previous
+   * navigation.
+   */
 
   function goNext() {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((current) => current + 1);
+    if (
+      currentQuestion <
+      questions.length - 1
+    ) {
+      setCurrentQuestion(
+        (current) =>
+          current + 1
+      );
+
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -485,41 +1028,64 @@ export default function WrittenTest() {
     }
   }
 
-  function goPrevious() {
-    if (currentQuestion > 0) {
-      setCurrentQuestion((current) => current - 1);
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  }
+  /*
+   * -------------------------------------------------------
+   * TIMER FORMAT
+   * -------------------------------------------------------
+   */
 
   function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
+    const minutes =
+      Math.floor(seconds / 60);
 
-    return `${String(minutes).padStart(2, "0")}:${String(
+    const remainingSeconds =
+      seconds % 60;
+
+    return `${String(
+      minutes
+    ).padStart(
+      2,
+      "0"
+    )}:${String(
       remainingSeconds
-    ).padStart(2, "0")}`;
+    ).padStart(
+      2,
+      "0"
+    )}`;
   }
 
-  async function handleSubmit(autoSubmit = false) {
-    if (submitting || completed) {
+  /*
+   * -------------------------------------------------------
+   * NORMAL SUBMIT / TIMEOUT
+   * -------------------------------------------------------
+   */
+
+  async function handleSubmit(
+    autoSubmit = false,
+    reason = "completed"
+  ) {
+    if (
+      submitting ||
+      completed ||
+      submitStartedRef.current
+    ) {
       return;
     }
 
     if (!autoSubmit) {
-      const confirmed = window.confirm(
-        "Êtes-vous certain de vouloir envoyer vos réponses ?\n\n" +
-          `Vous avez répondu à ${answeredCount} question(s) sur ${questions.length}.\n\n` +
-          "Cette partie ne pourra être envoyée qu'une seule fois."
-      );
+      const confirmed =
+        window.confirm(
+          "Êtes-vous certain de vouloir envoyer vos réponses ?\n\n" +
+            `Vous avez répondu à ${answeredCount} question(s) sur ${questions.length}.\n\n` +
+            "Cette partie ne pourra être envoyée qu'une seule fois."
+        );
 
       if (!confirmed) {
         return;
       }
     }
+
+    submitStartedRef.current = true;
 
     setSubmitting(true);
     setMessage("");
@@ -529,30 +1095,49 @@ export default function WrittenTest() {
         setMessage(
           "Votre session étudiant est introuvable."
         );
+
+        submitStartedRef.current = false;
         setSubmitting(false);
         return;
       }
 
       let score = 0;
 
-      questions.forEach((item) => {
-        if (answers[item.id] === item.correctAnswer) {
-          score += 1;
+      questions.forEach(
+        (item) => {
+          if (
+            answers[item.id] ===
+            item.correctAnswer
+          ) {
+            score += 1;
+          }
         }
-      });
-
-      const percentage = Math.round(
-        (score / questions.length) * 100
       );
 
-      const { error: insertError } = await supabase
+      const percentage =
+        Math.round(
+          (score /
+            questions.length) *
+            100
+        );
+
+      /*
+       * Save result.
+       */
+
+      const {
+        error: insertError,
+      } = await supabase
         .from("test_results")
         .insert({
-          student_id: studentId,
+          student_id:
+            studentId,
           score,
-          total_questions: questions.length,
+          total_questions:
+            questions.length,
           percentage,
-          test_type: "comprehension_ecrite",
+          test_type:
+            "comprehension_ecrite",
         });
 
       if (insertError) {
@@ -561,7 +1146,10 @@ export default function WrittenTest() {
           insertError
         );
 
-        if (insertError.code === "23505") {
+        if (
+          insertError.code ===
+          "23505"
+        ) {
           setCompleted(true);
           setSubmitting(false);
           return;
@@ -571,8 +1159,61 @@ export default function WrittenTest() {
           "Impossible d'enregistrer votre résultat."
         );
 
+        submitStartedRef.current = false;
         setSubmitting(false);
         return;
+      }
+
+      /*
+       * Finish server attempt.
+       */
+
+      if (serverAttemptId) {
+        const {
+          data: finishedAttempt,
+          error: finishError,
+        } = await supabase
+          .from(
+            "written_test_attempts"
+          )
+          .update({
+            status:
+              "finished",
+            finished_at:
+              new Date().toISOString(),
+            termination_reason:
+              reason === "time"
+                ? "time"
+                : "completed",
+          })
+          .eq(
+            "id",
+            serverAttemptId
+          )
+          .eq(
+            "status",
+            "in_progress"
+          )
+          .select(
+            "id, status, started_at, finished_at, tab_switches, termination_reason"
+          )
+          .single();
+
+        if (finishError) {
+          console.error(
+            "FINISH WRITTEN ATTEMPT ERROR:",
+            finishError
+          );
+        } else {
+          attemptRef.current =
+            finishedAttempt;
+
+          setTerminationReason(
+            reason === "time"
+              ? "time"
+              : "completed"
+          );
+        }
       }
 
       setCompleted(true);
@@ -585,26 +1226,56 @@ export default function WrittenTest() {
       setMessage(
         "Une erreur inattendue est survenue."
       );
+
+      submitStartedRef.current = false;
     }
 
     setSubmitting(false);
   }
 
+  /*
+   * -------------------------------------------------------
+   * LOADING SCREEN
+   * -------------------------------------------------------
+   */
+
   if (loading) {
     return (
       <div style={styles.page}>
-        <div style={styles.loadingCard}>
-          <div style={styles.logoText}>
+        <div
+          style={
+            styles.loadingCard
+          }
+        >
+          <div
+            style={
+              styles.logoText
+            }
+          >
             INTERNATIONAL FRENCH ACADEMY
           </div>
 
-          <div style={styles.spinner}>◌</div>
+          <div
+            style={
+              styles.spinner
+            }
+          >
+            ◌
+          </div>
 
-          <h1 style={styles.loadingTitle}>
+          <h1
+            style={
+              styles.loadingTitle
+            }
+          >
             Vérification de votre accès...
           </h1>
 
-          <p style={styles.muted}>
+          <p
+            style={
+              styles.muted
+            }
+          >
             Veuillez patienter.
           </p>
         </div>
@@ -612,37 +1283,284 @@ export default function WrittenTest() {
     );
   }
 
+  /*
+   * -------------------------------------------------------
+   * COMPLETED SCREEN
+   * -------------------------------------------------------
+   */
+
   if (completed) {
+    if (
+      terminationReason ===
+      "tab_switch"
+    ) {
+      return (
+        <div
+          style={styles.page}
+        >
+          <div
+            style={
+              styles.errorCard
+            }
+          >
+            <div
+              style={
+                styles.logoText
+              }
+            >
+              INTERNATIONAL FRENCH ACADEMY
+            </div>
+
+            <div
+              style={
+                styles.errorIcon
+              }
+            >
+              !
+            </div>
+
+            <h1
+              style={
+                styles.title
+              }
+            >
+              Test terminé
+            </h1>
+
+            <p
+              style={
+                styles.errorText
+              }
+            >
+              Le test a été
+              automatiquement
+              terminé après
+              deux changements
+              d'onglet.
+            </p>
+
+            <p
+              style={
+                styles.text
+              }
+            >
+              Cette tentative
+              a été enregistrée
+              avec un score de
+              0 /{" "}
+              {questions.length}.
+            </p>
+
+            <p
+              style={
+                styles.text
+              }
+            >
+              Une seule
+              tentative est
+              autorisée pour la
+              compréhension
+              écrite.
+            </p>
+
+            <button
+              type="button"
+              onClick={() =>
+                navigate(
+                  "/tests/results"
+                )
+              }
+              style={
+                styles.primaryButton
+              }
+            >
+              Voir mes résultats →
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                navigate(
+                  "/student-dashboard"
+                )
+              }
+              style={
+                styles.secondaryButton
+              }
+            >
+              Retour à mon espace
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (
+      terminationReason ===
+      "time"
+    ) {
+      return (
+        <div
+          style={styles.page}
+        >
+          <div
+            style={
+              styles.errorCard
+            }
+          >
+            <div
+              style={
+                styles.logoText
+              }
+            >
+              INTERNATIONAL FRENCH ACADEMY
+            </div>
+
+            <div
+              style={
+                styles.errorIcon
+              }
+            >
+              !
+            </div>
+
+            <h1
+              style={
+                styles.title
+              }
+            >
+              Temps écoulé
+            </h1>
+
+            <p
+              style={
+                styles.errorText
+              }
+            >
+              Le temps de
+              30 minutes est
+              terminé.
+            </p>
+
+            <p
+              style={
+                styles.text
+              }
+            >
+              Vos réponses ont
+              été enregistrées
+              automatiquement.
+            </p>
+
+            <p
+              style={
+                styles.text
+              }
+            >
+              Une seule
+              tentative est
+              autorisée pour la
+              compréhension
+              écrite.
+            </p>
+
+            <button
+              type="button"
+              onClick={() =>
+                navigate(
+                  "/tests/results"
+                )
+              }
+              style={
+                styles.primaryButton
+              }
+            >
+              Voir mes résultats →
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                navigate(
+                  "/student-dashboard"
+                )
+              }
+              style={
+                styles.secondaryButton
+              }
+            >
+              Retour à mon espace
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div style={styles.page}>
-        <div style={styles.successCard}>
-          <div style={styles.logoText}>
+      <div
+        style={styles.page}
+      >
+        <div
+          style={
+            styles.successCard
+          }
+        >
+          <div
+            style={
+              styles.logoText
+            }
+          >
             INTERNATIONAL FRENCH ACADEMY
           </div>
 
-          <div style={styles.successIcon}>
+          <div
+            style={
+              styles.successIcon
+            }
+          >
             ✓
           </div>
 
-          <h1 style={styles.title}>
+          <h1
+            style={
+              styles.title
+            }
+          >
             Compréhension écrite terminée
           </h1>
 
-          <p style={styles.text}>
-            Cette partie du test a déjà été envoyée.
+          <p
+            style={
+              styles.text
+            }
+          >
+            Cette partie du
+            test a déjà été
+            envoyée.
           </p>
 
-          <p style={styles.text}>
-            Une seule tentative est autorisée pour la
-            compréhension écrite.
+          <p
+            style={
+              styles.text
+            }
+          >
+            Une seule
+            tentative est
+            autorisée pour la
+            compréhension
+            écrite.
           </p>
 
           <button
             type="button"
             onClick={() =>
-              navigate("/tests/results")
+              navigate(
+                "/tests/results"
+              )
             }
-            style={styles.primaryButton}
+            style={
+              styles.primaryButton
+            }
           >
             Voir mes résultats →
           </button>
@@ -650,9 +1568,13 @@ export default function WrittenTest() {
           <button
             type="button"
             onClick={() =>
-              navigate("/student-dashboard")
+              navigate(
+                "/student-dashboard"
+              )
             }
-            style={styles.secondaryButton}
+            style={
+              styles.secondaryButton
+            }
           >
             Retour à mon espace
           </button>
@@ -661,32 +1583,64 @@ export default function WrittenTest() {
     );
   }
 
+  /*
+   * -------------------------------------------------------
+   * ERROR SCREEN
+   * -------------------------------------------------------
+   */
+
   if (message) {
     return (
-      <div style={styles.page}>
-        <div style={styles.errorCard}>
-          <div style={styles.logoText}>
+      <div
+        style={styles.page}
+      >
+        <div
+          style={
+            styles.errorCard
+          }
+        >
+          <div
+            style={
+              styles.logoText
+            }
+          >
             INTERNATIONAL FRENCH ACADEMY
           </div>
 
-          <div style={styles.errorIcon}>
+          <div
+            style={
+              styles.errorIcon
+            }
+          >
             !
           </div>
 
-          <h1 style={styles.title}>
+          <h1
+            style={
+              styles.title
+            }
+          >
             Accès au test
           </h1>
 
-          <p style={styles.errorText}>
+          <p
+            style={
+              styles.errorText
+            }
+          >
             {message}
           </p>
 
           <button
             type="button"
             onClick={() =>
-              navigate("/student-dashboard")
+              navigate(
+                "/student-dashboard"
+              )
             }
-            style={styles.primaryButton}
+            style={
+              styles.primaryButton
+            }
           >
             Retour à mon espace
           </button>
@@ -695,41 +1649,124 @@ export default function WrittenTest() {
     );
   }
 
+  /*
+   * -------------------------------------------------------
+   * TEST SCREEN
+   * -------------------------------------------------------
+   */
+
   return (
-    <div style={styles.page}>
-      <div style={styles.container}>
-        <header style={styles.header}>
-          <div style={styles.logoText}>
+    <div
+      style={styles.page}
+    >
+      <div
+        style={styles.container}
+      >
+        <header
+          style={styles.header}
+        >
+          <div
+            style={
+              styles.logoText
+            }
+          >
             INTERNATIONAL FRENCH ACADEMY
           </div>
 
-          <div style={styles.subtitle}>
+          <div
+            style={
+              styles.subtitle
+            }
+          >
             Évaluation de positionnement
           </div>
 
-          <h1 style={styles.title}>
+          <h1
+            style={
+              styles.title
+            }
+          >
             Compréhension écrite
           </h1>
 
-          <p style={styles.intro}>
-            Lisez chaque texte attentivement puis choisissez
-            la bonne réponse.
+          <p
+            style={
+              styles.intro
+            }
+          >
+            Lisez chaque texte
+            attentivement puis
+            choisissez la bonne
+            réponse.
           </p>
         </header>
 
-        <div style={styles.topBar}>
+        {tabSwitches ===
+          1 && (
+          <div
+            style={
+              styles.tabWarning
+            }
+          >
+            <strong>
+              ⚠️ Premier avertissement
+            </strong>
+
+            <div>
+              Vous avez quitté
+              l'onglet du test.
+              Un deuxième
+              changement
+              d'onglet entraînera
+              automatiquement la
+              fin du test.
+            </div>
+
+            <div
+              style={
+                styles.tabWarningCount
+              }
+            >
+              Changements
+              d'onglet : 1 / 2
+            </div>
+          </div>
+        )}
+
+        <div
+          style={styles.topBar}
+        >
           <div>
-            <div style={styles.progressLabel}>
+            <div
+              style={
+                styles.progressLabel
+              }
+            >
               QUESTION
             </div>
 
-            <div style={styles.progressValue}>
-              {currentQuestion + 1} / {questions.length}
+            <div
+              style={
+                styles.progressValue
+              }
+            >
+              {currentQuestion +
+                1}{" "}
+              /{" "}
+              {questions.length}
             </div>
           </div>
 
-          <div style={styles.timerBox}>
-            <div style={styles.timerLabel}>
+          <div
+            style={
+              styles.timerBox
+            }
+          >
+            <div
+              style={
+                styles.timerLabel
+              }
+            >
               TEMPS RESTANT
             </div>
 
@@ -737,32 +1774,50 @@ export default function WrittenTest() {
               style={{
                 ...styles.timer,
                 color:
-                  timeLeft <= 300
+                  timeLeft <=
+                  300
                     ? "#a33a3a"
                     : "#0d1b2a",
               }}
             >
-              {formatTime(timeLeft)}
+              {formatTime(
+                timeLeft
+              )}
             </div>
           </div>
 
           <div>
-            <div style={styles.progressLabel}>
+            <div
+              style={
+                styles.progressLabel
+              }
+            >
               RÉPONDUES
             </div>
 
-            <div style={styles.progressValue}>
-              {answeredCount} / {questions.length}
+            <div
+              style={
+                styles.progressValue
+              }
+            >
+              {answeredCount}{" "}
+              /{" "}
+              {questions.length}
             </div>
           </div>
         </div>
 
-        <div style={styles.progressBarOuter}>
+        <div
+          style={
+            styles.progressBarOuter
+          }
+        >
           <div
             style={{
               ...styles.progressBarInner,
               width: `${
-                ((currentQuestion + 1) /
+                ((currentQuestion +
+                  1) /
                   questions.length) *
                 100
               }%`,
@@ -770,48 +1825,111 @@ export default function WrittenTest() {
           />
         </div>
 
-        <div style={styles.questionCard}>
-          <div style={styles.questionHeader}>
-            <div style={styles.questionNumber}>
-              QUESTION {currentQuestion + 1}
+        <div
+          style={
+            styles.questionCard
+          }
+        >
+          <div
+            style={
+              styles.questionHeader
+            }
+          >
+            <div
+              style={
+                styles.questionNumber
+              }
+            >
+              QUESTION{" "}
+              {currentQuestion +
+                1}
             </div>
 
-            <div style={styles.levelBadge}>
+            <div
+              style={
+                styles.levelBadge
+              }
+            >
               {question.level}
             </div>
           </div>
 
-          <div style={styles.readingText}>
-            {question.text.split("\n").map(
-              (paragraph, index) => (
-                <p key={index}>
-                  {paragraph}
-                </p>
-              )
-            )}
+          <div
+            style={
+              styles.readingText
+            }
+          >
+            {question.text
+              .split("\n")
+              .map(
+                (
+                  paragraph,
+                  index
+                ) => (
+                  <p
+                    key={
+                      index
+                    }
+                  >
+                    {paragraph}
+                  </p>
+                )
+              )}
           </div>
 
-          <h2 style={styles.questionTitle}>
+          <h2
+            style={
+              styles.questionTitle
+            }
+          >
             {question.question}
           </h2>
 
-          <div style={styles.choices}>
+          <div
+            style={
+              styles.choices
+            }
+          >
             {question.choices.map(
-              (choice, index) => {
+              (
+                choice,
+                index
+              ) => {
                 const selected =
-                  answers[question.id] === index;
+                  answers[
+                    question.id
+                  ] ===
+                  index;
+
+                const answerLocked =
+                  Object.prototype.hasOwnProperty.call(
+                    answers,
+                    question.id
+                  );
 
                 return (
                   <button
                     type="button"
-                    key={index}
+                    key={
+                      index
+                    }
                     onClick={() =>
-                      handleAnswer(index)
+                      handleAnswer(
+                        index
+                      )
+                    }
+                    disabled={
+                      answerLocked
                     }
                     style={{
                       ...styles.choice,
+
                       ...(selected
                         ? styles.choiceSelected
+                        : {}),
+
+                      ...(answerLocked
+                        ? styles.choiceLocked
                         : {}),
                     }}
                   >
@@ -824,55 +1942,83 @@ export default function WrittenTest() {
                       }}
                     >
                       {String.fromCharCode(
-                        65 + index
+                        65 +
+                          index
                       )}
                     </span>
 
                     <span>
-                      {choice}
+                      {
+                        choice
+                      }
                     </span>
+
+                    {selected && (
+                      <span
+                        style={
+                          styles.lockIcon
+                        }
+                      >
+                        ✓
+                      </span>
+                    )}
                   </button>
                 );
               }
             )}
           </div>
+
+          {Object.prototype.hasOwnProperty.call(
+            answers,
+            question.id
+          ) && (
+            <div
+              style={
+                styles.answerLockedMessage
+              }
+            >
+              ✓ Réponse enregistrée — cette réponse ne peut plus être modifiée.
+            </div>
+          )}
         </div>
 
-        <div style={styles.navigation}>
-          <button
-            type="button"
-            onClick={goPrevious}
-            disabled={currentQuestion === 0}
-            style={{
-              ...styles.navButton,
-              opacity:
-                currentQuestion === 0
-                  ? 0.45
-                  : 1,
-            }}
-          >
-            ← Précédente
-          </button>
-
+        <div
+          style={
+            styles.navigation
+          }
+        >
           {currentQuestion <
-          questions.length - 1 ? (
+          questions.length -
+            1 ? (
             <button
               type="button"
-              onClick={goNext}
-              style={styles.primaryButton}
+              onClick={
+                goNext
+              }
+              style={
+                styles.primaryButton
+              }
             >
               Suivante →
             </button>
           ) : (
             <button
               type="button"
-              onClick={() => handleSubmit(false)}
-              disabled={submitting}
+              onClick={() =>
+                handleSubmit(
+                  false,
+                  "completed"
+                )
+              }
+              disabled={
+                submitting
+              }
               style={{
                 ...styles.submitButton,
-                opacity: submitting
-                  ? 0.7
-                  : 1,
+                opacity:
+                  submitting
+                    ? 0.7
+                    : 1,
               }}
             >
               {submitting
@@ -882,9 +2028,18 @@ export default function WrittenTest() {
           )}
         </div>
 
-        <div style={styles.warning}>
-          ⚠️ Une seule tentative est autorisée.
-          Vérifiez vos réponses avant de terminer le test.
+        <div
+          style={
+            styles.warning
+          }
+        >
+          ⚠️ Une seule
+          tentative est
+          autorisée. Une fois
+          une réponse
+          sélectionnée, elle
+          ne peut plus être
+          modifiée.
         </div>
       </div>
     </div>
@@ -896,7 +2051,8 @@ const styles = {
     minHeight: "100vh",
     background: "#f8f4ee",
     padding: "35px 20px 60px",
-    fontFamily: '"DM Sans", Arial, sans-serif',
+    fontFamily:
+      '"DM Sans", Arial, sans-serif',
     color: "#0d1b2a",
   },
 
@@ -912,7 +2068,8 @@ const styles = {
     borderRadius: "20px",
     padding: "45px 30px",
     textAlign: "center",
-    boxShadow: "0 15px 45px rgba(13,27,42,0.10)",
+    boxShadow:
+      "0 15px 45px rgba(13,27,42,0.10)",
   },
 
   successCard: {
@@ -922,7 +2079,8 @@ const styles = {
     borderRadius: "20px",
     padding: "45px 35px",
     textAlign: "center",
-    boxShadow: "0 15px 45px rgba(13,27,42,0.10)",
+    boxShadow:
+      "0 15px 45px rgba(13,27,42,0.10)",
   },
 
   errorCard: {
@@ -932,7 +2090,8 @@ const styles = {
     borderRadius: "20px",
     padding: "45px 35px",
     textAlign: "center",
-    boxShadow: "0 15px 45px rgba(13,27,42,0.10)",
+    boxShadow:
+      "0 15px 45px rgba(13,27,42,0.10)",
   },
 
   header: {
@@ -956,13 +2115,15 @@ const styles = {
 
   title: {
     margin: "0 0 12px",
-    fontFamily: '"Playfair Display", Georgia, serif',
+    fontFamily:
+      '"Playfair Display", Georgia, serif',
     fontSize: "38px",
   },
 
   loadingTitle: {
     margin: "0 0 10px",
-    fontFamily: '"Playfair Display", Georgia, serif',
+    fontFamily:
+      '"Playfair Display", Georgia, serif',
     fontSize: "27px",
   },
 
@@ -982,6 +2143,23 @@ const styles = {
     margin: "20px 0",
   },
 
+  tabWarning: {
+    background: "#fff4d6",
+    border: "1px solid #e5c76b",
+    borderRadius: "12px",
+    padding: "14px 18px",
+    marginBottom: "15px",
+    color: "#6b5512",
+    fontSize: "13px",
+    lineHeight: 1.6,
+  },
+
+  tabWarningCount: {
+    marginTop: "5px",
+    fontSize: "11px",
+    fontWeight: "800",
+  },
+
   topBar: {
     background: "#ffffff",
     border: "1px solid #e8e2d8",
@@ -992,7 +2170,8 @@ const styles = {
     alignItems: "center",
     gap: "20px",
     marginBottom: "10px",
-    boxShadow: "0 5px 18px rgba(13,27,42,0.04)",
+    boxShadow:
+      "0 5px 18px rgba(13,27,42,0.04)",
   },
 
   progressLabel: {
@@ -1023,7 +2202,8 @@ const styles = {
     fontSize: "22px",
     fontWeight: "900",
     marginTop: "2px",
-    fontVariantNumeric: "tabular-nums",
+    fontVariantNumeric:
+      "tabular-nums",
   },
 
   progressBarOuter: {
@@ -1038,7 +2218,8 @@ const styles = {
     height: "100%",
     background: "#c9a84c",
     borderRadius: "5px",
-    transition: "width 0.2s ease",
+    transition:
+      "width 0.2s ease",
   },
 
   questionCard: {
@@ -1046,7 +2227,8 @@ const styles = {
     border: "1px solid #e8e2d8",
     borderRadius: "18px",
     padding: "30px",
-    boxShadow: "0 8px 25px rgba(13,27,42,0.05)",
+    boxShadow:
+      "0 8px 25px rgba(13,27,42,0.05)",
   },
 
   questionHeader: {
@@ -1084,7 +2266,8 @@ const styles = {
   },
 
   questionTitle: {
-    fontFamily: '"Playfair Display", Georgia, serif',
+    fontFamily:
+      '"Playfair Display", Georgia, serif',
     fontSize: "23px",
     lineHeight: 1.4,
     margin: "0 0 20px",
@@ -1106,15 +2289,22 @@ const styles = {
     borderRadius: "11px",
     padding: "14px",
     cursor: "pointer",
-    fontFamily: '"DM Sans", Arial, sans-serif',
+    fontFamily:
+      '"DM Sans", Arial, sans-serif',
     fontSize: "14px",
     lineHeight: 1.5,
     color: "#0d1b2a",
   },
 
   choiceSelected: {
-    border: "2px solid #c9a84c",
-    background: "#fff9e8",
+  border: "2px solid #c9a84c",
+  background: "#fff3c4",
+  boxShadow: "0 0 0 2px rgba(201,168,76,0.18)",
+  fontWeight: "800",
+},
+
+  choiceLocked: {
+    cursor: "default",
   },
 
   choiceLetter: {
@@ -1131,26 +2321,34 @@ const styles = {
   },
 
   choiceLetterSelected: {
-    background: "#c9a84c",
-    color: "#ffffff",
+  background: "#c9a84c",
+  color: "#0d1b2a",
+  fontWeight: "900",
+},
+
+  lockIcon: {
+    marginLeft: "auto",
+    color: "#24713b",
+    fontWeight: "900",
+    fontSize: "16px",
+  },
+
+  answerLockedMessage: {
+    marginTop: "18px",
+    padding: "10px 14px",
+    background: "#f1f8f3",
+    border: "1px solid #cce5d2",
+    borderRadius: "8px",
+    color: "#24713b",
+    fontSize: "12px",
+    fontWeight: "700",
   },
 
   navigation: {
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     gap: "15px",
     marginTop: "22px",
-  },
-
-  navButton: {
-    background: "#ffffff",
-    color: "#0d1b2a",
-    border: "1px solid #d8d1c5",
-    borderRadius: "10px",
-    padding: "13px 22px",
-    fontSize: "14px",
-    fontWeight: "800",
-    cursor: "pointer",
   },
 
   primaryButton: {

@@ -147,22 +147,10 @@ export default function StudentDashboard() {
     }
   };
 
-  // START COMPRÉHENSION ORALE
+  // COMPRÉHENSION ORALE
+  // Disabled intentionally.
   const handleStartOralTest = () => {
-    if (
-      studentProfile?.status !== "approved" ||
-      studentProfile?.payment_status !== "paid"
-    ) {
-      return;
-    }
-
-    if (hasCompletedOralTest) {
-      return;
-    }
-
-    localStorage.removeItem("ifa_listening_test_attempt");
-
-    navigate("/tests/level-test");
+    return;
   };
 
   // START COMPRÉHENSION ÉCRITE
@@ -479,29 +467,20 @@ export default function StudentDashboard() {
             gap: "25px",
           }}
         >
-          {/* COMPRÉHENSION ORALE */}
+          {/* COMPRÉHENSION ORALE — DISABLED */}
           <button
             onClick={handleStartOralTest}
-            disabled={!isApprovedAndPaid || hasCompletedOralTest}
+            disabled={true}
             style={{
-              background:
-                isApprovedAndPaid && !hasCompletedOralTest
-                  ? "white"
-                  : "#f8f9fa",
+              background: "#f8f9fa",
               border: "none",
               borderRadius: "18px",
               padding: "30px",
               textAlign: "left",
-              cursor:
-                isApprovedAndPaid && !hasCompletedOralTest
-                  ? "pointer"
-                  : "not-allowed",
+              cursor: "not-allowed",
               boxShadow: "0 6px 25px rgba(0,0,0,0.08)",
               borderTop: "5px solid #c9a84c",
-              opacity:
-                isApprovedAndPaid && !hasCompletedOralTest
-                  ? 1
-                  : 0.65,
+              opacity: 0.65,
             }}
           >
             <div
@@ -517,7 +496,7 @@ export default function StudentDashboard() {
                 marginBottom: "20px",
               }}
             >
-              {hasCompletedOralTest ? "🔒" : "🎧"}
+              🔒
             </div>
 
             <h2
@@ -527,9 +506,7 @@ export default function StudentDashboard() {
                 fontSize: "21px",
               }}
             >
-              {hasCompletedOralTest
-                ? "Compréhension orale terminée"
-                : "Compréhension orale"}
+              Compréhension orale
             </h2>
 
             <p
@@ -539,41 +516,16 @@ export default function StudentDashboard() {
                 lineHeight: "1.6",
               }}
             >
-              {!isApproved &&
-                "L'accès sera disponible après validation de votre compte."}
-
-              {isApproved &&
-                !isPaid &&
-                "Votre compte est approuvé. L'accès sera disponible après confirmation du paiement."}
-
-              {isApprovedAndPaid &&
-                !hasCompletedOralTest &&
-                "Écoutez les documents audio et répondez aux questions."}
-
-              {isApprovedAndPaid &&
-                hasCompletedOralTest &&
-                "Vous avez déjà terminé cette partie. Une seule tentative est autorisée."}
+              Ce test est actuellement indisponible.
             </p>
 
             <span
               style={{
-                color: "#0d1b2a",
+                color: "#667085",
                 fontWeight: "bold",
               }}
             >
-              {!isApproved && "Accès verrouillé 🔒"}
-
-              {isApproved &&
-                !isPaid &&
-                "Paiement requis 🔒"}
-
-              {isApprovedAndPaid &&
-                !hasCompletedOralTest &&
-                "Commencer →"}
-
-              {isApprovedAndPaid &&
-                hasCompletedOralTest &&
-                "Terminé ✓"}
+              Indisponible 🔒
             </span>
           </button>
 
@@ -901,7 +853,9 @@ export default function StudentDashboard() {
               >
                 {isApprovedAndPaid && "✓ APPROUVÉ — PAYÉ"}
 
-                {isApproved && !isPaid && "✓ APPROUVÉ — PAIEMENT EN ATTENTE"}
+                {isApproved &&
+                  !isPaid &&
+                  "✓ APPROUVÉ — PAIEMENT EN ATTENTE"}
 
                 {isPending && "⏳ EN ATTENTE"}
 

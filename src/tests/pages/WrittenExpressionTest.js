@@ -1,4 +1,8 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { supabase } from "../../supabaseClient";
 
 export default function WrittenExpressionTest() {
@@ -14,12 +18,138 @@ export default function WrittenExpressionTest() {
   const [submitted, setSubmitted] = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
 
+  const [tabSwitches, setTabSwitches] = useState(0);
+  const [terminatedByTabSwitch, setTerminatedByTabSwitch] =
+    useState(false);
+
+  const tabSwitchCountRef = useRef(0);
+  const tabSwitchProcessingRef = useRef(false);
+
   const [accessDenied, setAccessDenied] = useState(false);
   const [accessReason, setAccessReason] = useState("");
 
   useEffect(() => {
     checkAccessAndAttempt();
   }, []);
+
+  useEffect(() => {
+    async function handleVisibilityChange() {
+      if (document.visibilityState !== "hidden") {
+        return;
+      }
+
+      if (tabSwitchProcessingRef.current) {
+        return;
+      }
+
+      const nextCount =
+        tabSwitchCountRef.current + 1;
+
+      tabSwitchCountRef.current = nextCount;
+
+      setTabSwitches(nextCount);
+
+      // First tab switch = warning only
+      if (nextCount === 1) {
+        return;
+      }
+
+      // Second tab switch = terminate the test
+      if (nextCount >= 2) {
+        tabSwitchProcessingRef.current = true;
+
+        try {
+          const {
+            data: { user },
+            error: userError,
+          } = await supabase.auth.getUser();
+
+          if (userError || !user) {
+            console.error(
+              "TAB SWITCH TERMINATION AUTH ERROR:",
+              userError
+            );
+
+            setTerminatedByTabSwitch(true);
+            return;
+          }
+
+          const { error: insertError } =
+            await supabase
+              .from("test_results")
+              .insert({
+                student_id: user.id,
+                score: 0,
+                total_questions: 3,
+                percentage: 0,
+                test_type: "expression_ecrite",
+                task1_answer:
+                  answers.task1.trim(),
+                task2_answer:
+                  answers.task2.trim(),
+                task3_answer:
+                  answers.task3.trim(),
+                grading_status: "pending",
+              });
+
+          if (insertError) {
+            console.error(
+              "TAB SWITCH TERMINATION INSERT ERROR:",
+              insertError
+            );
+
+            /*
+             * PostgreSQL error 23505 = unique_violation.
+             *
+             * This means the one-attempt rule has
+             * already been triggered.
+             */
+            if (
+              insertError.code === "23505" ||
+              insertError.message
+                ?.toLowerCase()
+                .includes("duplicate") ||
+              insertError.message
+                ?.toLowerCase()
+                .includes("unique")
+            ) {
+              setAlreadySubmitted(true);
+              return;
+            }
+
+            /*
+             * Even if the database insert fails,
+             * keep the local termination screen.
+             */
+            setTerminatedByTabSwitch(true);
+            return;
+          }
+
+          // Database record successfully saved
+          setTerminatedByTabSwitch(true);
+        } catch (error) {
+          console.error(
+            "TAB SWITCH TERMINATION ERROR:",
+            error
+          );
+
+          setTerminatedByTabSwitch(true);
+        }
+      }
+    }
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
+
+    return () => {
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
+    };
+  }, [answers]);
 
   async function checkAccessAndAttempt() {
     try {
@@ -36,9 +166,14 @@ export default function WrittenExpressionTest() {
       }
 
       // Check student profile first
-      const { data: student, error: studentError } = await supabase
+      const {
+        data: student,
+        error: studentError,
+      } = await supabase
         .from("student_profiles")
-        .select("id, full_name, email, status, payment_status")
+        .select(
+          "id, full_name, email, status, payment_status"
+        )
         .eq("id", user.id)
         .maybeSingle();
 
@@ -63,7 +198,9 @@ export default function WrittenExpressionTest() {
         return;
       }
 
-      const status = student.status || "pending";
+      const status =
+        student.status || "pending";
+
       const paymentStatus =
         student.payment_status || "unpaid";
 
@@ -105,7 +242,10 @@ export default function WrittenExpressionTest() {
         .from("test_results")
         .select("id")
         .eq("student_id", student.id)
-        .eq("test_type", "expression_ecrite")
+        .eq(
+          "test_type",
+          "expression_ecrite"
+        )
         .maybeSingle();
 
       if (existingError) {
@@ -149,7 +289,10 @@ export default function WrittenExpressionTest() {
   function countWords(text) {
     if (!text.trim()) return 0;
 
-    return text.trim().split(/\s+/).length;
+    return text
+      .trim()
+      .split(/\s+/)
+      .length;
   }
 
   async function handleSubmit(e) {
@@ -209,7 +352,9 @@ export default function WrittenExpressionTest() {
         return;
       }
 
-      const status = student.status || "pending";
+      const status =
+        student.status || "pending";
+
       const paymentStatus =
         student.payment_status || "unpaid";
 
@@ -245,7 +390,10 @@ export default function WrittenExpressionTest() {
         .from("test_results")
         .select("id")
         .eq("student_id", student.id)
-        .eq("test_type", "expression_ecrite")
+        .eq(
+          "test_type",
+          "expression_ecrite"
+        )
         .maybeSingle();
 
       if (existingError) {
@@ -269,19 +417,23 @@ export default function WrittenExpressionTest() {
       }
 
       // Save answers
-      const { error: insertError } = await supabase
-        .from("test_results")
-        .insert({
-          student_id: student.id,
-          score: 0,
-          total_questions: 3,
-          percentage: 0,
-          test_type: "expression_ecrite",
-          task1_answer: answers.task1.trim(),
-          task2_answer: answers.task2.trim(),
-          task3_answer: answers.task3.trim(),
-          grading_status: "pending",
-        });
+      const { error: insertError } =
+        await supabase
+          .from("test_results")
+          .insert({
+            student_id: student.id,
+            score: 0,
+            total_questions: 3,
+            percentage: 0,
+            test_type: "expression_ecrite",
+            task1_answer:
+              answers.task1.trim(),
+            task2_answer:
+              answers.task2.trim(),
+            task3_answer:
+              answers.task3.trim(),
+            grading_status: "pending",
+          });
 
       if (insertError) {
         console.error(
@@ -292,8 +444,8 @@ export default function WrittenExpressionTest() {
         /*
          * PostgreSQL error 23505 = unique_violation.
          *
-         * This is important because the database now has
-         * a unique index protecting the one-attempt rule.
+         * This is important because the database now
+         * has a unique index protecting the one-attempt rule.
          *
          * If two requests happen at nearly the same time,
          * both could pass the frontend check, but the
@@ -363,7 +515,8 @@ export default function WrittenExpressionTest() {
 
   // Access denied
   if (accessDenied) {
-    let title = "Accès au test non disponible";
+    let title =
+      "Accès au test non disponible";
 
     let text =
       "Vous ne pouvez pas encore accéder à cette partie du test.";
@@ -373,7 +526,9 @@ export default function WrittenExpressionTest() {
     let infoText =
       "Votre compte doit être approuvé et votre paiement doit être confirmé avant de commencer les tests.";
 
-    if (accessReason === "not_logged_in") {
+    if (
+      accessReason === "not_logged_in"
+    ) {
       title = "Connexion requise";
 
       text =
@@ -386,24 +541,28 @@ export default function WrittenExpressionTest() {
     }
 
     if (accessReason === "no_profile") {
-      title = "Profil étudiant introuvable";
+      title =
+        "Profil étudiant introuvable";
 
       text =
         "Votre profil étudiant n'a pas été trouvé.";
 
-      infoTitle = "Contactez l'administration";
+      infoTitle =
+        "Contactez l'administration";
 
       infoText =
         "Veuillez contacter l'International French Academy afin de vérifier votre inscription.";
     }
 
     if (accessReason === "pending") {
-      title = "Compte en attente de validation";
+      title =
+        "Compte en attente de validation";
 
       text =
         "Votre compte étudiant n'a pas encore été approuvé.";
 
-      infoTitle = "Validation nécessaire";
+      infoTitle =
+        "Validation nécessaire";
 
       infoText =
         "L'équipe administrative doit d'abord approuver votre compte avant que vous puissiez accéder aux tests.";
@@ -415,19 +574,23 @@ export default function WrittenExpressionTest() {
       text =
         "Votre compte étudiant n'a pas été approuvé.";
 
-      infoTitle = "Compte non approuvé";
+      infoTitle =
+        "Compte non approuvé";
 
       infoText =
         "Veuillez contacter l'équipe administrative de l'International French Academy pour plus d'informations.";
     }
 
-    if (accessReason === "not_approved") {
+    if (
+      accessReason === "not_approved"
+    ) {
       title = "Compte non approuvé";
 
       text =
         "Votre compte doit être approuvé avant de commencer le test.";
 
-      infoTitle = "Validation nécessaire";
+      infoTitle =
+        "Validation nécessaire";
 
       infoText =
         "L'équipe administrative doit d'abord approuver votre compte.";
@@ -439,7 +602,8 @@ export default function WrittenExpressionTest() {
       text =
         "Votre paiement n'a pas encore été confirmé.";
 
-      infoTitle = "Paiement nécessaire";
+      infoTitle =
+        "Paiement nécessaire";
 
       infoText =
         "Votre compte doit être approuvé et votre paiement doit être confirmé avant d'accéder aux tests.";
@@ -518,6 +682,61 @@ export default function WrittenExpressionTest() {
               Votre production écrite a bien été
               enregistrée et peut être consultée par
               l'équipe pédagogique pour correction.
+            </p>
+          </div>
+
+          <div style={styles.linkArea}>
+            <a
+              href="/tests/results"
+              style={styles.linkButton}
+            >
+              Voir mes résultats →
+            </a>
+
+            <a
+              href="/student-dashboard"
+              style={styles.backButton}
+            >
+              ← Retour à mon espace
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Terminated after two tab switches
+  if (terminatedByTabSwitch) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.successCard}>
+          <div style={styles.logoText}>
+            INTERNATIONAL FRENCH ACADEMY
+          </div>
+
+          <div style={styles.lockIcon}>
+            🔒
+          </div>
+
+          <h1 style={styles.title}>
+            Test terminé
+          </h1>
+
+          <p style={styles.text}>
+            Le test a été automatiquement terminé après
+            deux changements d'onglet.
+          </p>
+
+          <p style={styles.text}>
+            Cette tentative est considérée comme terminée.
+          </p>
+
+          <div style={styles.infoBox}>
+            <strong>Test terminé</strong>
+
+            <p style={styles.infoText}>
+              Vous ne pouvez pas recommencer cette partie
+              du test.
             </p>
           </div>
 
@@ -620,6 +839,14 @@ export default function WrittenExpressionTest() {
             Répondez aux trois tâches en français.
             Écrivez des réponses claires et complètes.
           </p>
+
+          {tabSwitches === 1 && (
+            <div style={styles.warningBox}>
+              ⚠️ Attention : vous avez changé d'onglet.
+              Un deuxième changement d'onglet terminera
+              automatiquement le test.
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -793,7 +1020,8 @@ const styles = {
     minHeight: "100vh",
     background: "#f8f4ee",
     padding: "40px 20px",
-    fontFamily: '"DM Sans", Arial, sans-serif',
+    fontFamily:
+      '"DM Sans", Arial, sans-serif',
     color: "#0d1b2a",
   },
 
@@ -844,6 +1072,19 @@ const styles = {
     margin: "0 auto",
     color: "#667085",
     lineHeight: 1.6,
+  },
+
+  warningBox: {
+    maxWidth: "650px",
+    margin: "20px auto 0",
+    background: "#fff9e8",
+    border: "1px solid #ead9a6",
+    borderRadius: "10px",
+    padding: "12px 15px",
+    color: "#66551f",
+    fontSize: "13px",
+    fontWeight: "700",
+    lineHeight: 1.5,
   },
 
   taskCard: {

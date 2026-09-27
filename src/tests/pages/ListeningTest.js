@@ -1,250 +1,332 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 
 const STORAGE_KEY = "ifa_listening_test_attempt";
+const RESULT_EMAIL_SENT_KEY = "ifa_listening_result_email_sent";
 
+const TEST_DURATION = 30 * 60 * 1000;
+const INITIALIZATION_TIMEOUT = 15000;
+
+/*
+ * IMPORTANT:
+ * The audio files are unchanged.
+ *
+ * Exam behavior:
+ * - Once an answer is selected, it is locked.
+ * - Students cannot change a selected answer.
+ * - Students cannot return to previous questions.
+ * - Answers are saved immediately.
+ */
 const questions = [
   {
     id: 1,
     level: "A1",
     audio: "/audio/q1_marie.mp3",
-    question: "Comment s'appelle la personne ?",
+    question: "Quel est le prénom de la personne présentée dans l'audio ?",
     choices: ["Marie", "Sophie", "Claire", "Julie"],
-    correctAnswer: 0,
+    answer: "Marie",
   },
+
   {
     id: 2,
     level: "A1",
     audio: "/audio/q2_enfants.mp3",
-    question: "Combien d'enfants a la personne ?",
+    question:
+      "Quelle information concernant sa famille est donnée dans l'audio ?",
     choices: [
-      "Un enfant",
-      "Deux enfants",
-      "Trois enfants",
-      "Quatre enfants",
+      "Elle a un enfant.",
+      "Elle a deux enfants.",
+      "Elle a trois enfants.",
+      "Elle a quatre enfants.",
     ],
-    correctAnswer: 1,
+    answer: "Elle a deux enfants.",
   },
+
   {
     id: 3,
     level: "A1",
     audio: "/audio/q3_magasin.mp3",
-    question: "À quelle heure ouvre le magasin ?",
-    choices: ["8 heures", "9 heures", "10 heures", "11 heures"],
-    correctAnswer: 1,
+    question:
+      "À quel moment de la journée peut-on commencer à faire des achats dans ce magasin ?",
+    choices: [
+      "À 7 heures.",
+      "À 8 heures.",
+      "À 9 heures.",
+      "À 10 heures.",
+    ],
+    answer: "À 9 heures.",
   },
+
   {
     id: 4,
     level: "A1",
     audio: "/audio/q4_pommes.mp3",
-    question: "Qu'est-ce que la sœur aime ?",
-    choices: ["Les bananes", "Les pommes", "Les oranges", "Les fraises"],
-    correctAnswer: 1,
+    question:
+      "Quel produit alimentaire est particulièrement apprécié par la sœur ?",
+    choices: [
+      "Les pommes vertes.",
+      "Les bananes.",
+      "Les oranges.",
+      "Les pommes rouges.",
+    ],
+    answer: "Les pommes rouges.",
   },
+
   {
     id: 5,
     level: "A1",
     audio: "/audio/q5_marche.mp3",
-    question: "Quand va-t-elle au marché ?",
-    choices: ["Le lundi", "Le samedi", "Le dimanche", "Le vendredi"],
-    correctAnswer: 1,
+    question:
+      "Quelle est la raison habituelle de sa visite au marché le samedi ?",
+    choices: [
+      "Acheter des légumes frais.",
+      "Retrouver ses amis.",
+      "Acheter des vêtements.",
+      "Faire une activité sportive.",
+    ],
+    answer: "Acheter des légumes frais.",
   },
+
   {
     id: 6,
     level: "A2",
     audio: "/audio/q6_hopital.mp3",
     question:
-      "Depuis combien de temps le frère travaille-t-il dans cet hôpital ?",
+      "Quel élément de la journée professionnelle de son frère est précisé ?",
     choices: [
-      "Depuis un an",
-      "Depuis deux ans",
-      "Depuis trois ans",
-      "Depuis cinq ans",
+      "Il commence à 6 heures.",
+      "Il commence à 7 heures.",
+      "Il commence à 8 heures.",
+      "Il commence à 9 heures.",
     ],
-    correctAnswer: 2,
+    answer: "Il commence à 7 heures.",
   },
+
   {
     id: 7,
     level: "A2",
     audio: "/audio/q7_pluie.mp3",
-    question: "Pourquoi la personne prend-elle son parapluie ?",
+    question:
+      "Quel objet emporte-t-il en prévision des conditions météorologiques annoncées ?",
     choices: [
-      "Parce qu'il fait froid",
-      "Parce qu'il va pleuvoir",
-      "Parce qu'il fait chaud",
-      "Parce qu'il y a du soleil",
+      "Un manteau.",
+      "Un chapeau.",
+      "Un parapluie.",
+      "Une veste.",
     ],
-    correctAnswer: 1,
+    answer: "Un parapluie.",
   },
+
   {
     id: 8,
     level: "A2",
     audio: "/audio/q8_voyage.mp3",
-    question: "Quand vont-ils finalement partir en voyage ?",
+    question:
+      "Après le changement de programme, quel jour est finalement prévu pour le voyage ?",
     choices: [
-      "Demain matin",
-      "Vendredi soir",
-      "Samedi matin",
-      "Dimanche soir",
+      "Vendredi.",
+      "Samedi.",
+      "Lundi.",
+      "Dimanche.",
     ],
-    correctAnswer: 2,
+    answer: "Dimanche.",
   },
+
   {
     id: 9,
     level: "B1",
     audio: "/audio/q9_emploi.mp3",
-    question: "Pourquoi souhaite-t-elle travailler dans une entreprise ?",
+    question:
+      "Quel secteur professionnel correspond au projet de la personne interrogée ?",
     choices: [
-      "Pour gagner plus d'argent",
-      "Pour acquérir de l'expérience",
-      "Pour rencontrer ses amis",
-      "Pour voyager",
+      "La comptabilité.",
+      "La médecine.",
+      "L'informatique.",
+      "L'enseignement.",
     ],
-    correctAnswer: 1,
+    answer: "La comptabilité.",
   },
+
   {
     id: 10,
     level: "B1",
     audio: "/audio/q10_transport.mp3",
-    question: "Pourquoi préfère-t-elle prendre le bus ?",
+    question:
+      "Quelle raison explique principalement sa préférence pour le bus ?",
     choices: [
-      "Parce qu'il est plus rapide",
-      "Parce qu'il est moins cher",
-      "Parce qu'il est plus confortable",
-      "Parce qu'il est plus moderne",
+      "Son coût est inférieur.",
+      "Il lui permet de contourner les embouteillages.",
+      "Il offre davantage de confort.",
+      "Il est plus rapide que le train.",
     ],
-    correctAnswer: 1,
+    answer:
+      "Il lui permet de contourner les embouteillages.",
   },
+
   {
     id: 11,
     level: "B1",
     audio: "/audio/q11_reunion.mp3",
-    question: "Quel est l'objectif principal de la réunion ?",
+    question:
+      "Quelle question constitue le principal objet de la réunion ?",
     choices: [
-      "Organiser une fête",
-      "Présenter un nouveau projet",
-      "Recruter des employés",
-      "Changer les horaires",
+      "Le recrutement de nouveaux employés.",
+      "La présentation de nouveaux produits.",
+      "L'analyse des résultats du dernier trimestre.",
+      "La préparation des congés des employés.",
     ],
-    correctAnswer: 1,
+    answer:
+      "L'analyse des résultats du dernier trimestre.",
   },
+
   {
     id: 12,
     level: "B1",
     audio: "/audio/q12_meteo.mp3",
-    question: "Quelle recommandation est donnée aux habitants ?",
+    question:
+      "Quelle mesure est recommandée lorsque les températures atteignent leur niveau le plus élevé ?",
     choices: [
-      "De rester chez eux",
-      "De fermer les fenêtres",
-      "D'éviter les déplacements inutiles",
-      "De prendre leur voiture",
+      "Augmenter les déplacements.",
+      "Prolonger les heures de travail.",
+      "Pratiquer davantage d'activités physiques.",
+      "Réduire les efforts physiques et s'hydrater régulièrement.",
     ],
-    correctAnswer: 2,
+    answer:
+      "Réduire les efforts physiques et s'hydrater régulièrement.",
   },
+
   {
     id: 13,
     level: "B2",
     audio: "/audio/q13_entreprise.mp3",
-    question: "Quelle conclusion peut-on tirer de cette situation ?",
+    question:
+      "Quel changement chiffré permet de caractériser l'évolution récente de l'entreprise ?",
     choices: [
-      "L'entreprise va fermer",
-      "L'entreprise doit s'adapter",
-      "L'entreprise recrute davantage",
-      "L'entreprise change de pays",
+      "Une progression de 10 % des ventes.",
+      "Une baisse de 10 % des ventes.",
+      "Une fermeture de plusieurs magasins.",
+      "Une diminution du nombre de produits proposés.",
     ],
-    correctAnswer: 1,
+    answer:
+      "Une progression de 10 % des ventes.",
   },
+
   {
     id: 14,
     level: "B2",
     audio: "/audio/q14_opinion.mp3",
-    question: "Quelle est l'opinion exprimée ?",
+    question:
+      "Quelle position est défendue à propos du rôle des jeunes générations ?",
     choices: [
-      "La situation est parfaite",
-      "Des changements sont nécessaires",
-      "Le problème est terminé",
-      "Personne n'est concerné",
+      "Elles devraient rester à l'écart des questions environnementales.",
+      "Elles devraient participer davantage à la protection de l'environnement.",
+      "Elles devraient donner la priorité exclusive à leurs études.",
+      "Elles devraient laisser cette question aux autorités publiques.",
     ],
-    correctAnswer: 1,
+    answer:
+      "Elles devraient participer davantage à la protection de l'environnement.",
   },
+
   {
     id: 15,
     level: "B2",
     audio: "/audio/q15_actualite.mp3",
-    question: "Que rapporte le journal ?",
+    question:
+      "Quelle orientation est envisagée par le gouvernement pour améliorer les transports dans la région ?",
     choices: [
-      "Une nouvelle économique",
-      "Une nouvelle sportive",
-      "Une nouvelle politique",
-      "Une nouvelle culturelle",
+      "Développer de nouvelles écoles.",
+      "Diminuer les possibilités de transport.",
+      "Développer le réseau routier.",
+      "Supprimer certaines routes actuellement utilisées.",
     ],
-    correctAnswer: 1,
+    answer:
+      "Développer le réseau routier.",
   },
+
   {
     id: 16,
     level: "C1",
     audio: "/audio/q16_numerique.mp3",
-    question: "Qu'est-ce qui a été bouleversé ?",
+    question:
+      "Quelle transformation majeure est associée au développement du numérique dans le document ?",
     choices: [
-      "Le système éducatif",
-      "Les habitudes professionnelles",
-      "Les transports publics",
-      "Le commerce international",
+      "Les entreprises ont progressivement réduit leur utilisation d'Internet.",
+      "Les clients se détournent progressivement des services numériques.",
+      "La transformation numérique reste essentiellement limitée aux grandes entreprises.",
+      "Les relations entre les entreprises et leurs clients ont été profondément transformées.",
     ],
-    correctAnswer: 1,
+    answer:
+      "Les relations entre les entreprises et leurs clients ont été profondément transformées.",
   },
+
   {
     id: 17,
     level: "C1",
     audio: "/audio/q17_regret.mp3",
-    question: "Que suggère cette phrase ?",
+    question:
+      "Quelle interprétation correspond le mieux au regret exprimé par l'intervenant ?",
     choices: [
-      "Une satisfaction",
-      "Un regret",
-      "Une certitude",
-      "Une invitation",
+      "Une anticipation plus importante aurait peut-être modifié la décision prise.",
+      "La décision était entièrement prévisible dès le départ.",
+      "Les conséquences étaient absolument impossibles à envisager.",
+      "Les conséquences de la décision n'ont finalement eu aucune portée.",
     ],
-    correctAnswer: 1,
+    answer:
+      "Une anticipation plus importante aurait peut-être modifié la décision prise.",
   },
+
   {
     id: 18,
     level: "C1",
     audio: "/audio/q18_projet.mp3",
-    question: "Comment le projet a-t-il été approuvé ?",
+    question:
+      "Quelle a finalement été l'issue du projet malgré les réserves exprimées par certains experts ?",
     choices: [
-      "Par vote",
-      "À l'unanimité",
-      "Par le directeur seul",
-      "Après plusieurs modifications",
+      "Il a finalement été abandonné.",
+      "Il a été approuvé à l'unanimité par le conseil.",
+      "Sa mise en œuvre a été reportée.",
+      "Il a été renvoyé devant le conseil pour un nouveau vote.",
     ],
-    correctAnswer: 1,
+    answer:
+      "Il a été approuvé à l'unanimité par le conseil.",
   },
+
   {
     id: 19,
     level: "C2",
     audio: "/audio/q19_clause.mp3",
-    question: "Qu'est-ce qui a suscité une controverse ?",
+    question:
+      "Quel problème d'ordre juridique est apparu autour de la clause contractuelle ?",
     choices: [
-      "Le financement",
-      "Une clause du contrat",
-      "Le calendrier",
-      "La décision finale",
+      "Elle a entraîné une révision du prix du contrat.",
+      "Elle a rendu le contrat juridiquement impossible à maintenir.",
+      "La portée exacte de son interprétation juridique a fait l'objet d'une controverse.",
+      "Elle a empêché les parties de parvenir à la signature du contrat.",
     ],
-    correctAnswer: 1,
+    answer:
+      "La portée exacte de son interprétation juridique a fait l'objet d'une controverse.",
   },
+
   {
     id: 20,
     level: "C2",
     audio: "/audio/q20_effort.mp3",
-    question: "Quelle est l'attitude de la personne face à la tâche ?",
+    question:
+      "Face à l'importance de la tâche, quelle réaction traduit le mieux son attitude ?",
     choices: [
-      "Elle refuse de la faire",
-      "Elle accepte malgré les difficultés",
-      "Elle demande de l'aide",
-      "Elle abandonne immédiatement",
+      "Elle renonce finalement au projet.",
+      "Elle confie la fin du projet à une autre personne.",
+      "Elle intensifie ses efforts afin de parvenir à terminer le projet.",
+      "Elle choisit de repousser le projet à plus tard.",
     ],
-    correctAnswer: 1,
+    answer:
+      "Elle intensifie ses efforts afin de parvenir à terminer le projet.",
   },
 ];
 
@@ -252,11 +334,14 @@ function createNewAttempt() {
   return {
     current: 0,
     selected: null,
+    answers: {},
     score: 0,
     finished: false,
-    endTime: Date.now() + 30 * 60 * 1000,
-    resultSaved: false,
-    resultEmailSent: false,
+    endTime: Date.now() + TEST_DURATION,
+    tabSwitches: 0,
+    terminationReason: null,
+    serverAttemptId: null,
+    serverStartedAt: null,
   };
 }
 
@@ -264,797 +349,1646 @@ function getInitialAttempt() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
 
-    if (saved) {
-      const parsed = JSON.parse(saved);
-
-      if (parsed && typeof parsed === "object") {
-        return {
-          ...createNewAttempt(),
-          ...parsed,
-          resultSaved: parsed.resultSaved === true,
-          resultEmailSent: parsed.resultEmailSent === true,
-        };
-      }
+    if (!saved) {
+      return createNewAttempt();
     }
-  } catch (error) {
-    console.error("Erreur localStorage :", error);
-  }
 
-  return createNewAttempt();
+    const parsed = JSON.parse(saved);
+
+    return {
+      ...createNewAttempt(),
+      ...parsed,
+      answers: parsed.answers || {},
+    };
+  } catch (error) {
+    console.error(
+      "Erreur récupération tentative:",
+      error
+    );
+
+    return createNewAttempt();
+  }
+}
+
+function saveAttempt(attempt) {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(attempt)
+    );
+  } catch (error) {
+    console.error(
+      "Erreur sauvegarde tentative:",
+      error
+    );
+  }
+}
+
+function withTimeout(
+  promise,
+  timeout = INITIALIZATION_TIMEOUT
+) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(
+        () =>
+          reject(
+            new Error("Timeout")
+          ),
+        timeout
+      )
+    ),
+  ]);
 }
 
 export default function ListeningTest() {
   const navigate = useNavigate();
 
-  const [accessChecking, setAccessChecking] = useState(true);
-  const [accessAllowed, setAccessAllowed] = useState(false);
+  const initialAttemptRef =
+    useRef(null);
 
-  const [alreadyCompleted, setAlreadyCompleted] = useState(false);
+  if (!initialAttemptRef.current) {
+    initialAttemptRef.current =
+      getInitialAttempt();
+  }
 
-  // Payment gate
-  const [paymentRequired, setPaymentRequired] = useState(false);
+  const initialAttempt =
+    initialAttemptRef.current;
 
-  const [attempt, setAttempt] = useState(getInitialAttempt);
-
-  const current = attempt.current;
-  const selected = attempt.selected;
-  const score = attempt.score;
-  const finished = attempt.finished;
-
-  const resultSaved = attempt.resultSaved === true;
-  const resultEmailSent = attempt.resultEmailSent === true;
-
-  const saveStartedRef = useRef(false);
-  const emailStartedRef = useRef(false);
-
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const initialAttempt = getInitialAttempt();
-
-    if (initialAttempt.finished) {
-      return 0;
-    }
-
-    return Math.max(
-      0,
-      Math.ceil((initialAttempt.endTime - Date.now()) / 1000)
+  const [current, setCurrent] =
+    useState(
+      initialAttempt.current || 0
     );
-  });
 
-  const [savingResult, setSavingResult] = useState(false);
-  const [sendingEmail, setSendingEmail] = useState(false);
+  const [selected, setSelected] =
+    useState(
+      initialAttempt.selected ||
+        null
+    );
 
-  const [saveMessage, setSaveMessage] = useState("");
-  const [emailMessage, setEmailMessage] = useState("");
+  const [answers, setAnswers] =
+    useState(
+      initialAttempt.answers ||
+        {}
+    );
 
-  const question = questions[current];
+  const [score, setScore] =
+    useState(
+      initialAttempt.score || 0
+    );
+
+  const [finished, setFinished] =
+    useState(
+      initialAttempt.finished ||
+        false
+    );
+
+  const [timeLeft, setTimeLeft] =
+    useState(
+      Math.max(
+        0,
+        initialAttempt.endTime -
+          Date.now()
+      )
+    );
+
+  const [
+    tabSwitches,
+    setTabSwitches,
+  ] = useState(
+    initialAttempt.tabSwitches ||
+      0
+  );
+
+  const [
+    terminationReason,
+    setTerminationReason,
+  ] = useState(
+    initialAttempt.terminationReason ||
+      null
+  );
+
+  const [
+    serverAttemptId,
+    setServerAttemptId,
+  ] = useState(
+    initialAttempt.serverAttemptId ||
+      null
+  );
+
+  const [
+    serverStartedAt,
+    setServerStartedAt,
+  ] = useState(
+    initialAttempt.serverStartedAt ||
+      null
+  );
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [
+    accessAllowed,
+    setAccessAllowed,
+  ] = useState(false);
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
+
+  const [audioError, setAudioError] =
+    useState(false);
+
+  const [isPlaying, setIsPlaying] =
+    useState(false);
+
+  const audioRef = useRef(null);
+
+  const initializationPromiseRef =
+    useRef(null);
+
+  const finishingRef =
+    useRef(false);
+
+  const resultSavedRef =
+    useRef(false);
+
+  const tabSwitchesRef =
+    useRef(
+      initialAttempt.tabSwitches ||
+        0
+    );
+
+  const currentQuestion =
+    questions[current];
 
   /*
-   * STEP 1
-   * Check:
-   * 1. Student is logged in.
-   * 2. Student account is approved.
-   * 3. Student payment status is paid.
-   * 4. Student has NOT already completed the oral test.
+   * SERVER TIME
+   */
+  const getServerNow =
+    useCallback(async () => {
+      const {
+        data,
+        error,
+      } = await supabase.rpc(
+        "get_server_time"
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      return new Date(
+        data
+      ).getTime();
+    }, []);
+
+  /*
+   * SAVE LOCAL PROGRESS
+   */
+  const updateAttempt =
+    useCallback(
+      (updates = {}) => {
+        const attempt = {
+          current,
+          selected,
+          answers,
+          score,
+          finished,
+
+          endTime:
+            timeLeft + Date.now(),
+
+          tabSwitches:
+            tabSwitchesRef.current,
+
+          terminationReason,
+
+          serverAttemptId,
+
+          serverStartedAt,
+
+          ...updates,
+        };
+
+        saveAttempt(attempt);
+      },
+      [
+        current,
+        selected,
+        answers,
+        score,
+        finished,
+        timeLeft,
+        terminationReason,
+        serverAttemptId,
+        serverStartedAt,
+      ]
+    );
+
+  /*
+   * FINISH SERVER ATTEMPT
+   */
+  const finishServerAttempt =
+    useCallback(
+      async (
+        attemptId,
+        reason,
+        switches
+      ) => {
+        if (!attemptId) {
+          return null;
+        }
+
+        try {
+          const {
+            data,
+            error,
+          } = await supabase.rpc(
+            "finish_listening_test_attempt",
+            {
+              p_attempt_id:
+                attemptId,
+
+              p_reason: reason,
+
+              p_tab_switches:
+                switches,
+            }
+          );
+
+          if (error) {
+            console.error(
+              "Erreur fermeture tentative serveur:",
+              error
+            );
+
+            return null;
+          }
+
+          return data;
+        } catch (error) {
+          console.error(
+            "Erreur fermeture tentative:",
+            error
+          );
+
+          return null;
+        }
+      },
+      []
+    );
+
+  /*
+   * SEND RESULT EMAIL
+   */
+  const sendResultEmail =
+    useCallback(
+      async (
+        finalScore,
+        percentage
+      ) => {
+        try {
+          const alreadySent =
+            localStorage.getItem(
+              RESULT_EMAIL_SENT_KEY
+            );
+
+          if (
+            alreadySent === "true"
+          ) {
+            return;
+          }
+
+          const {
+            data: {
+              user,
+            },
+          } =
+            await supabase.auth.getUser();
+
+          if (!user?.email) {
+            return;
+          }
+
+          const {
+            error,
+          } =
+            await supabase.functions.invoke(
+              "send-test-result",
+              {
+                body: {
+                  email: user.email,
+                  score: finalScore,
+                  total_questions:
+                    questions.length,
+                  percentage,
+                  test_type:
+                    "Compréhension orale",
+                },
+              }
+            );
+
+          if (error) {
+            console.error(
+              "Erreur envoi email:",
+              error
+            );
+
+            return;
+          }
+
+          localStorage.setItem(
+            RESULT_EMAIL_SENT_KEY,
+            "true"
+          );
+        } catch (error) {
+          console.error(
+            "Erreur email résultat:",
+            error
+          );
+        }
+      },
+      []
+    );
+
+  /*
+   * INITIALISATION
    */
   useEffect(() => {
-    const checkTestAccess = async () => {
+    let mounted = true;
+
+    async function initializeTest() {
       try {
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
+        setLoading(true);
+        setErrorMessage("");
 
-        if (userError) {
-          throw userError;
+        if (
+          !initializationPromiseRef.current
+        ) {
+          initializationPromiseRef.current =
+            (async () => {
+              /*
+               * USER
+               */
+              const {
+                data: {
+                  user,
+                },
+                error:
+                  userError,
+              } =
+                await withTimeout(
+                  supabase.auth.getUser()
+                );
+
+              if (
+                userError ||
+                !user
+              ) {
+                return {
+                  type: "redirect",
+                };
+              }
+
+              /*
+               * STUDENT PROFILE
+               */
+              const {
+                data: profile,
+                error:
+                  profileError,
+              } =
+                await withTimeout(
+                  supabase
+                    .from(
+                      "student_profiles"
+                    )
+                    .select("*")
+                    .eq(
+                      "id",
+                      user.id
+                    )
+                    .maybeSingle()
+                );
+
+              if (profileError) {
+                throw profileError;
+              }
+
+              if (!profile) {
+                return {
+                  type: "error",
+                  message:
+                    "Profil étudiant introuvable.",
+                };
+              }
+
+              /*
+               * APPROVED + PAID
+               */
+              const approved =
+                profile.status ===
+                "approved";
+
+              const paid =
+                profile.payment_status ===
+                "paid";
+
+              if (
+                !approved ||
+                !paid
+              ) {
+                return {
+                  type:
+                    "access_denied",
+                  message:
+                    "Votre compte doit être approuvé et votre paiement doit être confirmé avant de passer ce test.",
+                };
+              }
+
+              /*
+               * EXISTING RESULT
+               */
+              const {
+                data:
+                  existingResult,
+                error:
+                  resultError,
+              } =
+                await withTimeout(
+                  supabase
+                    .from(
+                      "test_results"
+                    )
+                    .select("id")
+                    .eq(
+                      "student_id",
+                      user.id
+                    )
+                    .eq(
+                      "test_type",
+                      "oral"
+                    )
+                    .limit(1)
+                );
+
+              if (resultError) {
+                throw resultError;
+              }
+
+              if (
+                existingResult &&
+                existingResult.length >
+                  0
+              ) {
+                return {
+                  type:
+                    "access_denied",
+                  message:
+                    "Vous avez déjà terminé ce test.",
+                };
+              }
+
+              /*
+               * EXISTING SERVER ATTEMPT
+               */
+              const {
+                data:
+                  existingAttempts,
+                error:
+                  attemptError,
+              } =
+                await withTimeout(
+                  supabase
+                    .from(
+                      "listening_test_attempts"
+                    )
+                    .select("*")
+                    .eq(
+                      "student_id",
+                      user.id
+                    )
+                    .order(
+                      "created_at",
+                      {
+                        ascending:
+                          false,
+                      }
+                    )
+                    .limit(1)
+                );
+
+              if (attemptError) {
+                throw attemptError;
+              }
+
+              if (
+                existingAttempts &&
+                existingAttempts.length >
+                  0
+              ) {
+                const latestAttempt =
+                  existingAttempts[0];
+
+                /*
+                 * ALREADY FINISHED
+                 */
+                if (
+                  latestAttempt.status ===
+                  "finished"
+                ) {
+                  return {
+                    type:
+                      "access_denied",
+                    message:
+                      "Vous avez déjà utilisé votre tentative de compréhension orale.",
+                  };
+                }
+
+                /*
+                 * RESUME EXISTING ATTEMPT
+                 */
+                if (
+                  latestAttempt.status ===
+                  "in_progress"
+                ) {
+                  const existingSwitches =
+                    latestAttempt.tab_switches ||
+                    0;
+
+                  /*
+                   * TWO TAB SWITCHES
+                   */
+                  if (
+                    existingSwitches >=
+                    2
+                  ) {
+                    await finishServerAttempt(
+                      latestAttempt.id,
+                      "tab_switch",
+                      existingSwitches
+                    );
+
+                    return {
+                      type:
+                        "finished",
+
+                      terminationReason:
+                        "tab_switch",
+
+                      serverAttemptId:
+                        latestAttempt.id,
+
+                      serverStartedAt:
+                        latestAttempt.started_at,
+
+                      tabSwitches:
+                        existingSwitches,
+                    };
+                  }
+
+                  /*
+                   * SERVER TIME
+                   */
+                  const serverNow =
+                    await getServerNow();
+
+                  const startedAt =
+                    new Date(
+                      latestAttempt.started_at
+                    ).getTime();
+
+                  const calculatedEnd =
+                    startedAt +
+                    TEST_DURATION;
+
+                  const remaining =
+                    Math.max(
+                      0,
+                      calculatedEnd -
+                        serverNow
+                    );
+
+                  /*
+                   * EXPIRED
+                   */
+                  if (
+                    remaining <= 0
+                  ) {
+                    await finishServerAttempt(
+                      latestAttempt.id,
+                      "time_expired",
+                      existingSwitches
+                    );
+
+                    return {
+                      type:
+                        "finished",
+
+                      terminationReason:
+                        "time_expired",
+
+                      serverAttemptId:
+                        latestAttempt.id,
+
+                      serverStartedAt:
+                        latestAttempt.started_at,
+
+                      tabSwitches:
+                        existingSwitches,
+                    };
+                  }
+
+                  return {
+                    type: "resume",
+
+                    serverAttemptId:
+                      latestAttempt.id,
+
+                    serverStartedAt:
+                      latestAttempt.started_at,
+
+                    tabSwitches:
+                      existingSwitches,
+
+                    timeLeft:
+                      remaining,
+                  };
+                }
+              }
+
+              /*
+               * CREATE NEW SERVER ATTEMPT
+               */
+              const {
+                data:
+                  newAttempt,
+                error:
+                  createError,
+              } =
+                await withTimeout(
+                  supabase
+                    .from(
+                      "listening_test_attempts"
+                    )
+                    .insert({
+                      student_id:
+                        user.id,
+
+                      status:
+                        "in_progress",
+
+                      tab_switches: 0,
+                    })
+                    .select()
+                    .single()
+                );
+
+              if (createError) {
+                throw createError;
+              }
+
+              /*
+               * SERVER TIME
+               */
+              const serverNow =
+                await getServerNow();
+
+              const startedAt =
+                new Date(
+                  newAttempt.started_at
+                ).getTime();
+
+              const calculatedEnd =
+                startedAt +
+                TEST_DURATION;
+
+              const remaining =
+                Math.max(
+                  0,
+                  calculatedEnd -
+                    serverNow
+                );
+
+              /*
+               * IMMEDIATE EXPIRATION
+               */
+              if (
+                remaining <= 0
+              ) {
+                await finishServerAttempt(
+                  newAttempt.id,
+                  "time_expired",
+                  0
+                );
+
+                return {
+                  type:
+                    "finished",
+
+                  terminationReason:
+                    "time_expired",
+
+                  serverAttemptId:
+                    newAttempt.id,
+
+                  serverStartedAt:
+                    newAttempt.started_at,
+
+                  tabSwitches: 0,
+                };
+              }
+
+              return {
+                type: "new",
+
+                serverAttemptId:
+                  newAttempt.id,
+
+                serverStartedAt:
+                  newAttempt.started_at,
+
+                tabSwitches: 0,
+
+                timeLeft:
+                  remaining,
+              };
+            })();
         }
 
-        if (!user) {
-          navigate("/student-login", { replace: true });
-          return;
-        }
+        const result =
+          await initializationPromiseRef.current;
 
-        const { data: profile, error: profileError } =
-          await supabase
-            .from("student_profiles")
-            .select("status, payment_status")
-            .eq("id", user.id)
-            .maybeSingle();
-
-        if (profileError) {
-          throw profileError;
-        }
-
-        if (!profile || profile.status !== "approved") {
-          navigate("/student-dashboard", { replace: true });
+        if (!mounted) {
           return;
         }
 
         /*
-         * PAYMENT GATE
-         *
-         * Only students whose payment_status is "paid"
-         * can access the official test.
+         * REDIRECT
          */
-        if (profile.payment_status !== "paid") {
-          setPaymentRequired(true);
-          setAccessAllowed(false);
-          setAlreadyCompleted(false);
+        if (
+          result.type ===
+          "redirect"
+        ) {
+          navigate(
+            "/student-login"
+          );
+
           return;
         }
 
         /*
-         * SECURITY CHECK
-         *
-         * Look for an existing completed
-         * comprehension_orale result.
+         * ERROR
          */
-        const { data: existingResult, error: resultError } =
-          await supabase
-            .from("test_results")
-            .select("id, completed_at")
-            .eq("student_id", user.id)
-            .eq("test_type", "comprehension_orale")
-            .limit(1)
-            .maybeSingle();
+        if (
+          result.type ===
+          "error"
+        ) {
+          setAccessAllowed(
+            false
+          );
 
-        if (resultError) {
-          throw resultError;
-        }
+          setErrorMessage(
+            result.message
+          );
 
-        if (existingResult) {
-          setAlreadyCompleted(true);
-          setAccessAllowed(false);
           return;
         }
 
-        setAlreadyCompleted(false);
-        setPaymentRequired(false);
+        /*
+         * ACCESS DENIED
+         */
+        if (
+          result.type ===
+          "access_denied"
+        ) {
+          setAccessAllowed(
+            false
+          );
+
+          setErrorMessage(
+            result.message
+          );
+
+          return;
+        }
+
+        /*
+         * AUTOMATICALLY FINISHED
+         */
+        if (
+          result.type ===
+          "finished"
+        ) {
+          tabSwitchesRef.current =
+            result.tabSwitches || 0;
+
+          setTabSwitches(
+            result.tabSwitches || 0
+          );
+
+          setServerAttemptId(
+            result.serverAttemptId
+          );
+
+          setServerStartedAt(
+            result.serverStartedAt
+          );
+
+          setTerminationReason(
+            result.terminationReason
+          );
+
+          setTimeLeft(0);
+
+          setFinished(true);
+
+          setAccessAllowed(true);
+
+          return;
+        }
+
+        /*
+         * NEW / RESUMED
+         */
+        tabSwitchesRef.current =
+          result.tabSwitches || 0;
+
+        setTabSwitches(
+          result.tabSwitches || 0
+        );
+
+        setServerAttemptId(
+          result.serverAttemptId
+        );
+
+        setServerStartedAt(
+          result.serverStartedAt
+        );
+
+        /*
+         * TIMER DISPLAY FIX:
+         * For a brand-new attempt, show the full
+         * 30:00 immediately instead of the value
+         * already reduced by initialization checks.
+         * Resumed attempts keep using the real
+         * server-calculated remaining time.
+         */
+        setTimeLeft(
+          result.type === "new"
+            ? TEST_DURATION
+            : result.timeLeft
+        );
+
         setAccessAllowed(true);
       } catch (error) {
         console.error(
-          "Erreur lors de la vérification de l'accès au test :",
+          "Erreur initialisation test:",
           error
         );
 
-        navigate("/student-dashboard", { replace: true });
+        if (mounted) {
+          setErrorMessage(
+            "Une erreur est survenue lors de l'initialisation du test."
+          );
+        }
       } finally {
-        setAccessChecking(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
-    };
-
-    checkTestAccess();
-  }, [navigate]);
-    /*
-   * STEP 2
-   * Save the complete current test attempt locally.
-   */
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(attempt));
-  }, [attempt]);
-
-  /*
-   * STEP 3
-   * Test timer.
-   */
-  useEffect(() => {
-    if (finished) {
-      setTimeLeft(0);
-      return;
     }
 
-    const updateTimer = () => {
-      const remaining = Math.max(
-        0,
-        Math.ceil((attempt.endTime - Date.now()) / 1000)
-      );
+    initializeTest();
 
-      setTimeLeft(remaining);
-
-      if (remaining <= 0) {
-        setAttempt((prev) => ({
-          ...prev,
-          finished: true,
-          selected: null,
-        }));
-      }
+    return () => {
+      mounted = false;
     };
-
-    updateTimer();
-
-    const timer = setInterval(updateTimer, 1000);
-
-    return () => clearInterval(timer);
-  }, [attempt.endTime, finished]);
-
-  /*
-   * STEP 4
-   * Save the student's result in Supabase.
-   *
-   * This happens only once for THIS test attempt.
-   */
-  useEffect(() => {
-    if (
-      !accessAllowed ||
-      !finished ||
-      resultSaved ||
-      saveStartedRef.current
-    ) {
-      return;
-    }
-
-    saveStartedRef.current = true;
-
-    const saveResult = async () => {
-      setSavingResult(true);
-      setSaveMessage("");
-
-      try {
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
-
-        if (userError) {
-          throw userError;
-        }
-
-        if (!user) {
-          throw new Error(
-            "Aucun étudiant connecté. Impossible d'enregistrer le résultat."
-          );
-        }
-
-        const percentage = Math.round(
-          (score / questions.length) * 100
-        );
-
-        const { error } = await supabase
-          .from("test_results")
-          .insert([
-            {
-              student_id: user.id,
-              score: score,
-              total_questions: questions.length,
-              percentage: percentage,
-              test_type: "comprehension_orale",
-            },
-          ]);
-
-        if (error) {
-          throw error;
-        }
-
-        setAttempt((prev) => ({
-          ...prev,
-          resultSaved: true,
-        }));
-
-        setSaveMessage(
-          "Votre résultat a été enregistré avec succès."
-        );
-
-        console.log("Résultat enregistré dans Supabase.");
-      } catch (error) {
-        console.error(
-          "Erreur lors de l'enregistrement du résultat :",
-          error
-        );
-
-        saveStartedRef.current = false;
-
-        setSaveMessage(
-          "Le test est terminé, mais le résultat n'a pas pu être enregistré."
-        );
-      } finally {
-        setSavingResult(false);
-      }
-    };
-
-    saveResult();
-  }, [accessAllowed, finished, resultSaved, score]);
-
-  /*
-   * STEP 5
-   * Send the result automatically by email.
-   *
-   * The email is sent to the authenticated student's email.
-   */
-  useEffect(() => {
-    if (
-      !accessAllowed ||
-      !finished ||
-      !resultSaved ||
-      resultEmailSent ||
-      emailStartedRef.current
-    ) {
-      return;
-    }
-
-    emailStartedRef.current = true;
-
-    const sendResultEmail = async () => {
-      setSendingEmail(true);
-      setEmailMessage("");
-
-      try {
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
-
-        if (userError) {
-          throw userError;
-        }
-
-        if (!user) {
-          throw new Error(
-            "Aucun étudiant connecté. Impossible d'envoyer le résultat."
-          );
-        }
-
-        if (!user.email) {
-          throw new Error(
-            "L'adresse email du compte étudiant est introuvable."
-          );
-        }
-
-        let studentName = "étudiant(e)";
-
-        try {
-          const { data: profile } = await supabase
-            .from("student_profiles")
-            .select("full_name")
-            .eq("id", user.id)
-            .maybeSingle();
-
-          if (profile?.full_name) {
-            studentName = profile.full_name;
-          }
-        } catch (profileError) {
-          console.warn(
-            "Impossible de récupérer le nom de l'étudiant :",
-            profileError
-          );
-        }
-
-        const { data, error } = await supabase.functions.invoke(
-          "send-test-result",
-          {
-            body: {
-              email: user.email,
-              studentName: studentName,
-              score: score,
-              total: questions.length,
-            },
-          }
-        );
-
-        if (error) {
-          throw error;
-        }
-
-        if (!data?.success) {
-          throw new Error(
-            data?.error ||
-              "L'envoi de l'email a échoué."
-          );
-        }
-
-        setAttempt((prev) => ({
-          ...prev,
-          resultEmailSent: true,
-        }));
-
-        setEmailMessage(
-          `Votre résultat a été envoyé à ${user.email}.`
-        );
-
-        console.log(
-          "Email de résultat envoyé à :",
-          user.email
-        );
-      } catch (error) {
-        console.error(
-          "Erreur lors de l'envoi de l'email :",
-          error
-        );
-
-        emailStartedRef.current = false;
-
-        setEmailMessage(
-          "Votre résultat est enregistré, mais l'email n'a pas pu être envoyé pour le moment."
-        );
-      } finally {
-        setSendingEmail(false);
-      }
-    };
-
-    sendResultEmail();
   }, [
-    accessAllowed,
-    finished,
-    resultSaved,
-    resultEmailSent,
-    score,
+    navigate,
+    getServerNow,
+    finishServerAttempt,
   ]);
 
   /*
-   * Play current audio.
+   * SAVE PROGRESS
    */
-  const playAudio = () => {
-    if (!question || finished || !accessAllowed) {
-      return;
-    }
-
-    const audio = new Audio(question.audio);
-
-    audio.play().catch((error) => {
-      console.error("Impossible de lire l'audio :", error);
-    });
-  };
+  useEffect(() => {
+    updateAttempt();
+  }, [
+    current,
+    selected,
+    answers,
+    score,
+    finished,
+    tabSwitches,
+    terminationReason,
+    serverAttemptId,
+    serverStartedAt,
+    updateAttempt,
+  ]);
 
   /*
-   * Select an answer.
+   * TIMER
    */
-  const chooseAnswer = (index) => {
+  useEffect(() => {
     if (
-      selected !== null ||
+      !accessAllowed ||
       finished ||
-      !accessAllowed
+      !serverAttemptId
     ) {
       return;
     }
 
-    const isCorrect = index === question.correctAnswer;
+    let active = true;
 
-    setAttempt((prev) => ({
-      ...prev,
-      selected: index,
-      score: isCorrect ? prev.score + 1 : prev.score,
-    }));
-  };
+    const updateTimer =
+      async () => {
+        try {
+          const serverNow =
+            await getServerNow();
 
-  /*
-   * Move to the next question.
-   */
-  const nextQuestion = () => {
-    if (
-      selected === null ||
-      finished ||
-      !accessAllowed
-    ) {
-      return;
-    }
+          if (!active) {
+            return;
+          }
 
-    if (current === questions.length - 1) {
-      setAttempt((prev) => ({
-        ...prev,
-        finished: true,
-      }));
+          const startedAt =
+            serverStartedAt
+              ? new Date(
+                  serverStartedAt
+                ).getTime()
+              : null;
 
-      return;
-    }
+          if (!startedAt) {
+            return;
+          }
 
-    setAttempt((prev) => ({
-      ...prev,
-      current: prev.current + 1,
-      selected: null,
-    }));
-  };
+          const remaining =
+            Math.max(
+              0,
+              startedAt +
+                TEST_DURATION -
+                serverNow
+            );
 
-  /*
-   * Format timer.
-   */
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
+          setTimeLeft(
+            remaining
+          );
 
-    return `${String(minutes).padStart(2, "0")}:${String(
-      remainingSeconds
-    ).padStart(2, "0")}`;
-  };
+          if (
+            remaining <= 0 &&
+            !finishingRef.current
+          ) {
+            finishingRef.current =
+              true;
 
-  const percentage = Math.round(
-    (score / questions.length) * 100
-  );
+            await finishServerAttempt(
+              serverAttemptId,
+              "time_expired",
+              tabSwitchesRef.current
+            );
 
-  /*
-   * Access checking screen.
-   */
-  if (accessChecking) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background:
-            "linear-gradient(135deg, #0d1b2a 0%, #132b40 100%)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "30px 20px",
-          fontFamily: "DM Sans, Arial, sans-serif",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "500px",
-            background: "#f8f4ee",
-            borderRadius: "22px",
-            padding: "45px 30px",
-            textAlign: "center",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-          }}
-        >
-          <img
-            src="/IFA logo.jpg"
-            alt="International French Academy"
-            style={{
-              width: "150px",
-              maxWidth: "70%",
-              marginBottom: "25px",
-              borderRadius: "10px",
-            }}
-          />
+            if (!active) {
+              return;
+            }
 
-          <div
-            style={{
-              fontSize: "40px",
-              marginBottom: "15px",
-            }}
-          >
-            🔐
-          </div>
+            setTimeLeft(0);
 
-          <h1
-            style={{
-              color: "#0d1b2a",
-              fontSize: "28px",
-              marginBottom: "12px",
-              fontFamily:
-                "Playfair Display, Georgia, serif",
-            }}
-          >
-            Vérification de l'accès
-          </h1>
+            setTerminationReason(
+              "time_expired"
+            );
 
-          <p
-            style={{
-              color: "#667085",
-              fontSize: "15px",
-              lineHeight: "1.6",
-            }}
-          >
-            Vérification de votre autorisation
-            d'accès au test...
-          </p>
-        </div>
-      </div>
-    );
-  }
+            setFinished(true);
+          }
+        } catch (error) {
+          console.error(
+            "Erreur timer:",
+            error
+          );
+        }
+      };
+
+    updateTimer();
+
+    const interval =
+      setInterval(
+        updateTimer,
+        1000
+      );
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [
+    accessAllowed,
+    finished,
+    serverAttemptId,
+    serverStartedAt,
+    getServerNow,
+    finishServerAttempt,
+  ]);
 
   /*
-   * Payment required screen.
+   * TAB / WINDOW SECURITY
    *
-   * The student must be approved AND paid
-   * before accessing the official test.
+   * 1st change = warning
+   * 2nd change = automatic termination
    */
-  if (paymentRequired) {
+  useEffect(() => {
+    if (
+      !accessAllowed ||
+      finished ||
+      !serverAttemptId
+    ) {
+      return;
+    }
+
+    const handleVisibilityChange =
+      async () => {
+        if (
+          document.visibilityState !==
+          "hidden"
+        ) {
+          return;
+        }
+
+        if (
+          finishingRef.current
+        ) {
+          return;
+        }
+
+        const newSwitchCount =
+          tabSwitchesRef.current +
+          1;
+
+        tabSwitchesRef.current =
+          newSwitchCount;
+
+        setTabSwitches(
+          newSwitchCount
+        );
+
+        /*
+         * FIRST SWITCH
+         */
+        if (
+          newSwitchCount === 1
+        ) {
+          try {
+            const {
+              error,
+            } = await supabase
+              .from(
+                "listening_test_attempts"
+              )
+              .update({
+                tab_switches:
+                  newSwitchCount,
+              })
+              .eq(
+                "id",
+                serverAttemptId
+              );
+
+            if (error) {
+              console.error(
+                "Erreur sauvegarde changement onglet:",
+                error
+              );
+            }
+          } catch (error) {
+            console.error(
+              "Erreur sauvegarde changement onglet:",
+              error
+            );
+          }
+
+          window.setTimeout(() => {
+            if (
+              !finishingRef.current &&
+              !document.hidden
+            ) {
+              alert(
+                "Attention : vous avez quitté la fenêtre ou l'onglet du test. Un deuxième changement entraînera la fin automatique du test."
+              );
+            }
+          }, 100);
+
+          return;
+        }
+
+        /*
+         * SECOND SWITCH
+         */
+        if (
+          newSwitchCount >= 2
+        ) {
+          finishingRef.current =
+            true;
+
+          await finishServerAttempt(
+            serverAttemptId,
+            "tab_switch",
+            newSwitchCount
+          );
+
+          setTerminationReason(
+            "tab_switch"
+          );
+
+          setFinished(true);
+
+          setSelected(null);
+        }
+      };
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
+
+    return () => {
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
+    };
+  }, [
+    accessAllowed,
+    finished,
+    serverAttemptId,
+    finishServerAttempt,
+  ]);
+
+  /*
+   * AUDIO
+   */
+  const playAudio =
+    useCallback(
+      (audioPath) => {
+        try {
+          setAudioError(false);
+
+          if (
+            audioRef.current
+          ) {
+            audioRef.current.pause();
+
+            audioRef.current =
+              null;
+          }
+
+          const audio =
+            new Audio(audioPath);
+
+          audioRef.current =
+            audio;
+
+          audio.onplay = () => {
+            setIsPlaying(true);
+          };
+
+          audio.onended = () => {
+            setIsPlaying(false);
+          };
+
+          audio.onerror = () => {
+            console.error(
+              "Erreur audio:",
+              audioPath
+            );
+
+            setIsPlaying(false);
+
+            setAudioError(true);
+          };
+
+          audio
+            .play()
+            .catch((error) => {
+              console.error(
+                "Impossible de lire l'audio:",
+                error
+              );
+
+              setIsPlaying(false);
+
+              setAudioError(true);
+            });
+        } catch (error) {
+          console.error(
+            "Erreur lecture audio:",
+            error
+          );
+
+          setIsPlaying(false);
+
+          setAudioError(true);
+        }
+      },
+      []
+    );
+
+  /*
+   * SELECT ANSWER
+   *
+   * IMPORTANT:
+   * Once an answer has been selected,
+   * it cannot be changed.
+   */
+  const handleSelectAnswer =
+    (choice) => {
+      if (finished) {
+        return;
+      }
+
+      /*
+       * If this question already has an answer,
+       * it is permanently locked.
+       */
+      if (
+        answers[
+          currentQuestion.id
+        ]
+      ) {
+        return;
+      }
+
+      const updatedAnswers = {
+        ...answers,
+
+        [currentQuestion.id]:
+          choice,
+      };
+
+      const newScore =
+        questions.reduce(
+          (total, question) => {
+            return (
+              total +
+              (updatedAnswers[
+                question.id
+              ] === question.answer
+                ? 1
+                : 0)
+            );
+          },
+          0
+        );
+
+      /*
+       * Save immediately.
+       */
+      setAnswers(
+        updatedAnswers
+      );
+
+      setSelected(choice);
+
+      setScore(newScore);
+
+      /*
+       * Also save directly to localStorage
+       * so a refresh cannot unlock the answer.
+       */
+      saveAttempt({
+        current,
+        selected: choice,
+        answers: updatedAnswers,
+        score: newScore,
+        finished,
+        endTime:
+          timeLeft + Date.now(),
+        tabSwitches:
+          tabSwitchesRef.current,
+        terminationReason,
+        serverAttemptId,
+        serverStartedAt,
+      });
+    };
+
+  /*
+   * NEXT QUESTION
+   */
+  const handleNext = () => {
+    if (finished) {
+      return;
+    }
+
+    /*
+     * The current question must have
+     * a locked answer.
+     */
+    const currentAnswer =
+      answers[
+        currentQuestion.id
+      ];
+
+    if (!currentAnswer) {
+      alert(
+        "Veuillez sélectionner une réponse avant de continuer."
+      );
+
+      return;
+    }
+
+    if (
+      current <
+      questions.length - 1
+    ) {
+      const nextQuestion =
+        current + 1;
+
+      setCurrent(
+        nextQuestion
+      );
+
+      /*
+       * New question starts with no selection.
+       */
+      setSelected(null);
+    }
+  };
+
+  /*
+   * SAVE RESULT
+   */
+  const saveResult =
+    useCallback(
+      async (finalScore) => {
+        if (
+          resultSavedRef.current ||
+          !serverAttemptId
+        ) {
+          return;
+        }
+
+        resultSavedRef.current =
+          true;
+
+        try {
+          const {
+            data: {
+              user,
+            },
+            error: userError,
+          } =
+            await supabase.auth.getUser();
+
+          if (
+            userError ||
+            !user
+          ) {
+            throw (
+              userError ||
+              new Error(
+                "Utilisateur introuvable"
+              )
+            );
+          }
+
+          const percentage =
+            Math.round(
+              (finalScore /
+                questions.length) *
+                100
+            );
+
+          /*
+           * SAVE RESULT
+           */
+          const {
+            error:
+              resultError,
+          } =
+            await supabase
+              .from(
+                "test_results"
+              )
+              .insert({
+                student_id:
+                  user.id,
+
+                score:
+                  finalScore,
+
+                total_questions:
+                  questions.length,
+
+                percentage,
+
+                test_type:
+                  "oral",
+
+                completed_at:
+                  new Date().toISOString(),
+              });
+
+          if (resultError) {
+            resultSavedRef.current =
+              false;
+
+            throw resultError;
+          }
+
+          /*
+           * FINISH SERVER ATTEMPT
+           */
+          await finishServerAttempt(
+            serverAttemptId,
+            "completed",
+            tabSwitchesRef.current
+          );
+
+          /*
+           * Student Portal remains the
+           * primary location for results.
+           */
+          await sendResultEmail(
+            finalScore,
+            percentage
+          );
+        } catch (error) {
+          console.error(
+            "Erreur sauvegarde résultat:",
+            error
+          );
+        }
+      },
+      [
+        serverAttemptId,
+        finishServerAttempt,
+        sendResultEmail,
+      ]
+    );
+
+  /*
+   * FINISH BUTTON
+   */
+  const handleFinish = () => {
+    if (finished) {
+      return;
+    }
+
+    const finalAnswer =
+      answers[
+        currentQuestion.id
+      ];
+
+    if (!finalAnswer) {
+      alert(
+        "Veuillez sélectionner une réponse avant de terminer le test."
+      );
+
+      return;
+    }
+
+    if (
+      finishingRef.current
+    ) {
+      return;
+    }
+
+    const finalScore =
+      questions.reduce(
+        (total, question) => {
+          return (
+            total +
+            (answers[
+              question.id
+            ] === question.answer
+              ? 1
+              : 0)
+          );
+        },
+        0
+      );
+
+    finishingRef.current =
+      true;
+
+    setScore(
+      finalScore
+    );
+
+    setFinished(true);
+
+    saveResult(
+      finalScore
+    );
+  };
+
+  /*
+   * AUDIO CLEANUP
+   */
+  useEffect(() => {
+    return () => {
+      if (
+        audioRef.current
+      ) {
+        audioRef.current.pause();
+
+        audioRef.current =
+          null;
+      }
+    };
+  }, []);
+
+  /*
+   * FORMAT TIMER
+   */
+  const formatTime = (
+    milliseconds
+  ) => {
+    const totalSeconds =
+      Math.max(
+        0,
+        Math.floor(
+          milliseconds /
+            1000
+        )
+      );
+
+    const minutes =
+      Math.floor(
+        totalSeconds / 60
+      );
+
+    const seconds =
+      totalSeconds % 60;
+
+    return `${String(
+      minutes
+    ).padStart(
+      2,
+      "0"
+    )}:${String(
+      seconds
+    ).padStart(
+      2,
+      "0"
+    )}`;
+  };
+
+  /*
+   * LOADING
+   */
+  if (loading) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background:
-            "linear-gradient(135deg, #0d1b2a 0%, #132b40 100%)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "30px 20px",
-          fontFamily: "DM Sans, Arial, sans-serif",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "600px",
-            background: "#f8f4ee",
-            borderRadius: "22px",
-            padding: "45px 30px",
-            textAlign: "center",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-          }}
-        >
-          <img
-            src="/IFA logo.jpg"
-            alt="International French Academy"
-            style={{
-              width: "170px",
-              maxWidth: "70%",
-              marginBottom: "25px",
-              borderRadius: "10px",
-            }}
-          />
-
-          <div
-            style={{
-              fontSize: "52px",
-              marginBottom: "15px",
-            }}
-          >
-            💳
-          </div>
-
-          <h1
-            style={{
-              color: "#0d1b2a",
-              fontSize: "30px",
-              marginBottom: "15px",
-              fontFamily:
-                "Playfair Display, Georgia, serif",
-            }}
-          >
-            Paiement requis
+      <div style={styles.page}>
+        <div style={styles.card}>
+          <h1 style={styles.title}>
+            INTERNATIONAL FRENCH ACADEMY
           </h1>
 
-          <p
-            style={{
-              color: "#555",
-              fontSize: "16px",
-              lineHeight: "1.7",
-              marginBottom: "20px",
-            }}
-          >
-            Votre compte étudiant est approuvé,
-            mais votre paiement n'a pas encore été
-            confirmé.
+          <p style={styles.loading}>
+            Chargement du test...
           </p>
-
-          <div
-            style={{
-              background: "#fff8df",
-              border: "1px solid #e5d08a",
-              borderRadius: "12px",
-              padding: "18px",
-              marginBottom: "25px",
-              color: "#6b5715",
-              fontSize: "14px",
-              lineHeight: "1.6",
-            }}
-          >
-            <strong>Accès au test bloqué</strong>
-            <br />
-            Le test de niveau sera accessible
-            après confirmation de votre paiement
-            par l'administration de l'International
-            French Academy.
-          </div>
-
-          <button
-            type="button"
-            onClick={() => navigate("/student-dashboard")}
-            style={{
-              width: "100%",
-              border: "none",
-              borderRadius: "12px",
-              padding: "16px",
-              background: "#c9a84c",
-              color: "#0d1b2a",
-              fontSize: "16px",
-              fontWeight: "700",
-              cursor: "pointer",
-            }}
-          >
-            ← Retour à mon espace étudiant
-          </button>
         </div>
       </div>
     );
   }
-    /*
-   * If the student already completed the oral test,
-   * block direct access to /tests/level-test.
+
+  /*
+   * ACCESS DENIED
    */
-  if (alreadyCompleted) {
+  if (!accessAllowed) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background:
-            "linear-gradient(135deg, #0d1b2a 0%, #132b40 100%)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "30px 20px",
-          fontFamily: "DM Sans, Arial, sans-serif",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "600px",
-            background: "#f8f4ee",
-            borderRadius: "22px",
-            padding: "45px 30px",
-            textAlign: "center",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-          }}
-        >
-          <img
-            src="/IFA logo.jpg"
-            alt="International French Academy"
-            style={{
-              width: "170px",
-              maxWidth: "70%",
-              marginBottom: "25px",
-              borderRadius: "10px",
-            }}
-          />
-
-          <div
-            style={{
-              fontSize: "52px",
-              marginBottom: "15px",
-            }}
-          >
-            🔒
-          </div>
-
-          <h1
-            style={{
-              color: "#0d1b2a",
-              fontSize: "30px",
-              marginBottom: "15px",
-              fontFamily:
-                "Playfair Display, Georgia, serif",
-            }}
-          >
-            Test déjà effectué
+      <div style={styles.page}>
+        <div style={styles.card}>
+          <h1 style={styles.title}>
+            INTERNATIONAL FRENCH ACADEMY
           </h1>
 
-          <p
-            style={{
-              color: "#555",
-              fontSize: "16px",
-              lineHeight: "1.7",
-              marginBottom: "25px",
-            }}
-          >
-            Vous avez déjà effectué votre test de
-            compréhension orale.
-          </p>
+          <h2 style={styles.heading}>
+            Test de compréhension orale
+          </h2>
 
           <div
-            style={{
-              background: "#ffffff",
-              border: "1px solid #e4ddd2",
-              borderRadius: "12px",
-              padding: "18px",
-              marginBottom: "25px",
-              color: "#555",
-              fontSize: "14px",
-              lineHeight: "1.6",
-            }}
+            style={
+              styles.messageBox
+            }
           >
-            Une seule tentative est autorisée pour
-            cette partie du test de niveau.
+            {errorMessage ||
+              "Votre compte doit être approuvé et votre paiement doit être confirmé avant de passer ce test."}
           </div>
 
           <button
-            type="button"
-            onClick={() => navigate("/student-dashboard")}
-            style={{
-              width: "100%",
-              border: "none",
-              borderRadius: "12px",
-              padding: "16px",
-              background: "#c9a84c",
-              color: "#0d1b2a",
-              fontSize: "16px",
-              fontWeight: "700",
-              cursor: "pointer",
-            }}
+            style={
+              styles.primaryButton
+            }
+            onClick={() =>
+              navigate(
+                "/student-dashboard"
+              )
+            }
           >
-            ← Retour à mon espace étudiant
+            Retour à mon espace étudiant
           </button>
         </div>
       </div>
@@ -1062,604 +1996,898 @@ export default function ListeningTest() {
   }
 
   /*
-   * Final result screen.
+   * TEST FINISHED
    */
   if (finished) {
+    const wasTabSwitch =
+      terminationReason ===
+      "tab_switch";
+
+    const wasTimeout =
+      terminationReason ===
+      "time_expired";
+
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background:
-            "linear-gradient(135deg, #0d1b2a 0%, #132b40 100%)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "30px 20px",
-          fontFamily: "DM Sans, Arial, sans-serif",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "650px",
-            background: "#f8f4ee",
-            borderRadius: "22px",
-            padding: "45px 30px",
-            textAlign: "center",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-          }}
-        >
-          <img
-            src="/IFA logo.jpg"
-            alt="International French Academy"
-            style={{
-              width: "180px",
-              maxWidth: "70%",
-              marginBottom: "25px",
-              borderRadius: "10px",
-            }}
-          />
-
-          <div
-            style={{
-              fontSize: "50px",
-              marginBottom: "10px",
-            }}
-          >
-            🎉
-          </div>
-
-          <h1
-            style={{
-              color: "#0d1b2a",
-              fontSize: "34px",
-              marginBottom: "15px",
-              fontFamily:
-                "Playfair Display, Georgia, serif",
-            }}
-          >
-            Test terminé !
+      <div style={styles.page}>
+        <div style={styles.card}>
+          <h1 style={styles.title}>
+            INTERNATIONAL FRENCH ACADEMY
           </h1>
 
-          <p
-            style={{
-              color: "#555",
-              fontSize: "17px",
-              marginBottom: "10px",
-            }}
-          >
-            Vous avez obtenu
-          </p>
+          {wasTabSwitch ? (
+            <>
+              <div
+                style={
+                  styles.dangerIcon
+                }
+              >
+                ⚠️
+              </div>
 
-          <div
-            style={{
-              fontSize: "48px",
-              fontWeight: "700",
-              color: "#c9a84c",
-              marginBottom: "5px",
-            }}
-          >
-            {score} / {questions.length}
-          </div>
+              <h2
+                style={
+                  styles.heading
+                }
+              >
+                Test terminé
+              </h2>
 
-          <div
-            style={{
-              fontSize: "22px",
-              fontWeight: "600",
-              color: "#0d1b2a",
-              marginBottom: "20px",
-            }}
-          >
-            Score : {percentage}%
-          </div>
+              <p
+                style={
+                  styles.resultText
+                }
+              >
+                Le test a été
+                automatiquement
+                terminé après un
+                deuxième changement
+                de fenêtre ou
+                d'onglet.
+              </p>
 
-          <p
-            style={{
-              color: "#555",
-              fontSize: "16px",
-              lineHeight: "1.6",
-              marginBottom: "25px",
-            }}
-          >
-            Merci d'avoir passé le test de compréhension
-            orale de l'International French Academy.
-          </p>
+              <div
+                style={
+                  styles.warningBox
+                }
+              >
+                Votre tentative a
+                été enregistrée.
+              </div>
+            </>
+          ) : wasTimeout ? (
+            <>
+              <div
+                style={
+                  styles.dangerIcon
+                }
+              >
+                ⏰
+              </div>
 
-          {savingResult && (
-            <div
-              style={{
-                background: "#fff8df",
-                border: "1px solid #e5d08a",
-                color: "#8a6d1d",
-                padding: "14px 16px",
-                borderRadius: "10px",
-                marginBottom: "15px",
-                fontSize: "14px",
-                fontWeight: "600",
-              }}
-            >
-              ⏳ Enregistrement de votre résultat...
-            </div>
+              <h2
+                style={
+                  styles.heading
+                }
+              >
+                Temps écoulé
+              </h2>
+
+              <p
+                style={
+                  styles.resultText
+                }
+              >
+                Le temps de 30
+                minutes est écoulé.
+                Le test est terminé.
+              </p>
+
+              <div
+                style={
+                  styles.warningBox
+                }
+              >
+                Votre tentative a
+                été enregistrée.
+              </div>
+            </>
+          ) : (
+            <>
+              <div
+                style={
+                  styles.successIcon
+                }
+              >
+                ✓
+              </div>
+
+              <h2
+                style={
+                  styles.heading
+                }
+              >
+                Test terminé
+              </h2>
+
+              <p
+                style={
+                  styles.resultText
+                }
+              >
+                Votre test de
+                compréhension orale
+                a été enregistré.
+              </p>
+
+              <div
+                style={
+                  styles.scoreBox
+                }
+              >
+                <strong>
+                  Score : {score}/
+                  {questions.length}
+                </strong>
+
+                <span>
+                  {Math.round(
+                    (score /
+                      questions.length) *
+                      100
+                  )}
+                  %
+                </span>
+              </div>
+            </>
           )}
 
-          {saveMessage && !savingResult && (
-            <div
-              style={{
-                background: resultSaved
-                  ? "#e8f5e9"
-                  : "#fff3cd",
-                color: resultSaved
-                  ? "#2e7d32"
-                  : "#856404",
-                padding: "12px 15px",
-                borderRadius: "10px",
-                marginBottom: "15px",
-                fontSize: "14px",
-              }}
-            >
-              {saveMessage}
-            </div>
-          )}
-
-          {sendingEmail && (
-            <div
-              style={{
-                background: "#fff8df",
-                border: "1px solid #e5d08a",
-                color: "#8a6d1d",
-                padding: "14px 16px",
-                borderRadius: "10px",
-                marginBottom: "15px",
-                fontSize: "14px",
-                fontWeight: "600",
-              }}
-            >
-              📧 Envoi de votre résultat par email...
-            </div>
-          )}
-
-          {emailMessage && !sendingEmail && (
-            <div
-              style={{
-                background: resultEmailSent
-                  ? "#e8f5e9"
-                  : "#fff3cd",
-                color: resultEmailSent
-                  ? "#2e7d32"
-                  : "#856404",
-                padding: "12px 15px",
-                borderRadius: "10px",
-                marginBottom: "20px",
-                fontSize: "14px",
-                lineHeight: "1.5",
-              }}
-            >
-              {emailMessage}
-            </div>
-          )}
-
-          <div
-            style={{
-              background: "#ffffff",
-              border: "1px solid #e4ddd2",
-              borderRadius: "12px",
-              padding: "15px",
-              color: "#555",
-              fontSize: "14px",
-            }}
+          <button
+            style={
+              styles.primaryButton
+            }
+            onClick={() =>
+              navigate(
+                "/student-dashboard"
+              )
+            }
           >
-            Cette tentative est terminée. Vous ne pouvez
-            pas recommencer le test depuis cette page.
-          </div>
+            Retour à mon espace étudiant
+          </button>
         </div>
       </div>
     );
   }
 
-  const progress =
-    ((current + 1) / questions.length) * 100;
+  /*
+   * CURRENT QUESTION ALREADY ANSWERED
+   */
+  const answerLocked =
+    Boolean(
+      answers[
+        currentQuestion.id
+      ]
+    );
 
   /*
-   * Main test screen - beginning.
+   * TEST SCREEN
    */
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #0d1b2a 0%, #132b40 100%)",
-        padding: "30px 20px",
-        fontFamily: "DM Sans, Arial, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "850px",
-          margin: "0 auto",
-          background: "#f8f4ee",
-          borderRadius: "22px",
-          overflow: "hidden",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-        }}
-      >
+    <div style={styles.page}>
+      <div style={styles.container}>
+        <header style={styles.header}>
+          <div>
+            <div style={styles.brand}>
+              INTERNATIONAL FRENCH ACADEMY
+            </div>
+
+            <h1
+              style={
+                styles.mainTitle
+              }
+            >
+              Test de compréhension
+              orale
+            </h1>
+
+            <p
+              style={
+                styles.subtitle
+              }
+            >
+              Évaluez votre niveau
+              de compréhension du
+              français.
+            </p>
+          </div>
+
+          <div
+            style={
+              styles.timerBox
+            }
+          >
+            <span
+              style={
+                styles.timerLabel
+              }
+            >
+              TEMPS RESTANT
+            </span>
+
+            <strong
+              style={{
+                ...styles.timer,
+
+                ...(timeLeft <=
+                5 * 60 * 1000
+                  ? styles.timerWarning
+                  : {}),
+              }}
+            >
+              {formatTime(
+                timeLeft
+              )}
+            </strong>
+          </div>
+        </header>
+
         <div
-          style={{
-            padding: "25px 30px",
-            borderBottom: "1px solid #e5ded3",
-            background: "#ffffff",
-          }}
+          style={
+            styles.securityNotice
+          }
+        >
+          🔒 Ne quittez pas la
+          fenêtre du test. Un
+          deuxième changement de
+          fenêtre ou d'onglet
+          entraîne la fin
+          automatique du test.
+        </div>
+
+        <div
+          style={
+            styles.answerNotice
+          }
+        >
+          🔒 Une fois votre réponse
+          sélectionnée, elle ne peut
+          plus être modifiée.
+        </div>
+
+        <main
+          style={
+            styles.testCard
+          }
         >
           <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: "20px",
-              flexWrap: "wrap",
-            }}
+            style={
+              styles.questionHeader
+            }
           >
             <div>
-              <img
-                src="/IFA logo.jpg"
-                alt="International French Academy"
-                style={{
-                  width: "150px",
-                  maxWidth: "100%",
-                  borderRadius: "8px",
-                }}
-              />
-
-              <div
-                style={{
-                  marginTop: "15px",
-                  fontSize: "13px",
-                  fontWeight: "700",
-                  letterSpacing: "1.5px",
-                  color: "#c9a84c",
-                }}
+              <span
+                style={
+                  styles.questionNumber
+                }
               >
-                COMPRÉHENSION ORALE
-              </div>
-
-              <h1
-                style={{
-                  margin: "5px 0 0",
-                  color: "#0d1b2a",
-                  fontFamily:
-                    "Playfair Display, Georgia, serif",
-                  fontSize: "30px",
-                }}
-              >
-                Test de niveau
-              </h1>
-            </div>
-
-            <div
-              style={{
-                background:
-                  timeLeft <= 300
-                    ? "#fff0f0"
-                    : "#f8f4ee",
-                border:
-                  timeLeft <= 300
-                    ? "1px solid #e6aaaa"
-                    : "1px solid #e5ded3",
-                borderRadius: "12px",
-                padding: "12px 18px",
-                textAlign: "center",
-                minWidth: "115px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#777",
-                  marginBottom: "4px",
-                }}
-              >
-                TEMPS RESTANT
-              </div>
-
-              <strong
-                style={{
-                  fontSize: "22px",
-                  color:
-                    timeLeft <= 300
-                      ? "#b42318"
-                      : "#0d1b2a",
-                }}
-              >
-                {formatTime(timeLeft)}
-              </strong>
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            padding: "20px 30px 0",
-            background: "#ffffff",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontSize: "14px",
-              color: "#666",
-              marginBottom: "8px",
-            }}
-          >
-            <span>
-              Question {current + 1} sur {questions.length}
-            </span>
-
-            <span>
-              Niveau {question.level}
-            </span>
-          </div>
-
-          <div
-            style={{
-              height: "8px",
-              background: "#e5ded3",
-              borderRadius: "10px",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                width: `${progress}%`,
-                height: "100%",
-                background: "#c9a84c",
-                borderRadius: "10px",
-                transition: "width 0.3s ease",
-              }}
-            />
-          </div>
-        </div>
-                <div
-          style={{
-            padding: "30px",
-          }}
-        >
-          <div
-            style={{
-              background: "#ffffff",
-              border: "1px solid #e5ded3",
-              borderRadius: "16px",
-              padding: "25px",
-              marginBottom: "25px",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: "15px",
-                flexWrap: "wrap",
-                marginBottom: "20px",
-              }}
-            >
-              <h2
-                style={{
-                  margin: 0,
-                  color: "#0d1b2a",
-                  fontSize: "21px",
-                  fontFamily:
-                    "Playfair Display, Georgia, serif",
-                  lineHeight: "1.4",
-                }}
-              >
-                {question.question}
-              </h2>
+                Question{" "}
+                {current + 1} sur{" "}
+                {questions.length}
+              </span>
 
               <span
-                style={{
-                  background: "#0d1b2a",
-                  color: "#ffffff",
-                  borderRadius: "20px",
-                  padding: "7px 13px",
-                  fontSize: "12px",
-                  fontWeight: "700",
-                  whiteSpace: "nowrap",
-                }}
+                style={
+                  styles.level
+                }
               >
-                {question.level}
+                Niveau{" "}
+                {currentQuestion.level}
               </span>
             </div>
 
-            <button
-              type="button"
-              onClick={playAudio}
-              style={{
-                width: "100%",
-                border: "none",
-                borderRadius: "14px",
-                padding: "18px",
-                background: "#0d1b2a",
-                color: "#ffffff",
-                fontSize: "16px",
-                fontWeight: "700",
-                cursor: "pointer",
-                marginBottom: "25px",
-              }}
-            >
-              🔊 Écouter l'audio
-            </button>
-
             <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: "12px",
-              }}
+              style={
+                styles.progressText
+              }
             >
-              {question.choices.map((choice, index) => {
-                const isSelected = selected === index;
-                const isCorrect =
-                  index === question.correctAnswer;
-
-                let background = "#ffffff";
-                let border = "1px solid #d8d2c8";
-                let textColor = "#333";
-
-                if (selected !== null) {
-                  if (isSelected && isCorrect) {
-                    background = "#e8f5e9";
-                    border = "2px solid #43a047";
-                    textColor = "#2e7d32";
-                  } else if (isSelected && !isCorrect) {
-                    background = "#ffebee";
-                    border = "2px solid #e53935";
-                    textColor = "#c62828";
-                  } else if (isCorrect) {
-                    background = "#f1f8e9";
-                    border = "2px solid #81c784";
-                    textColor = "#388e3c";
-                  }
-                }
-
-                return (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => chooseAnswer(index)}
-                    disabled={selected !== null}
-                    style={{
-                      textAlign: "left",
-                      border,
-                      borderRadius: "12px",
-                      padding: "16px",
-                      background,
-                      color: textColor,
-                      fontSize: "15px",
-                      fontWeight: "600",
-                      cursor:
-                        selected !== null
-                          ? "default"
-                          : "pointer",
-                      transition:
-                        "all 0.2s ease",
-                    }}
-                  >
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: "30px",
-                        height: "30px",
-                        borderRadius: "50%",
-                        background:
-                          selected !== null &&
-                          index === question.correctAnswer
-                            ? "#c9a84c"
-                            : "#f0ebe3",
-                        color: "#0d1b2a",
-                        fontWeight: "700",
-                        marginRight: "10px",
-                      }}
-                    >
-                      {String.fromCharCode(65 + index)}
-                    </span>
-
-                    {choice}
-                  </button>
-                );
-              })}
+              {Math.round(
+                ((current + 1) /
+                  questions.length) *
+                  100
+              )}
+              %
             </div>
           </div>
 
-          {selected !== null && (
+          <div
+            style={
+              styles.progressBar
+            }
+          >
             <div
               style={{
-                background:
-                  selected === question.correctAnswer
-                    ? "#e8f5e9"
-                    : "#fff3cd",
-                border:
-                  selected === question.correctAnswer
-                    ? "1px solid #a5d6a7"
-                    : "1px solid #e5d08a",
-                borderRadius: "12px",
-                padding: "15px 18px",
-                marginBottom: "20px",
-                color:
-                  selected === question.correctAnswer
-                    ? "#2e7d32"
-                    : "#856404",
-                fontSize: "14px",
-                lineHeight: "1.5",
-              }}
-            >
-              {selected === question.correctAnswer ? (
-                <strong>✓ Bonne réponse !</strong>
-              ) : (
-                <>
-                  <strong>Réponse incorrecte.</strong>
-                  <br />
-                  La bonne réponse est :{" "}
-                  {question.choices[question.correctAnswer]}
-                </>
-              )}
-            </div>
-          )}
+                ...styles.progressFill,
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-            }}
+                width: `${
+                  ((current + 1) /
+                    questions.length) *
+                  100
+                }%`,
+              }}
+            />
+          </div>
+
+          <section
+            style={
+              styles.audioSection
+            }
           >
             <button
               type="button"
-              onClick={nextQuestion}
-              disabled={selected === null}
-              style={{
-                border: "none",
-                borderRadius: "12px",
-                padding: "15px 28px",
-                background:
-                  selected === null
-                    ? "#d7d1c8"
-                    : "#c9a84c",
-                color:
-                  selected === null
-                    ? "#888"
-                    : "#0d1b2a",
-                fontSize: "15px",
-                fontWeight: "700",
-                cursor:
-                  selected === null
-                    ? "not-allowed"
-                    : "pointer",
-                minWidth: "180px",
-              }}
+              style={
+                isPlaying
+                  ? styles.audioButtonPlaying
+                  : styles.audioButton
+              }
+              onClick={() =>
+                playAudio(
+                  currentQuestion.audio
+                )
+              }
             >
-              {current === questions.length - 1
-                ? "Terminer le test"
-                : "Question suivante →"}
+              {isPlaying
+                ? "⏸ Lecture..."
+                : "▶ Écouter l'audio"}
             </button>
-          </div>
-        </div>
 
-        <div
-          style={{
-            padding: "18px 30px",
-            background: "#0d1b2a",
-            color: "#ffffff",
-            textAlign: "center",
-            fontSize: "12px",
-            lineHeight: "1.5",
-          }}
+            {audioError && (
+              <p
+                style={
+                  styles.audioError
+                }
+              >
+                Impossible de lire
+                l'audio. Vérifiez
+                votre connexion ou
+                réessayez.
+              </p>
+            )}
+          </section>
+
+          <section
+            style={
+              styles.questionSection
+            }
+          >
+            <div
+              style={
+                styles.questionLabel
+              }
+            >
+              Question{" "}
+              {current + 1}
+            </div>
+
+            <h2
+              style={
+                styles.question
+              }
+            >
+              {
+                currentQuestion.question
+              }
+            </h2>
+
+            <div
+              style={
+                styles.choices
+              }
+            >
+              {currentQuestion.choices.map(
+                (
+                  choice,
+                  index
+                ) => {
+                  const isSelected =
+                    selected ===
+                    choice;
+
+                  return (
+                    <button
+                      key={choice}
+                      type="button"
+                      disabled={
+                        answerLocked
+                      }
+                      onClick={() =>
+                        handleSelectAnswer(
+                          choice
+                        )
+                      }
+                      style={{
+                        ...styles.choice,
+
+                        ...(isSelected
+                          ? styles.choiceSelected
+                          : {}),
+
+                        ...(answerLocked
+                          ? styles.choiceLocked
+                          : {}),
+                      }}
+                    >
+                      <span
+                        style={
+                          styles.choiceLetter
+                        }
+                      >
+                        {String.fromCharCode(
+                          65 +
+                            index
+                        )}
+                      </span>
+
+                      <span>
+                        {choice}
+                      </span>
+
+                      {isSelected && (
+                        <span
+                          style={
+                            styles.lockIcon
+                          }
+                        >
+                          🔒
+                        </span>
+                      )}
+                    </button>
+                  );
+                }
+              )}
+            </div>
+
+            {answerLocked && (
+              <div
+                style={
+                  styles.lockedMessage
+                }
+              >
+                ✓ Réponse enregistrée
+                et verrouillée. Vous ne
+                pouvez plus la modifier.
+              </div>
+            )}
+          </section>
+
+          <div
+            style={
+              styles.navigation
+            }
+          >
+            {current <
+            questions.length - 1 ? (
+              <button
+                type="button"
+                onClick={
+                  handleNext
+                }
+                disabled={
+                  !answerLocked
+                }
+                style={{
+                  ...styles.primaryButton,
+
+                  ...(!answerLocked
+                    ? styles.disabledButton
+                    : {}),
+                }}
+              >
+                Question suivante →
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={
+                  handleFinish
+                }
+                disabled={
+                  !answerLocked
+                }
+                style={{
+                  ...styles.finishButton,
+
+                  ...(!answerLocked
+                    ? styles.disabledButton
+                    : {}),
+                }}
+              >
+                Terminer le test ✓
+              </button>
+            )}
+          </div>
+        </main>
+
+        <footer
+          style={
+            styles.footer
+          }
         >
-          International French Academy — Kigali, Rwanda
-        </div>
+          International French Academy —
+          Kigali, Rwanda
+        </footer>
       </div>
     </div>
   );
 }
+
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: "#f8f4ee",
+    padding: "30px 20px",
+    boxSizing: "border-box",
+    fontFamily:
+      '"DM Sans", Arial, sans-serif',
+    color: "#0d1b2a",
+  },
+
+  container: {
+    maxWidth: "1000px",
+    margin: "0 auto",
+  },
+
+  card: {
+    maxWidth: "700px",
+    margin: "60px auto",
+    background: "#ffffff",
+    padding: "45px",
+    borderRadius: "18px",
+    boxShadow:
+      "0 10px 35px rgba(13, 27, 42, 0.10)",
+    textAlign: "center",
+  },
+
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: "25px",
+    marginBottom: "20px",
+  },
+
+  brand: {
+    fontSize: "13px",
+    fontWeight: "700",
+    letterSpacing: "1.5px",
+    marginBottom: "12px",
+  },
+
+  title: {
+    fontFamily:
+      '"Playfair Display", Georgia, serif',
+    fontSize: "22px",
+    marginBottom: "25px",
+  },
+
+  mainTitle: {
+    fontFamily:
+      '"Playfair Display", Georgia, serif',
+    fontSize: "34px",
+    margin: 0,
+    lineHeight: 1.2,
+  },
+
+  subtitle: {
+    marginTop: "10px",
+    fontSize: "16px",
+    opacity: 0.75,
+  },
+
+  heading: {
+    fontFamily:
+      '"Playfair Display", Georgia, serif',
+    fontSize: "28px",
+    marginBottom: "20px",
+  },
+
+  timerBox: {
+    minWidth: "150px",
+    background: "#ffffff",
+    borderRadius: "12px",
+    padding: "14px 18px",
+    textAlign: "center",
+    boxShadow:
+      "0 5px 20px rgba(13, 27, 42, 0.08)",
+  },
+
+  timerLabel: {
+    display: "block",
+    fontSize: "11px",
+    fontWeight: "700",
+    letterSpacing: "1px",
+    marginBottom: "5px",
+  },
+
+  timer: {
+    fontSize: "25px",
+    fontWeight: "800",
+  },
+
+  timerWarning: {
+    color: "#b42318",
+  },
+
+  securityNotice: {
+    background: "#fff8e7",
+    border: "1px solid #e7d39a",
+    borderRadius: "10px",
+    padding: "12px 15px",
+    marginBottom: "10px",
+    fontSize: "14px",
+    fontWeight: "600",
+  },
+
+  answerNotice: {
+    background: "#f1f5f9",
+    border: "1px solid #d8dee6",
+    borderRadius: "10px",
+    padding: "12px 15px",
+    marginBottom: "20px",
+    fontSize: "14px",
+    fontWeight: "600",
+  },
+
+  testCard: {
+    background: "#ffffff",
+    borderRadius: "18px",
+    padding: "30px",
+    boxShadow:
+      "0 10px 35px rgba(13, 27, 42, 0.08)",
+  },
+
+  questionHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "12px",
+  },
+
+  questionNumber: {
+    display: "inline-block",
+    fontWeight: "800",
+    fontSize: "18px",
+    marginRight: "15px",
+  },
+
+  level: {
+    display: "inline-block",
+    background: "#0d1b2a",
+    color: "#ffffff",
+    padding: "5px 10px",
+    borderRadius: "20px",
+    fontSize: "12px",
+    fontWeight: "700",
+  },
+
+  progressText: {
+    fontSize: "13px",
+    fontWeight: "700",
+  },
+
+  progressBar: {
+    height: "7px",
+    background: "#e6e1d8",
+    borderRadius: "10px",
+    overflow: "hidden",
+    marginBottom: "30px",
+  },
+
+  progressFill: {
+    height: "100%",
+    background: "#c9a84c",
+    transition: "width 0.3s ease",
+  },
+
+  audioSection: {
+    marginBottom: "30px",
+    textAlign: "center",
+  },
+
+  audioButton: {
+    border: "none",
+    background: "#0d1b2a",
+    color: "#ffffff",
+    padding: "14px 25px",
+    borderRadius: "10px",
+    fontSize: "15px",
+    fontWeight: "700",
+    cursor: "pointer",
+  },
+
+  audioButtonPlaying: {
+    border: "none",
+    background: "#c9a84c",
+    color: "#0d1b2a",
+    padding: "14px 25px",
+    borderRadius: "10px",
+    fontSize: "15px",
+    fontWeight: "700",
+    cursor: "pointer",
+  },
+
+  audioError: {
+    color: "#b42318",
+    marginTop: "12px",
+    fontSize: "14px",
+  },
+
+  questionSection: {
+    marginBottom: "30px",
+  },
+
+  questionLabel: {
+    fontSize: "13px",
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: "1px",
+    marginBottom: "8px",
+    opacity: 0.65,
+  },
+
+  question: {
+    fontFamily:
+      '"Playfair Display", Georgia, serif',
+    fontSize: "27px",
+    lineHeight: 1.35,
+    marginTop: 0,
+    marginBottom: "25px",
+  },
+
+  choices: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+  },
+
+  choice: {
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+    textAlign: "left",
+    background: "#ffffff",
+    border: "1px solid #d8d3ca",
+    borderRadius: "10px",
+    padding: "15px",
+    cursor: "pointer",
+    fontSize: "16px",
+  },
+
+  choiceSelected: {
+  border: "2px solid #c9a84c",
+  background: "#c9a84c",
+  color: "#0d1b2a",
+  fontWeight: "700",
+},
+
+  choiceLocked: {
+    cursor: "not-allowed",
+  },
+
+  choiceLetter: {
+    minWidth: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#0d1b2a",
+    color: "#ffffff",
+    fontWeight: "800",
+  },
+
+  lockIcon: {
+    marginLeft: "auto",
+    fontSize: "15px",
+  },
+
+  lockedMessage: {
+    marginTop: "15px",
+    background: "#f1f8f3",
+    border: "1px solid #b8d8c0",
+    borderRadius: "9px",
+    padding: "12px 15px",
+    fontSize: "14px",
+    fontWeight: "700",
+  },
+
+  navigation: {
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "15px",
+    marginTop: "30px",
+  },
+
+  primaryButton: {
+    border: "none",
+    background: "#0d1b2a",
+    color: "#ffffff",
+    padding: "13px 22px",
+    borderRadius: "9px",
+    fontSize: "15px",
+    fontWeight: "700",
+    cursor: "pointer",
+  },
+
+  finishButton: {
+    border: "none",
+    background: "#c9a84c",
+    color: "#0d1b2a",
+    padding: "13px 22px",
+    borderRadius: "9px",
+    fontSize: "15px",
+    fontWeight: "800",
+    cursor: "pointer",
+  },
+
+  disabledButton: {
+    opacity: 0.45,
+    cursor: "not-allowed",
+  },
+
+  loading: {
+    fontSize: "17px",
+  },
+
+  messageBox: {
+    background: "#fff8e7",
+    border:
+      "1px solid #e7d39a",
+    borderRadius: "10px",
+    padding: "18px",
+    marginBottom: "25px",
+    lineHeight: 1.5,
+  },
+
+  warningBox: {
+    background: "#fff8e7",
+    border:
+      "1px solid #e7d39a",
+    borderRadius: "10px",
+    padding: "15px",
+    margin: "20px 0",
+    fontWeight: "600",
+  },
+
+  resultText: {
+    fontSize: "16px",
+    lineHeight: 1.6,
+  },
+
+  scoreBox: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    background: "#f8f4ee",
+    borderRadius: "12px",
+    padding: "20px",
+    margin: "25px 0",
+    fontSize: "20px",
+  },
+
+  successIcon: {
+    fontSize: "50px",
+    marginBottom: "15px",
+  },
+
+  dangerIcon: {
+    fontSize: "50px",
+    marginBottom: "15px",
+  },
+
+  footer: {
+    textAlign: "center",
+    marginTop: "25px",
+    fontSize: "13px",
+    opacity: 0.65,
+  },
+};

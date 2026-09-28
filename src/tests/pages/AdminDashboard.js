@@ -1169,7 +1169,7 @@ export default function AdminDashboard() {
                   <div style={styles.summaryCard}>
                     <div>
                       <div style={styles.summaryLabel}>
-                        PERFORMANCE EN COMPRÉHENSION
+                        PERFORMANCE AUX TESTS
                       </div>
 
                       <div style={styles.summaryScore}>
@@ -1270,7 +1270,7 @@ export default function AdminDashboard() {
                         </div>
 
                         <h3 style={styles.resultTitle}>
-                          Compréhension écrite
+                          Examen de français
                         </h3>
                       </div>
 

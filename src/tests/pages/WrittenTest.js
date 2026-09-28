@@ -2,353 +2,719 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 
+/*
+ * =========================================================
+ * EXAMEN DE FRANÇAIS — 50 QUESTIONS
+ * Compréhension écrite / Grammaire
+ * =========================================================
+ *
+ * One attempt only.
+ * 30 minutes.
+ * First tab switch = warning.
+ * Second tab switch = automatic termination with 0.
+ */
+
 const questions = [
+  /*
+   * =======================================================
+   * I. LES VERBES AU PRÉSENT — QUESTIONS 1 À 8
+   * =======================================================
+   */
+
   {
     id: 1,
+    section: "Les verbes au présent",
     level: "A1",
-    text: "Bonjour, je m'appelle Marie. J'habite à Kigali.",
-    question: "Où habite Marie ?",
-    choices: [
-      "À Paris",
-      "À Kigali",
-      "À Nairobi",
-      "À Bruxelles",
-    ],
-    correctAnswer: 1,
+    instruction:
+      "Conjugue le verbe entre parenthèses au présent.",
+    text: "Je __________ au marché tous les samedis. (aller)",
+    acceptedAnswers: ["vais"],
   },
 
   {
     id: 2,
+    section: "Les verbes au présent",
     level: "A1",
-    text: "Le cours commence à huit heures.",
-    question: "À quelle heure commence le cours ?",
-    choices: [
-      "À sept heures",
-      "À huit heures",
-      "À neuf heures",
-      "À dix heures",
-    ],
-    correctAnswer: 1,
+    instruction:
+      "Conjugue le verbe entre parenthèses au présent.",
+    text: "Nous __________ le français à l’école. (étudier)",
+    acceptedAnswers: ["étudions", "etudions"],
   },
 
   {
     id: 3,
+    section: "Les verbes au présent",
     level: "A1",
-    text: "Paul aime le café, mais il n'aime pas le thé.",
-    question: "Qu'est-ce que Paul n'aime pas ?",
-    choices: [
-      "Le café",
-      "Le lait",
-      "Le thé",
-      "Le jus",
-    ],
-    correctAnswer: 2,
+    instruction:
+      "Conjugue le verbe entre parenthèses au présent.",
+    text: "Ils __________ souvent au football. (jouer)",
+    acceptedAnswers: ["jouent"],
   },
 
   {
     id: 4,
+    section: "Les verbes au présent",
     level: "A1",
-    text: "La bibliothèque est ouverte du lundi au vendredi.",
-    question: "Quand la bibliothèque est-elle ouverte ?",
-    choices: [
-      "Seulement le samedi",
-      "Du lundi au vendredi",
-      "Le dimanche uniquement",
-      "Tous les jours",
-    ],
-    correctAnswer: 1,
+    instruction:
+      "Conjugue le verbe entre parenthèses au présent.",
+    text: "Tu __________ un livre intéressant. (lire)",
+    acceptedAnswers: ["lis"],
   },
 
   {
     id: 5,
+    section: "Les verbes au présent",
     level: "A1",
-    text: "Sophie va au marché pour acheter des légumes.",
-    question: "Pourquoi Sophie va-t-elle au marché ?",
-    choices: [
-      "Pour acheter des vêtements",
-      "Pour rencontrer son professeur",
-      "Pour acheter des légumes",
-      "Pour prendre le bus",
-    ],
-    correctAnswer: 2,
+    instruction:
+      "Conjugue le verbe entre parenthèses au présent.",
+    text: "Elle __________ une belle chanson. (chanter)",
+    acceptedAnswers: ["chante"],
   },
 
   {
     id: 6,
-    level: "A2",
-    text:
-      "Cher Paul,\n\nJe t'invite à mon anniversaire samedi prochain. La fête commencera à 15 heures chez moi. Tu peux venir avec ton frère.\n\nÀ bientôt,\nJean",
-    question: "À quelle heure commence la fête ?",
-    choices: [
-      "À 13 heures",
-      "À 14 heures",
-      "À 15 heures",
-      "À 16 heures",
-    ],
-    correctAnswer: 2,
+    section: "Les verbes au présent",
+    level: "A1",
+    instruction:
+      "Conjugue le verbe entre parenthèses au présent.",
+    text: "Vous __________ très bien français. (parler)",
+    acceptedAnswers: ["parlez"],
   },
 
   {
     id: 7,
-    level: "A2",
-    text:
-      "Le bus pour le centre-ville part toutes les trente minutes. Le premier bus part à 6 h 30 et le dernier à 20 h.",
-    question: "À quelle heure part le dernier bus ?",
-    choices: [
-      "18 h",
-      "19 h",
-      "20 h",
-      "20 h 30",
-    ],
-    correctAnswer: 2,
+    section: "Les verbes au présent",
+    level: "A1",
+    instruction:
+      "Complète la phrase avec le verbe faire au présent.",
+    text: "Je __________ mes devoirs chaque soir.",
+    acceptedAnswers: ["fais"],
   },
 
   {
     id: 8,
-    level: "A2",
-    text:
-      "Nous avons prévu de faire une promenade dimanche matin, mais la météo annonce de fortes pluies. Nous allons donc rester à la maison et regarder un film.",
-    question: "Pourquoi changent-ils leur programme ?",
-    choices: [
-      "Parce qu'ils sont fatigués",
-      "Parce qu'il va beaucoup pleuvoir",
-      "Parce qu'ils travaillent",
-      "Parce que le cinéma est fermé",
-    ],
-    correctAnswer: 1,
+    section: "Les verbes au présent",
+    level: "A1",
+    instruction:
+      "Complète la phrase avec le verbe voir au présent.",
+    text: "Nous __________ nos amis tous les jours.",
+    acceptedAnswers: ["voyons"],
   },
+
+  /*
+   * =======================================================
+   * II. LE PASSÉ COMPOSÉ — QUESTIONS 9 À 16
+   * =======================================================
+   */
 
   {
     id: 9,
-    level: "B1",
-    text:
-      "Depuis quelques mois, Aline travaille à distance trois jours par semaine. Elle apprécie cette organisation parce qu'elle passe moins de temps dans les transports. Cependant, elle trouve parfois difficile de séparer sa vie professionnelle de sa vie personnelle.",
-    question:
-      "Quel est l'un des avantages du travail à distance pour Aline ?",
-    choices: [
-      "Elle travaille moins d'heures.",
-      "Elle gagne davantage d'argent.",
-      "Elle passe moins de temps dans les transports.",
-      "Elle rencontre davantage de collègues.",
-    ],
-    correctAnswer: 2,
+    section: "Le passé composé",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au passé composé.",
+    text: "Hier, j’__________ un film. (regarder)",
+    acceptedAnswers: ["ai regardé", "ai regarde"],
   },
 
   {
     id: 10,
-    level: "B1",
-    text:
-      "La ville souhaite encourager les habitants à utiliser davantage le vélo. Elle prévoit donc de construire de nouvelles pistes cyclables et d'installer plusieurs parkings sécurisés près des stations de transport public.",
-    question:
-      "Quel est l'objectif principal de la ville ?",
-    choices: [
-      "Réduire les transports publics",
-      "Encourager l'utilisation du vélo",
-      "Construire de nouvelles routes",
-      "Fermer les stations de transport",
-    ],
-    correctAnswer: 1,
+    section: "Le passé composé",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au passé composé.",
+    text: "Elle __________ à Kigali hier matin. (arriver)",
+    acceptedAnswers: ["est arrivée", "est arrivee"],
   },
 
   {
     id: 11,
-    level: "B1",
-    text:
-      "Après son diplôme, Karim a choisi de faire un stage dans une petite entreprise plutôt que de chercher immédiatement un emploi dans une grande société. Il voulait découvrir plusieurs aspects du fonctionnement d'une entreprise et acquérir une expérience pratique.",
-    question:
-      "Pourquoi Karim a-t-il choisi cette petite entreprise ?",
-    choices: [
-      "Parce qu'elle était plus proche de chez lui",
-      "Parce qu'il voulait gagner beaucoup d'argent",
-      "Parce qu'il voulait acquérir une expérience variée",
-      "Parce qu'il ne voulait pas travailler",
-    ],
-    correctAnswer: 2,
+    section: "Le passé composé",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au passé composé.",
+    text: "Nous __________ nos devoirs. (terminer)",
+    acceptedAnswers: ["avons terminé", "avons termine"],
   },
 
   {
     id: 12,
-    level: "B1",
-    text:
-      "De nombreux étudiants utilisent des applications pour organiser leur travail. Ces outils permettent de créer des listes de tâches, de programmer des rappels et de suivre les progrès réalisés. Toutefois, une application ne remplace pas une bonne organisation personnelle.",
-    question:
-      "Selon le texte, que permettent notamment ces applications ?",
-    choices: [
-      "De supprimer toutes les tâches",
-      "De programmer des rappels",
-      "De remplacer les enseignants",
-      "De travailler sans planification",
-    ],
-    correctAnswer: 1,
+    section: "Le passé composé",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au passé composé.",
+    text: "Ils __________ au marché dimanche dernier. (aller)",
+    acceptedAnswers: ["sont allés", "sont alles"],
   },
 
   {
     id: 13,
-    level: "B2",
-    text:
-      "Le développement des espaces de coworking répond à une transformation du monde professionnel. Ces lieux permettent à des travailleurs indépendants, à des entrepreneurs et parfois à des salariés de partager un environnement de travail. Au-delà des économies liées aux infrastructures, ils favorisent les rencontres et les collaborations.",
-    question:
-      "Quel avantage supplémentaire des espaces de coworking est mentionné ?",
-    choices: [
-      "Ils garantissent un emploi à leurs utilisateurs.",
-      "Ils favorisent les collaborations.",
-      "Ils remplacent les universités.",
-      "Ils réduisent automatiquement les horaires de travail.",
-    ],
-    correctAnswer: 1,
+    section: "Le passé composé",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au passé composé.",
+    text: "Tu __________ ton petit-déjeuner ? (prendre)",
+    acceptedAnswers: ["as pris"],
   },
 
   {
     id: 14,
-    level: "B2",
-    text:
-      "Certaines entreprises mettent en place une semaine de quatre jours. L'objectif n'est pas nécessairement de réduire la quantité de travail, mais de réorganiser les horaires afin d'améliorer l'équilibre entre vie professionnelle et vie personnelle. Les premiers résultats observés dans certaines organisations montrent une satisfaction accrue des employés, même si cette organisation ne convient pas à tous les secteurs.",
-    question:
-      "Quelle idée principale ressort du texte ?",
-    choices: [
-      "La semaine de quatre jours convient à toutes les entreprises.",
-      "Les employés doivent travailler moins.",
-      "La semaine de quatre jours peut améliorer l'équilibre de vie, mais ses effets dépendent du contexte.",
-      "Toutes les entreprises vont bientôt fermer.",
-    ],
-    correctAnswer: 2,
+    section: "Le passé composé",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au passé composé.",
+    text: "Marie __________ une lettre à sa mère. (écrire)",
+    acceptedAnswers: ["a écrit", "a ecrit"],
   },
 
   {
     id: 15,
-    level: "B2",
-    text:
-      "Les réseaux sociaux ont profondément modifié la manière dont les informations circulent. Leur rapidité permet de suivre presque immédiatement un événement, mais cette même rapidité peut favoriser la diffusion de contenus inexacts. Vérifier l'origine d'une information et consulter plusieurs sources devient donc essentiel.",
-    question:
-      "Quelle précaution est recommandée dans le texte ?",
-    choices: [
-      "Partager rapidement toutes les informations",
-      "Ne consulter qu'une seule source",
-      "Vérifier l'origine et comparer plusieurs sources",
-      "Éviter complètement Internet",
+    section: "Le passé composé",
+    level: "A2",
+    instruction:
+      "Mets toute la phrase au passé composé.",
+    text: "Je mange une pomme.",
+    acceptedAnswers: [
+      "j'ai mangé une pomme",
+      "j'ai mange une pomme",
     ],
-    correctAnswer: 2,
   },
 
   {
     id: 16,
-    level: "C1",
-    text:
-      "La généralisation du télétravail ne constitue pas simplement une évolution technologique. Elle remet en question certaines habitudes organisationnelles, notamment la place accordée à la présence physique. Si les outils numériques permettent de maintenir une partie des échanges, ils ne reproduisent pas nécessairement toutes les interactions informelles qui contribuent à la cohésion d'une équipe.",
-    question:
-      "Quelle limite du télétravail est principalement soulignée ?",
-    choices: [
-      "L'impossibilité d'utiliser des outils numériques",
-      "La disparition de toute communication professionnelle",
-      "La difficulté à reproduire certaines interactions informelles",
-      "L'augmentation obligatoire du temps de transport",
+    section: "Le passé composé",
+    level: "A2",
+    instruction:
+      "Mets toute la phrase au passé composé.",
+    text: "Nous allons à l’école.",
+    acceptedAnswers: [
+      "nous sommes allés à l'école",
+      "nous sommes alles a l'ecole",
     ],
-    correctAnswer: 2,
   },
+
+  /*
+   * =======================================================
+   * III. LE FUTUR SIMPLE — QUESTIONS 17 À 23
+   * =======================================================
+   */
 
   {
     id: 17,
-    level: "C1",
-    text:
-      "Dans les débats sur l'intelligence artificielle, l'attention se concentre souvent sur ses capacités techniques. Pourtant, l'enjeu ne réside pas uniquement dans ce que ces systèmes peuvent accomplir, mais également dans les conditions de leur utilisation. La transparence des décisions automatisées, la protection des données et la responsabilité des utilisateurs constituent ainsi des questions centrales.",
-    question:
-      "Selon le texte, quels éléments sont également essentiels ?",
-    choices: [
-      "Uniquement la vitesse des systèmes",
-      "Les conditions d'utilisation et les responsabilités associées",
-      "La suppression des données personnelles",
-      "La limitation de toutes les technologies",
-    ],
-    correctAnswer: 1,
+    section: "Le futur simple",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au futur simple.",
+    text: "Demain, je __________ mes grands-parents. (visiter)",
+    acceptedAnswers: ["visiterai"],
   },
 
   {
     id: 18,
-    level: "C1",
-    text:
-      "L'accès croissant à l'information ne garantit pas nécessairement une meilleure compréhension du monde. La multiplication des contenus peut au contraire rendre plus difficile la distinction entre une analyse argumentée, une opinion personnelle et une information vérifiée. Dans ce contexte, l'esprit critique devient une compétence indispensable.",
-    question:
-      "Quelle conclusion peut-on tirer du texte ?",
-    choices: [
-      "Plus d'informations signifie toujours une meilleure compréhension.",
-      "L'information n'a aucune utilité.",
-      "La capacité à évaluer les informations est devenue particulièrement importante.",
-      "Les opinions personnelles doivent être interdites.",
-    ],
-    correctAnswer: 2,
+    section: "Le futur simple",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au futur simple.",
+    text: "Nous __________ nos examens la semaine prochaine. (passer)",
+    acceptedAnswers: ["passerons"],
   },
 
   {
     id: 19,
-    level: "C2",
-    text:
-      "La transformation numérique des services publics est souvent présentée comme un moyen de simplifier les démarches administratives. Si elle peut effectivement réduire certains délais et faciliter l'accès à l'information, elle risque aussi d'accentuer les difficultés rencontrées par les personnes peu familières avec les outils numériques. Une politique de numérisation efficace doit donc s'accompagner de solutions permettant de maintenir un accès équitable aux services.",
-    question:
-      "Quelle position le texte défend-il principalement ?",
-    choices: [
-      "La numérisation doit remplacer tous les services physiques.",
-      "La numérisation est toujours négative.",
-      "La numérisation peut être utile, mais elle doit préserver l'accès équitable aux services.",
-      "Les outils numériques doivent être interdits.",
-    ],
-    correctAnswer: 2,
+    section: "Le futur simple",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au futur simple.",
+    text: "Elle __________ médecin plus tard. (être)",
+    acceptedAnswers: ["sera"],
   },
 
   {
     id: 20,
-    level: "C2",
-    text:
-      "Face aux changements environnementaux, les politiques publiques sont parfois évaluées uniquement à partir de leurs résultats immédiats. Une telle approche peut cependant négliger les effets à long terme et les conséquences indirectes de certaines décisions. Une politique réellement durable suppose donc d'articuler les impératifs présents avec les intérêts des générations futures.",
-    question:
-      "Quelle idée centrale est exprimée ?",
-    choices: [
-      "Les résultats immédiats sont toujours les plus importants.",
-      "Les politiques publiques doivent tenir compte des effets à long terme.",
-      "Les générations futures ne doivent pas intervenir dans les décisions.",
-      "Les politiques environnementales sont inutiles.",
+    section: "Le futur simple",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au futur simple.",
+    text: "Ils __________ une nouvelle maison. (acheter)",
+    acceptedAnswers: ["achèteront", "acheteront"],
+  },
+
+  {
+    id: 21,
+    section: "Le futur simple",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au futur simple.",
+    text: "Tu __________ beaucoup de choses demain. (apprendre)",
+    acceptedAnswers: ["apprendras"],
+  },
+
+  {
+    id: 22,
+    section: "Le futur simple",
+    level: "A2",
+    instruction:
+      "Conjugue le verbe venir au futur simple.",
+    text: "Vous __________ demain matin.",
+    acceptedAnswers: ["viendrez"],
+  },
+
+  {
+    id: 23,
+    section: "Le futur simple",
+    level: "A2",
+    instruction:
+      "Mets toute la phrase au futur simple.",
+    text: "Je fais mes devoirs.",
+    acceptedAnswers: ["je ferai mes devoirs"],
+  },
+
+  /*
+   * =======================================================
+   * IV. LE FUTUR PROCHE — QUESTIONS 24 À 29
+   * =======================================================
+   */
+
+  {
+    id: 24,
+    section: "Le futur proche",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au futur proche.",
+    text: "Je __________ manger maintenant. (manger)",
+    acceptedAnswers: ["vais manger"],
+  },
+
+  {
+    id: 25,
+    section: "Le futur proche",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au futur proche.",
+    text: "Nous __________ regarder un film ce soir. (regarder)",
+    acceptedAnswers: ["allons regarder"],
+  },
+
+  {
+    id: 26,
+    section: "Le futur proche",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au futur proche.",
+    text: "Elle __________ une nouvelle robe. (acheter)",
+    acceptedAnswers: ["va acheter"],
+  },
+
+  {
+    id: 27,
+    section: "Le futur proche",
+    level: "A2",
+    instruction:
+      "Mets le verbe entre parenthèses au futur proche.",
+    text: "Ils __________ au football. (jouer)",
+    acceptedAnswers: ["vont jouer"],
+  },
+
+  {
+    id: 28,
+    section: "Le futur proche",
+    level: "A2",
+    instruction:
+      "Mets la phrase au futur proche.",
+    text: "Tu fais tes devoirs.",
+    acceptedAnswers: ["tu vas faire tes devoirs"],
+  },
+
+  {
+    id: 29,
+    section: "Le futur proche",
+    level: "A2",
+    instruction:
+      "Mets la phrase au futur proche.",
+    text: "Nous visitons le musée.",
+    acceptedAnswers: ["nous allons visiter le musée"],
+  },
+
+  /*
+   * =======================================================
+   * V. LES PRONOMS — QUESTIONS 30 À 35
+   * =======================================================
+   */
+
+  {
+    id: 30,
+    section: "Les pronoms",
+    level: "A2",
+    instruction:
+      "Remplace le groupe souligné par un pronom personnel.",
+    text: "Marie parle à Paul.",
+    acceptedAnswers: [
+      "elle parle à paul",
+      "elle parle a paul",
     ],
-    correctAnswer: 1,
+  },
+
+  {
+    id: 31,
+    section: "Les pronoms",
+    level: "A2",
+    instruction:
+      "Remplace le groupe souligné par un pronom personnel.",
+    text: "Paul et Jean jouent au football.",
+    acceptedAnswers: ["ils jouent au football"],
+  },
+
+  {
+    id: 32,
+    section: "Les pronoms",
+    level: "A2",
+    instruction:
+      "Remplace le groupe souligné par un pronom.",
+    text: "Je parle à Marie.",
+    acceptedAnswers: ["je lui parle"],
+  },
+
+  {
+    id: 33,
+    section: "Les pronoms",
+    level: "A2",
+    instruction:
+      "Remplace le groupe souligné par un pronom.",
+    text: "Je regarde les enfants.",
+    acceptedAnswers: ["je les regarde"],
+  },
+
+  {
+    id: 34,
+    section: "Les pronoms",
+    level: "A2",
+    instruction:
+      "Remplace le groupe souligné par un pronom.",
+    text: "Je parle à mes parents.",
+    acceptedAnswers: ["je leur parle"],
+  },
+
+  {
+    id: 35,
+    section: "Les pronoms",
+    level: "A2",
+    instruction:
+      "Remplace le groupe souligné par un pronom.",
+    text: "Nous aimons Marie.",
+    acceptedAnswers: [
+      "nous l'aimons",
+      "nous laimons",
+    ],
+  },
+
+  /*
+   * =======================================================
+   * VI. LES DÉTERMINANTS — QUESTIONS 36 À 40
+   * =======================================================
+   */
+
+  {
+    id: 36,
+    section: "Les déterminants",
+    level: "A2",
+    instruction:
+      "Complète avec le déterminant qui convient.",
+    text: "__________ garçon joue dans le jardin.",
+    acceptedAnswers: ["le", "un"],
+  },
+
+  {
+    id: 37,
+    section: "Les déterminants",
+    level: "A2",
+    instruction:
+      "Complète avec le déterminant qui convient.",
+    text: "J’ai acheté __________ pommes.",
+    acceptedAnswers: ["des"],
+  },
+
+  {
+    id: 38,
+    section: "Les déterminants",
+    level: "A2",
+    instruction:
+      "Complète avec le déterminant qui convient.",
+    text: "__________ maison est très grande.",
+    acceptedAnswers: ["la", "une"],
+  },
+
+  {
+    id: 39,
+    section: "Les déterminants",
+    level: "A2",
+    instruction:
+      "Complète avec le déterminant qui convient.",
+    text: "Il mange __________ pain.",
+    acceptedAnswers: ["du", "le"],
+  },
+
+  {
+    id: 40,
+    section: "Les déterminants",
+    level: "A2",
+    instruction:
+      "Complète avec le déterminant qui convient.",
+    text: "Nous avons __________ voiture rouge.",
+    acceptedAnswers: ["une", "la"],
+  },
+
+  /*
+   * =======================================================
+   * VII. CE, CET, CETTE, CES — QUESTIONS 41 À 44
+   * =======================================================
+   */
+
+  {
+    id: 41,
+    section: "Ce, cet, cette, ces",
+    level: "A2",
+    instruction:
+      "Complète avec ce, cet, cette ou ces.",
+    text: "__________ garçon est mon frère.",
+    acceptedAnswers: ["ce"],
+  },
+
+  {
+    id: 42,
+    section: "Ce, cet, cette, ces",
+    level: "A2",
+    instruction:
+      "Complète avec ce, cet, cette ou ces.",
+    text: "__________ arbre est très vieux.",
+    acceptedAnswers: ["cet"],
+  },
+
+  {
+    id: 43,
+    section: "Ce, cet, cette, ces",
+    level: "A2",
+    instruction:
+      "Complète avec ce, cet, cette ou ces.",
+    text: "__________ fille est ma sœur.",
+    acceptedAnswers: ["cette"],
+  },
+
+  {
+    id: 44,
+    section: "Ce, cet, cette, ces",
+    level: "A2",
+    instruction:
+      "Complète avec ce, cet, cette ou ces.",
+    text: "__________ livres sont intéressants.",
+    acceptedAnswers: ["ces"],
+  },
+
+  /*
+   * =======================================================
+   * VIII. LES PRÉPOSITIONS — QUESTIONS 45 À 47
+   * =======================================================
+   */
+
+  {
+    id: 45,
+    section: "Les prépositions",
+    level: "A2",
+    instruction:
+      "Complète avec la préposition qui convient.",
+    text: "Je vais __________ l’école.",
+    acceptedAnswers: ["à", "a"],
+  },
+
+  {
+    id: 46,
+    section: "Les prépositions",
+    level: "A2",
+    instruction:
+      "Complète avec la préposition qui convient.",
+    text: "Le livre est __________ la table.",
+    acceptedAnswers: ["sur"],
+  },
+
+  {
+    id: 47,
+    section: "Les prépositions",
+    level: "A2",
+    instruction:
+      "Complète avec la préposition qui convient.",
+    text: "Je vais au marché __________ ma mère.",
+    acceptedAnswers: ["avec"],
+  },
+
+  /*
+   * =======================================================
+   * IX. LES CONJONCTIONS — QUESTIONS 48 À 50
+   * =======================================================
+   */
+
+  {
+    id: 48,
+    section: "Les conjonctions",
+    level: "A2",
+    instruction:
+      "Complète avec une conjonction qui convient.",
+    text: "Je veux sortir __________ il pleut.",
+    acceptedAnswers: ["mais"],
+  },
+
+  {
+    id: 49,
+    section: "Les conjonctions",
+    level: "A2",
+    instruction:
+      "Complète avec une conjonction qui convient.",
+    text: "Paul aime le thé __________ le café.",
+    acceptedAnswers: ["et"],
+  },
+
+  {
+    id: 50,
+    section: "Les conjonctions",
+    level: "A2",
+    instruction:
+      "Complète avec une conjonction qui convient.",
+    text: "Je reste à la maison __________ je suis malade.",
+    acceptedAnswers: ["parce que", "parceque"],
   },
 ];
 
 const TEST_DURATION = 30 * 60;
 
+/*
+ * =========================================================
+ * ANSWER NORMALIZATION
+ * =========================================================
+ */
+
+function normalizeAnswer(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’`]/g, "'")
+    .replace(/\s+/g, " ")
+    .replace(/[.!?]+$/g, "");
+}
+
+function isAnswerCorrect(studentAnswer, acceptedAnswers) {
+  const normalizedStudentAnswer =
+    normalizeAnswer(studentAnswer);
+
+  if (!normalizedStudentAnswer) {
+    return false;
+  }
+
+  return acceptedAnswers.some(
+    (answer) =>
+      normalizeAnswer(answer) ===
+      normalizedStudentAnswer
+  );
+}
+
 export default function WrittenTest() {
   const navigate = useNavigate();
 
+  /*
+   * answers = answers that have been LOCKED
+   * draftAnswer = answer currently being typed
+   */
   const [answers, setAnswers] = useState({});
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(TEST_DURATION);
+  const [draftAnswer, setDraftAnswer] = useState("");
 
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [currentQuestion, setCurrentQuestion] =
+    useState(0);
 
-  const [message, setMessage] = useState("");
-  const [completed, setCompleted] = useState(false);
+  const [timeLeft, setTimeLeft] =
+    useState(TEST_DURATION);
 
-  const [studentId, setStudentId] = useState(null);
+  const [loading, setLoading] =
+    useState(true);
 
-  // Security states
-  const [tabSwitches, setTabSwitches] = useState(0);
-  const [terminationReason, setTerminationReason] = useState(null);
-  const [serverAttemptId, setServerAttemptId] = useState(null);
+  const [submitting, setSubmitting] =
+    useState(false);
 
-  // Security refs
-  const attemptRef = useRef(null);
-  const tabSwitchProcessingRef = useRef(false);
-  const accessCheckStartedRef = useRef(false);
-  const submitStartedRef = useRef(false);
+  const [message, setMessage] =
+    useState("");
 
-  const question = questions[currentQuestion];
+  const [answerMessage, setAnswerMessage] =
+    useState("");
 
-  const answeredCount = useMemo(() => {
-    return Object.keys(answers).length;
-  }, [answers]);
+  const [completed, setCompleted] =
+    useState(false);
+
+  const [studentId, setStudentId] =
+    useState(null);
+
+  const [score, setScore] =
+    useState(null);
+
+  const [percentage, setPercentage] =
+    useState(null);
 
   /*
-   * -------------------------------------------------------
+   * Security states
+   */
+
+  const [tabSwitches, setTabSwitches] =
+    useState(0);
+
+  const [terminationReason, setTerminationReason] =
+    useState(null);
+
+  const [serverAttemptId, setServerAttemptId] =
+    useState(null);
+
+  /*
+   * Security refs
+   */
+
+  const attemptRef =
+    useRef(null);
+
+  const tabSwitchProcessingRef =
+    useRef(false);
+
+  const accessCheckStartedRef =
+    useRef(false);
+
+  const submitStartedRef =
+    useRef(false);
+
+  const question =
+    questions[currentQuestion];
+
+  const answeredCount =
+    useMemo(() => {
+      return Object.keys(answers).length;
+    }, [answers]);
+
+  const isLastQuestion =
+    currentQuestion ===
+    questions.length - 1;
+
+  /*
+   * =======================================================
+   * LOAD CURRENT QUESTION ANSWER
+   * =======================================================
+   */
+
+  useEffect(() => {
+    const savedAnswer =
+      answers[question.id] || "";
+
+    setDraftAnswer(savedAnswer);
+    setAnswerMessage("");
+  }, [currentQuestion]);
+
+  /*
+   * =======================================================
    * ACCESS CHECK
-   * -------------------------------------------------------
+   * =======================================================
    */
 
   useEffect(() => {
@@ -362,13 +728,17 @@ export default function WrittenTest() {
   }, []);
 
   /*
-   * -------------------------------------------------------
+   * =======================================================
    * TIMER
-   * -------------------------------------------------------
+   * =======================================================
    */
 
   useEffect(() => {
-    if (loading || completed || submitting) {
+    if (
+      loading ||
+      completed ||
+      submitting
+    ) {
       return;
     }
 
@@ -396,9 +766,9 @@ export default function WrittenTest() {
   ]);
 
   /*
-   * -------------------------------------------------------
+   * =======================================================
    * TAB SWITCH SECURITY
-   * -------------------------------------------------------
+   * =======================================================
    */
 
   useEffect(() => {
@@ -420,19 +790,24 @@ export default function WrittenTest() {
         return;
       }
 
-      const attempt = attemptRef.current;
+      const attempt =
+        attemptRef.current;
 
       if (!attempt) {
         return;
       }
 
-      tabSwitchProcessingRef.current = true;
+      tabSwitchProcessingRef.current =
+        true;
 
-      processTabSwitch(attempt).finally(() => {
-        setTimeout(() => {
-          tabSwitchProcessingRef.current = false;
-        }, 500);
-      });
+      processTabSwitch(attempt).finally(
+        () => {
+          setTimeout(() => {
+            tabSwitchProcessingRef.current =
+              false;
+          }, 500);
+        }
+      );
     }
 
     document.addEventListener(
@@ -454,9 +829,9 @@ export default function WrittenTest() {
   ]);
 
   /*
-   * -------------------------------------------------------
+   * =======================================================
    * CHECK ACCESS + SERVER ATTEMPT
-   * -------------------------------------------------------
+   * =======================================================
    */
 
   async function checkAccess() {
@@ -481,7 +856,9 @@ export default function WrittenTest() {
         error: studentError,
       } = await supabase
         .from("student_profiles")
-        .select("id, status, payment_status")
+        .select(
+          "id, status, payment_status"
+        )
         .eq("id", user.id)
         .maybeSingle();
 
@@ -500,12 +877,18 @@ export default function WrittenTest() {
       }
 
       if (!student) {
-        setMessage("Profil étudiant introuvable.");
+        setMessage(
+          "Profil étudiant introuvable."
+        );
+
         setLoading(false);
         return;
       }
 
-      if (student.status !== "approved") {
+      if (
+        student.status !==
+        "approved"
+      ) {
         setMessage(
           "Votre compte doit être approuvé par l'administration avant de passer ce test."
         );
@@ -514,7 +897,10 @@ export default function WrittenTest() {
         return;
       }
 
-      if (student.payment_status !== "paid") {
+      if (
+        student.payment_status !==
+        "paid"
+      ) {
         setMessage(
           "Le paiement doit être confirmé par l'administration avant de passer ce test."
         );
@@ -526,7 +912,9 @@ export default function WrittenTest() {
       setStudentId(student.id);
 
       /*
-       * Check actual result first.
+       * ---------------------------------------------------
+       * CHECK EXISTING RESULT
+       * ---------------------------------------------------
        */
 
       const {
@@ -537,7 +925,10 @@ export default function WrittenTest() {
         .select(
           "id, score, total_questions, percentage"
         )
-        .eq("student_id", student.id)
+        .eq(
+          "student_id",
+          student.id
+        )
         .eq(
           "test_type",
           "comprehension_ecrite"
@@ -559,13 +950,23 @@ export default function WrittenTest() {
       }
 
       if (existingResult) {
+        setScore(
+          existingResult.score
+        );
+
+        setPercentage(
+          existingResult.percentage
+        );
+
         setCompleted(true);
         setLoading(false);
         return;
       }
 
       /*
-       * Check server-side attempt.
+       * ---------------------------------------------------
+       * CHECK SERVER-SIDE ATTEMPT
+       * ---------------------------------------------------
        */
 
       const {
@@ -576,7 +977,10 @@ export default function WrittenTest() {
         .select(
           "id, status, started_at, finished_at, tab_switches, termination_reason"
         )
-        .eq("student_id", student.id)
+        .eq(
+          "student_id",
+          student.id
+        )
         .maybeSingle();
 
       if (attemptError) {
@@ -599,14 +1003,17 @@ export default function WrittenTest() {
 
       if (
         existingAttempt &&
-        existingAttempt.status === "finished"
+        existingAttempt.status ===
+          "finished"
       ) {
         setTabSwitches(
-          existingAttempt.tab_switches || 0
+          existingAttempt.tab_switches ||
+            0
         );
 
         setTerminationReason(
-          existingAttempt.termination_reason || null
+          existingAttempt.termination_reason ||
+            null
         );
 
         setCompleted(true);
@@ -614,10 +1021,13 @@ export default function WrittenTest() {
         return;
       }
 
-      let activeAttempt = existingAttempt;
+      let activeAttempt =
+        existingAttempt;
 
       /*
-       * Create attempt if needed.
+       * ---------------------------------------------------
+       * CREATE ATTEMPT IF NEEDED
+       * ---------------------------------------------------
        */
 
       if (!activeAttempt) {
@@ -625,10 +1035,14 @@ export default function WrittenTest() {
           data: newAttempt,
           error: createAttemptError,
         } = await supabase
-          .from("written_test_attempts")
+          .from(
+            "written_test_attempts"
+          )
           .insert({
-            student_id: student.id,
-            status: "in_progress",
+            student_id:
+              student.id,
+            status:
+              "in_progress",
             tab_switches: 0,
           })
           .select(
@@ -638,8 +1052,8 @@ export default function WrittenTest() {
 
         if (createAttemptError) {
           /*
-           * Another request may have created the
-           * unique attempt at the same time.
+           * Another request may have
+           * created the unique attempt.
            */
 
           if (
@@ -650,7 +1064,9 @@ export default function WrittenTest() {
               data: raceAttempt,
               error: raceError,
             } = await supabase
-              .from("written_test_attempts")
+              .from(
+                "written_test_attempts"
+              )
               .select(
                 "id, status, started_at, finished_at, tab_switches, termination_reason"
               )
@@ -677,7 +1093,8 @@ export default function WrittenTest() {
               return;
             }
 
-            activeAttempt = raceAttempt;
+            activeAttempt =
+              raceAttempt;
           } else {
             console.error(
               "CREATE WRITTEN ATTEMPT ERROR:",
@@ -692,23 +1109,29 @@ export default function WrittenTest() {
             return;
           }
         } else {
-          activeAttempt = newAttempt;
+          activeAttempt =
+            newAttempt;
         }
       }
 
       /*
-       * Check again if finished.
+       * ---------------------------------------------------
+       * CHECK AGAIN IF FINISHED
+       * ---------------------------------------------------
        */
 
       if (
-        activeAttempt.status === "finished"
+        activeAttempt.status ===
+        "finished"
       ) {
         setTabSwitches(
-          activeAttempt.tab_switches || 0
+          activeAttempt.tab_switches ||
+            0
         );
 
         setTerminationReason(
-          activeAttempt.termination_reason || null
+          activeAttempt.termination_reason ||
+            null
         );
 
         setCompleted(true);
@@ -717,15 +1140,21 @@ export default function WrittenTest() {
       }
 
       /*
-       * Save active attempt.
+       * ---------------------------------------------------
+       * SAVE ACTIVE ATTEMPT
+       * ---------------------------------------------------
        */
 
-      attemptRef.current = activeAttempt;
+      attemptRef.current =
+        activeAttempt;
 
-      setServerAttemptId(activeAttempt.id);
+      setServerAttemptId(
+        activeAttempt.id
+      );
 
       setTabSwitches(
-        activeAttempt.tab_switches || 0
+        activeAttempt.tab_switches ||
+          0
       );
 
       /*
@@ -755,17 +1184,22 @@ export default function WrittenTest() {
         return;
       }
 
-      const startedAt = new Date(
-        activeAttempt.started_at
-      ).getTime();
+      const startedAt =
+        new Date(
+          activeAttempt.started_at
+        ).getTime();
 
-      const serverNow = new Date(
-        serverTime
-      ).getTime();
+      const serverNow =
+        new Date(
+          serverTime
+        ).getTime();
 
-      const elapsedSeconds = Math.floor(
-        (serverNow - startedAt) / 1000
-      );
+      const elapsedSeconds =
+        Math.floor(
+          (serverNow -
+            startedAt) /
+            1000
+        );
 
       const remainingSeconds =
         Math.min(
@@ -778,11 +1212,8 @@ export default function WrittenTest() {
         );
 
       /*
-       * For a brand-new attempt, display
-       * the complete 30:00 immediately.
-       *
-       * Resumed attempts use the actual
-       * server-calculated remaining time.
+       * Brand-new attempt gets full 30 minutes.
+       * Resumed attempt uses server time.
        */
 
       const isBrandNewAttempt =
@@ -795,9 +1226,7 @@ export default function WrittenTest() {
       );
 
       /*
-       * If the server says an existing
-       * attempt has already expired,
-       * automatically submit it.
+       * Existing attempt already expired.
        */
 
       if (
@@ -807,7 +1236,10 @@ export default function WrittenTest() {
         setLoading(false);
 
         setTimeout(() => {
-          handleSubmit(true, "time");
+          handleSubmit(
+            true,
+            "time"
+          );
         }, 0);
 
         return;
@@ -829,9 +1261,9 @@ export default function WrittenTest() {
   }
 
   /*
-   * -------------------------------------------------------
+   * =======================================================
    * TAB SWITCH PROCESSING
-   * -------------------------------------------------------
+   * =======================================================
    */
 
   async function processTabSwitch(
@@ -847,16 +1279,23 @@ export default function WrittenTest() {
      * FIRST SWITCH = WARNING
      */
 
-    if (newSwitchCount === 1) {
+    if (
+      newSwitchCount === 1
+    ) {
       const {
         data: updatedAttempt,
         error: updateError,
       } = await supabase
-        .from("written_test_attempts")
+        .from(
+          "written_test_attempts"
+        )
         .update({
           tab_switches: 1,
         })
-        .eq("id", attempt.id)
+        .eq(
+          "id",
+          attempt.id
+        )
         .eq(
           "status",
           "in_progress"
@@ -895,6 +1334,7 @@ export default function WrittenTest() {
      */
 
     setTabSwitches(2);
+
     setTerminationReason(
       "tab_switch"
     );
@@ -908,7 +1348,8 @@ export default function WrittenTest() {
     } = await supabase
       .from("test_results")
       .insert({
-        student_id: studentId,
+        student_id:
+          studentId,
         score: 0,
         total_questions:
           questions.length,
@@ -919,7 +1360,8 @@ export default function WrittenTest() {
 
     if (
       resultError &&
-      resultError.code !== "23505"
+      resultError.code !==
+        "23505"
     ) {
       console.error(
         "TAB SWITCH RESULT INSERT ERROR:",
@@ -935,7 +1377,9 @@ export default function WrittenTest() {
       data: finishedAttempt,
       error: finishError,
     } = await supabase
-      .from("written_test_attempts")
+      .from(
+        "written_test_attempts"
+      )
       .update({
         status: "finished",
         finished_at:
@@ -944,7 +1388,10 @@ export default function WrittenTest() {
         termination_reason:
           "tab_switch",
       })
-      .eq("id", attempt.id)
+      .eq(
+        "id",
+        attempt.id
+      )
       .eq(
         "status",
         "in_progress"
@@ -964,54 +1411,58 @@ export default function WrittenTest() {
         finishedAttempt;
     }
 
+    setScore(0);
+    setPercentage(0);
     setAnswers({});
+    setDraftAnswer("");
     setCompleted(true);
   }
 
   /*
-   * -------------------------------------------------------
-   * ANSWERS
-   * -------------------------------------------------------
+   * =======================================================
+   * TYPE ANSWER
+   * =======================================================
    *
    * IMPORTANT:
-   * Once an answer is selected, it is locked.
-   * The student cannot change it.
+   * The student can type the complete answer.
+   * The answer is NOT locked while typing.
    */
 
-  function handleAnswer(
-    choiceIndex
-  ) {
-    setAnswers((current) => {
-      /*
-       * Answer already exists = LOCKED.
-       */
-      if (
-        Object.prototype.hasOwnProperty.call(
-          current,
-          question.id
-        )
-      ) {
-        return current;
-      }
-
-      return {
-        ...current,
-        [question.id]:
-          choiceIndex,
-      };
-    });
+  function handleDraftAnswer(value) {
+    setDraftAnswer(value);
+    setAnswerMessage("");
   }
 
   /*
-   * -------------------------------------------------------
-   * NAVIGATION
-   * -------------------------------------------------------
-   *
-   * There is intentionally NO previous
-   * navigation.
+   * =======================================================
+   * SAVE CURRENT ANSWER AND GO NEXT
+   * =======================================================
    */
 
   function goNext() {
+    const trimmedAnswer =
+      draftAnswer.trim();
+
+    if (!trimmedAnswer) {
+      setAnswerMessage(
+        "Veuillez écrire une réponse avant de continuer."
+      );
+
+      return;
+    }
+
+    /*
+     * Lock the current answer.
+     */
+
+    setAnswers((current) => ({
+      ...current,
+      [question.id]:
+        trimmedAnswer,
+    }));
+
+    setAnswerMessage("");
+
     if (
       currentQuestion <
       questions.length - 1
@@ -1021,6 +1472,8 @@ export default function WrittenTest() {
           current + 1
       );
 
+      setDraftAnswer("");
+
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -1029,14 +1482,16 @@ export default function WrittenTest() {
   }
 
   /*
-   * -------------------------------------------------------
+   * =======================================================
    * TIMER FORMAT
-   * -------------------------------------------------------
+   * =======================================================
    */
 
   function formatTime(seconds) {
     const minutes =
-      Math.floor(seconds / 60);
+      Math.floor(
+        seconds / 60
+      );
 
     const remainingSeconds =
       seconds % 60;
@@ -1055,9 +1510,9 @@ export default function WrittenTest() {
   }
 
   /*
-   * -------------------------------------------------------
+   * =======================================================
    * NORMAL SUBMIT / TIMEOUT
-   * -------------------------------------------------------
+   * =======================================================
    */
 
   async function handleSubmit(
@@ -1072,11 +1527,42 @@ export default function WrittenTest() {
       return;
     }
 
+    const currentDraft =
+      draftAnswer.trim();
+
+    /*
+     * If this is the final question,
+     * include the answer currently being typed.
+     */
+
+    const finalAnswers = {
+      ...answers,
+      ...(currentDraft
+        ? {
+            [question.id]:
+              currentDraft,
+          }
+        : {}),
+    };
+
+    const finalAnsweredCount =
+      Object.keys(
+        finalAnswers
+      ).length;
+
     if (!autoSubmit) {
+      if (!currentDraft) {
+        setAnswerMessage(
+          "Veuillez écrire une réponse avant de terminer le test."
+        );
+
+        return;
+      }
+
       const confirmed =
         window.confirm(
           "Êtes-vous certain de vouloir envoyer vos réponses ?\n\n" +
-            `Vous avez répondu à ${answeredCount} question(s) sur ${questions.length}.\n\n` +
+            `Vous avez répondu à ${finalAnsweredCount} question(s) sur ${questions.length}.\n\n` +
             "Cette partie ne pourra être envoyée qu'une seule fois."
         );
 
@@ -1085,7 +1571,8 @@ export default function WrittenTest() {
       }
     }
 
-    submitStartedRef.current = true;
+    submitStartedRef.current =
+      true;
 
     setSubmitting(true);
     setMessage("");
@@ -1096,33 +1583,59 @@ export default function WrittenTest() {
           "Votre session étudiant est introuvable."
         );
 
-        submitStartedRef.current = false;
+        submitStartedRef.current =
+          false;
+
         setSubmitting(false);
+
         return;
       }
 
-      let score = 0;
+      /*
+       * ---------------------------------------------------
+       * CALCUL DU SCORE
+       * ---------------------------------------------------
+       */
+
+      let calculatedScore = 0;
 
       questions.forEach(
         (item) => {
+          const studentAnswer =
+            finalAnswers[item.id] ||
+            "";
+
           if (
-            answers[item.id] ===
-            item.correctAnswer
+            isAnswerCorrect(
+              studentAnswer,
+              item.acceptedAnswers
+            )
           ) {
-            score += 1;
+            calculatedScore +=
+              1;
           }
         }
       );
 
-      const percentage =
+      const calculatedPercentage =
         Math.round(
-          (score /
+          (calculatedScore /
             questions.length) *
             100
         );
 
+      setScore(
+        calculatedScore
+      );
+
+      setPercentage(
+        calculatedPercentage
+      );
+
       /*
-       * Save result.
+       * ---------------------------------------------------
+       * SAVE RESULT
+       * ---------------------------------------------------
        */
 
       const {
@@ -1132,10 +1645,12 @@ export default function WrittenTest() {
         .insert({
           student_id:
             studentId,
-          score,
+          score:
+            calculatedScore,
           total_questions:
             questions.length,
-          percentage,
+          percentage:
+            calculatedPercentage,
           test_type:
             "comprehension_ecrite",
         });
@@ -1159,13 +1674,18 @@ export default function WrittenTest() {
           "Impossible d'enregistrer votre résultat."
         );
 
-        submitStartedRef.current = false;
+        submitStartedRef.current =
+          false;
+
         setSubmitting(false);
+
         return;
       }
 
       /*
-       * Finish server attempt.
+       * ---------------------------------------------------
+       * FINISH SERVER ATTEMPT
+       * ---------------------------------------------------
        */
 
       if (serverAttemptId) {
@@ -1216,6 +1736,8 @@ export default function WrittenTest() {
         }
       }
 
+      setAnswers(finalAnswers);
+      setDraftAnswer("");
       setCompleted(true);
     } catch (error) {
       console.error(
@@ -1227,55 +1749,36 @@ export default function WrittenTest() {
         "Une erreur inattendue est survenue."
       );
 
-      submitStartedRef.current = false;
+      submitStartedRef.current =
+        false;
     }
 
     setSubmitting(false);
   }
 
   /*
-   * -------------------------------------------------------
+   * =======================================================
    * LOADING SCREEN
-   * -------------------------------------------------------
+   * =======================================================
    */
 
   if (loading) {
     return (
       <div style={styles.page}>
-        <div
-          style={
-            styles.loadingCard
-          }
-        >
-          <div
-            style={
-              styles.logoText
-            }
-          >
+        <div style={styles.loadingCard}>
+          <div style={styles.logoText}>
             INTERNATIONAL FRENCH ACADEMY
           </div>
 
-          <div
-            style={
-              styles.spinner
-            }
-          >
+          <div style={styles.spinner}>
             ◌
           </div>
 
-          <h1
-            style={
-              styles.loadingTitle
-            }
-          >
+          <h1 style={styles.loadingTitle}>
             Vérification de votre accès...
           </h1>
 
-          <p
-            style={
-              styles.muted
-            }
-          >
+          <p style={styles.muted}>
             Veuillez patienter.
           </p>
         </div>
@@ -1284,82 +1787,56 @@ export default function WrittenTest() {
   }
 
   /*
-   * -------------------------------------------------------
+   * =======================================================
    * COMPLETED SCREEN
-   * -------------------------------------------------------
+   * =======================================================
    */
 
   if (completed) {
+    /*
+     * ---------------------------------------------------
+     * TAB SWITCH TERMINATION
+     * ---------------------------------------------------
+     */
+
     if (
       terminationReason ===
       "tab_switch"
     ) {
       return (
-        <div
-          style={styles.page}
-        >
-          <div
-            style={
-              styles.errorCard
-            }
-          >
-            <div
-              style={
-                styles.logoText
-              }
-            >
+        <div style={styles.page}>
+          <div style={styles.errorCard}>
+            <div style={styles.logoText}>
               INTERNATIONAL FRENCH ACADEMY
             </div>
 
-            <div
-              style={
-                styles.errorIcon
-              }
-            >
+            <div style={styles.errorIcon}>
               !
             </div>
 
-            <h1
-              style={
-                styles.title
-              }
-            >
+            <h1 style={styles.title}>
               Test terminé
             </h1>
 
-            <p
-              style={
-                styles.errorText
-              }
-            >
+            <p style={styles.errorText}>
               Le test a été
               automatiquement
-              terminé après
-              deux changements
+              terminé après deux
+              changements
               d'onglet.
             </p>
 
-            <p
-              style={
-                styles.text
-              }
-            >
-              Cette tentative
-              a été enregistrée
-              avec un score de
-              0 /{" "}
+            <p style={styles.text}>
+              Cette tentative a
+              été enregistrée avec
+              un score de 0 /{" "}
               {questions.length}.
             </p>
 
-            <p
-              style={
-                styles.text
-              }
-            >
-              Une seule
-              tentative est
-              autorisée pour la
-              compréhension
+            <p style={styles.text}>
+              Une seule tentative
+              est autorisée pour
+              la compréhension
               écrite.
             </p>
 
@@ -1370,9 +1847,7 @@ export default function WrittenTest() {
                   "/tests/results"
                 )
               }
-              style={
-                styles.primaryButton
-              }
+              style={styles.primaryButton}
             >
               Voir mes résultats →
             </button>
@@ -1384,9 +1859,7 @@ export default function WrittenTest() {
                   "/student-dashboard"
                 )
               }
-              style={
-                styles.secondaryButton
-              }
+              style={styles.secondaryButton}
             >
               Retour à mon espace
             </button>
@@ -1394,74 +1867,53 @@ export default function WrittenTest() {
         </div>
       );
     }
+
+    /*
+     * ---------------------------------------------------
+     * TIME TERMINATION
+     * ---------------------------------------------------
+     */
 
     if (
       terminationReason ===
       "time"
     ) {
       return (
-        <div
-          style={styles.page}
-        >
-          <div
-            style={
-              styles.errorCard
-            }
-          >
-            <div
-              style={
-                styles.logoText
-              }
-            >
+        <div style={styles.page}>
+          <div style={styles.errorCard}>
+            <div style={styles.logoText}>
               INTERNATIONAL FRENCH ACADEMY
             </div>
 
-            <div
-              style={
-                styles.errorIcon
-              }
-            >
+            <div style={styles.errorIcon}>
               !
             </div>
 
-            <h1
-              style={
-                styles.title
-              }
-            >
+            <h1 style={styles.title}>
               Temps écoulé
             </h1>
 
-            <p
-              style={
-                styles.errorText
-              }
-            >
+            <p style={styles.errorText}>
               Le temps de
               30 minutes est
               terminé.
             </p>
 
-            <p
-              style={
-                styles.text
-              }
-            >
+            <p style={styles.text}>
               Vos réponses ont
               été enregistrées
               automatiquement.
             </p>
 
-            <p
-              style={
-                styles.text
-              }
-            >
-              Une seule
-              tentative est
-              autorisée pour la
-              compréhension
-              écrite.
+            <p style={styles.text}>
+              Votre résultat est :
+              <strong>
+                {" "}
+                {score ?? 0} /{" "}
+                {questions.length}
+              </strong>
+              {" "}
+              ({percentage ?? 0}%).
             </p>
 
             <button
@@ -1471,9 +1923,7 @@ export default function WrittenTest() {
                   "/tests/results"
                 )
               }
-              style={
-                styles.primaryButton
-              }
+              style={styles.primaryButton}
             >
               Voir mes résultats →
             </button>
@@ -1485,9 +1935,7 @@ export default function WrittenTest() {
                   "/student-dashboard"
                 )
               }
-              style={
-                styles.secondaryButton
-              }
+              style={styles.secondaryButton}
             >
               Retour à mon espace
             </button>
@@ -1496,58 +1944,55 @@ export default function WrittenTest() {
       );
     }
 
+    /*
+     * ---------------------------------------------------
+     * NORMAL COMPLETION
+     * ---------------------------------------------------
+     */
+
     return (
-      <div
-        style={styles.page}
-      >
-        <div
-          style={
-            styles.successCard
-          }
-        >
-          <div
-            style={
-              styles.logoText
-            }
-          >
+      <div style={styles.page}>
+        <div style={styles.successCard}>
+          <div style={styles.logoText}>
             INTERNATIONAL FRENCH ACADEMY
           </div>
 
-          <div
-            style={
-              styles.successIcon
-            }
-          >
+          <div style={styles.successIcon}>
             ✓
           </div>
 
-          <h1
-            style={
-              styles.title
-            }
-          >
-            Compréhension écrite terminée
+          <h1 style={styles.title}>
+            Test terminé
           </h1>
 
-          <p
-            style={
-              styles.text
-            }
-          >
-            Cette partie du
-            test a déjà été
-            envoyée.
+          <p style={styles.text}>
+            Votre test de
+            français a été
+            enregistré avec
+            succès.
           </p>
 
-          <p
-            style={
-              styles.text
-            }
-          >
-            Une seule
-            tentative est
-            autorisée pour la
-            compréhension
+          {score !== null && (
+            <div style={styles.scoreBox}>
+              <div style={styles.scoreLabel}>
+                VOTRE SCORE
+              </div>
+
+              <div style={styles.scoreValue}>
+                {score} /{" "}
+                {questions.length}
+              </div>
+
+              <div style={styles.percentage}>
+                {percentage}%
+              </div>
+            </div>
+          )}
+
+          <p style={styles.text}>
+            Une seule tentative
+            est autorisée pour
+            la compréhension
             écrite.
           </p>
 
@@ -1558,9 +2003,7 @@ export default function WrittenTest() {
                 "/tests/results"
               )
             }
-            style={
-              styles.primaryButton
-            }
+            style={styles.primaryButton}
           >
             Voir mes résultats →
           </button>
@@ -1572,9 +2015,7 @@ export default function WrittenTest() {
                 "/student-dashboard"
               )
             }
-            style={
-              styles.secondaryButton
-            }
+            style={styles.secondaryButton}
           >
             Retour à mon espace
           </button>
@@ -1584,50 +2025,28 @@ export default function WrittenTest() {
   }
 
   /*
-   * -------------------------------------------------------
+   * =======================================================
    * ERROR SCREEN
-   * -------------------------------------------------------
+   * =======================================================
    */
 
   if (message) {
     return (
-      <div
-        style={styles.page}
-      >
-        <div
-          style={
-            styles.errorCard
-          }
-        >
-          <div
-            style={
-              styles.logoText
-            }
-          >
+      <div style={styles.page}>
+        <div style={styles.errorCard}>
+          <div style={styles.logoText}>
             INTERNATIONAL FRENCH ACADEMY
           </div>
 
-          <div
-            style={
-              styles.errorIcon
-            }
-          >
+          <div style={styles.errorIcon}>
             !
           </div>
 
-          <h1
-            style={
-              styles.title
-            }
-          >
+          <h1 style={styles.title}>
             Accès au test
           </h1>
 
-          <p
-            style={
-              styles.errorText
-            }
-          >
+          <p style={styles.errorText}>
             {message}
           </p>
 
@@ -1638,9 +2057,7 @@ export default function WrittenTest() {
                 "/student-dashboard"
               )
             }
-            style={
-              styles.primaryButton
-            }
+            style={styles.primaryButton}
           >
             Retour à mon espace
           </button>
@@ -1650,64 +2067,44 @@ export default function WrittenTest() {
   }
 
   /*
-   * -------------------------------------------------------
+   * =======================================================
    * TEST SCREEN
-   * -------------------------------------------------------
+   * =======================================================
    */
 
+  const answerLocked =
+    Object.prototype.hasOwnProperty.call(
+      answers,
+      question.id
+    );
+
   return (
-    <div
-      style={styles.page}
-    >
-      <div
-        style={styles.container}
-      >
-        <header
-          style={styles.header}
-        >
-          <div
-            style={
-              styles.logoText
-            }
-          >
+    <div style={styles.page}>
+      <div style={styles.container}>
+        <header style={styles.header}>
+          <div style={styles.logoText}>
             INTERNATIONAL FRENCH ACADEMY
           </div>
 
-          <div
-            style={
-              styles.subtitle
-            }
-          >
+          <div style={styles.subtitle}>
             Évaluation de positionnement
           </div>
 
-          <h1
-            style={
-              styles.title
-            }
-          >
-            Compréhension écrite
+          <h1 style={styles.title}>
+            Examen de français
           </h1>
 
-          <p
-            style={
-              styles.intro
-            }
-          >
-            Lisez chaque texte
-            attentivement puis
-            choisissez la bonne
-            réponse.
+          <p style={styles.intro}>
+            Répondez aux 50
+            questions. Écrivez
+            directement votre
+            réponse dans le champ
+            prévu.
           </p>
         </header>
 
-        {tabSwitches ===
-          1 && (
-          <div
-            style={
-              styles.tabWarning
-            }
-          >
+        {tabSwitches === 1 && (
+          <div style={styles.tabWarning}>
             <strong>
               ⚠️ Premier avertissement
             </strong>
@@ -1716,57 +2113,33 @@ export default function WrittenTest() {
               Vous avez quitté
               l'onglet du test.
               Un deuxième
-              changement
-              d'onglet entraînera
+              changement d'onglet
+              entraînera
               automatiquement la
               fin du test.
             </div>
 
-            <div
-              style={
-                styles.tabWarningCount
-              }
-            >
-              Changements
-              d'onglet : 1 / 2
+            <div style={styles.tabWarningCount}>
+              Changements d'onglet :
+              1 / 2
             </div>
           </div>
         )}
 
-        <div
-          style={styles.topBar}
-        >
+        <div style={styles.topBar}>
           <div>
-            <div
-              style={
-                styles.progressLabel
-              }
-            >
+            <div style={styles.progressLabel}>
               QUESTION
             </div>
 
-            <div
-              style={
-                styles.progressValue
-              }
-            >
-              {currentQuestion +
-                1}{" "}
-              /{" "}
-              {questions.length}
+            <div style={styles.progressValue}>
+              {currentQuestion + 1}{" "}
+              / {questions.length}
             </div>
           </div>
 
-          <div
-            style={
-              styles.timerBox
-            }
-          >
-            <div
-              style={
-                styles.timerLabel
-              }
-            >
+          <div style={styles.timerBox}>
+            <div style={styles.timerLabel}>
               TEMPS RESTANT
             </div>
 
@@ -1774,8 +2147,7 @@ export default function WrittenTest() {
               style={{
                 ...styles.timer,
                 color:
-                  timeLeft <=
-                  300
+                  timeLeft <= 300
                     ? "#a33a3a"
                     : "#0d1b2a",
               }}
@@ -1787,37 +2159,23 @@ export default function WrittenTest() {
           </div>
 
           <div>
-            <div
-              style={
-                styles.progressLabel
-              }
-            >
+            <div style={styles.progressLabel}>
               RÉPONDUES
             </div>
 
-            <div
-              style={
-                styles.progressValue
-              }
-            >
-              {answeredCount}{" "}
-              /{" "}
+            <div style={styles.progressValue}>
+              {answeredCount} /{" "}
               {questions.length}
             </div>
           </div>
         </div>
 
-        <div
-          style={
-            styles.progressBarOuter
-          }
-        >
+        <div style={styles.progressBarOuter}>
           <div
             style={{
               ...styles.progressBarInner,
               width: `${
-                ((currentQuestion +
-                  1) /
+                ((currentQuestion + 1) /
                   questions.length) *
                 100
               }%`,
@@ -1825,181 +2183,132 @@ export default function WrittenTest() {
           />
         </div>
 
-        <div
-          style={
-            styles.questionCard
-          }
-        >
-          <div
-            style={
-              styles.questionHeader
-            }
-          >
-            <div
-              style={
-                styles.questionNumber
-              }
-            >
+        <div style={styles.questionCard}>
+          <div style={styles.questionHeader}>
+            <div style={styles.questionNumber}>
               QUESTION{" "}
-              {currentQuestion +
-                1}
+              {currentQuestion + 1}
             </div>
 
-            <div
-              style={
-                styles.levelBadge
-              }
-            >
+            <div style={styles.levelBadge}>
               {question.level}
             </div>
           </div>
 
-          <div
-            style={
-              styles.readingText
-            }
-          >
-            {question.text
-              .split("\n")
-              .map(
-                (
-                  paragraph,
-                  index
-                ) => (
-                  <p
-                    key={
-                      index
-                    }
-                  >
-                    {paragraph}
-                  </p>
-                )
-              )}
+          <div style={styles.sectionName}>
+            {question.section}
           </div>
 
-          <h2
-            style={
-              styles.questionTitle
-            }
-          >
-            {question.question}
-          </h2>
+          <div style={styles.instruction}>
+            {question.instruction}
+          </div>
 
-          <div
-            style={
-              styles.choices
-            }
-          >
-            {question.choices.map(
-              (
-                choice,
-                index
-              ) => {
-                const selected =
-                  answers[
-                    question.id
-                  ] ===
-                  index;
+          <div style={styles.questionText}>
+            {question.text}
+          </div>
 
-                const answerLocked =
-                  Object.prototype.hasOwnProperty.call(
-                    answers,
-                    question.id
-                  );
+          <div style={styles.answerArea}>
+            <label style={styles.answerLabel}>
+              Votre réponse
+            </label>
 
-                return (
-                  <button
-                    type="button"
-                    key={
-                      index
-                    }
-                    onClick={() =>
-                      handleAnswer(
-                        index
-                      )
-                    }
-                    disabled={
-                      answerLocked
-                    }
-                    style={{
-                      ...styles.choice,
-
-                      ...(selected
-                        ? styles.choiceSelected
-                        : {}),
-
-                      ...(answerLocked
-                        ? styles.choiceLocked
-                        : {}),
-                    }}
-                  >
-                    <span
-                      style={{
-                        ...styles.choiceLetter,
-                        ...(selected
-                          ? styles.choiceLetterSelected
-                          : {}),
-                      }}
-                    >
-                      {String.fromCharCode(
-                        65 +
-                          index
-                      )}
-                    </span>
-
-                    <span>
-                      {
-                        choice
-                      }
-                    </span>
-
-                    {selected && (
-                      <span
-                        style={
-                          styles.lockIcon
-                        }
-                      >
-                        ✓
-                      </span>
-                    )}
-                  </button>
-                );
+            <input
+              type="text"
+              value={draftAnswer}
+              disabled={answerLocked}
+              autoComplete="off"
+              spellCheck="false"
+              autoFocus
+              onChange={(event) =>
+                handleDraftAnswer(
+                  event.target.value
+                )
               }
+              onKeyDown={(event) => {
+                if (
+                  event.key ===
+                  "Enter"
+                ) {
+                  event.preventDefault();
+
+                  if (
+                    !answerLocked &&
+                    draftAnswer.trim()
+                  ) {
+                    if (
+                      isLastQuestion
+                    ) {
+                      handleSubmit(
+                        false,
+                        "completed"
+                      );
+                    } else {
+                      goNext();
+                    }
+                  }
+                }
+              }}
+              placeholder={
+                answerLocked
+                  ? "Réponse enregistrée"
+                  : "Écrivez votre réponse ici..."
+              }
+              style={{
+                ...styles.answerInput,
+                ...(answerLocked
+                  ? styles.answerInputLocked
+                  : {}),
+              }}
+            />
+
+            {answerMessage && (
+              <div
+                style={
+                  styles.answerErrorMessage
+                }
+              >
+                {answerMessage}
+              </div>
+            )}
+
+            {answerLocked && (
+              <div
+                style={
+                  styles.answerLockedMessage
+                }
+              >
+                ✓ Réponse enregistrée —
+                cette réponse ne peut
+                plus être modifiée.
+              </div>
             )}
           </div>
-
-          {Object.prototype.hasOwnProperty.call(
-            answers,
-            question.id
-          ) && (
-            <div
-              style={
-                styles.answerLockedMessage
-              }
-            >
-              ✓ Réponse enregistrée — cette réponse ne peut plus être modifiée.
-            </div>
-          )}
         </div>
 
-        <div
-          style={
-            styles.navigation
-          }
-        >
-          {currentQuestion <
-          questions.length -
-            1 ? (
+        <div style={styles.navigation}>
+          {!isLastQuestion ? (
             <button
               type="button"
-              onClick={
-                goNext
+              onClick={goNext}
+              disabled={
+                answerLocked ||
+                !draftAnswer.trim()
               }
-              style={
-                styles.primaryButton
-              }
+              style={{
+                ...styles.primaryButton,
+                opacity:
+                  answerLocked ||
+                  !draftAnswer.trim()
+                    ? 0.5
+                    : 1,
+                cursor:
+                  answerLocked ||
+                  !draftAnswer.trim()
+                    ? "not-allowed"
+                    : "pointer",
+              }}
             >
-              Suivante →
+              Enregistrer et continuer →
             </button>
           ) : (
             <button
@@ -2011,14 +2320,24 @@ export default function WrittenTest() {
                 )
               }
               disabled={
-                submitting
+                submitting ||
+                answerLocked ||
+                !draftAnswer.trim()
               }
               style={{
                 ...styles.submitButton,
                 opacity:
-                  submitting
-                    ? 0.7
+                  submitting ||
+                  answerLocked ||
+                  !draftAnswer.trim()
+                    ? 0.6
                     : 1,
+                cursor:
+                  submitting ||
+                  answerLocked ||
+                  !draftAnswer.trim()
+                    ? "not-allowed"
+                    : "pointer",
               }}
             >
               {submitting
@@ -2028,23 +2347,24 @@ export default function WrittenTest() {
           )}
         </div>
 
-        <div
-          style={
-            styles.warning
-          }
-        >
-          ⚠️ Une seule
-          tentative est
-          autorisée. Une fois
-          une réponse
-          sélectionnée, elle
-          ne peut plus être
-          modifiée.
+        <div style={styles.warning}>
+          ⚠️ Une seule tentative
+          est autorisée. Après
+          avoir enregistré une
+          réponse et continué,
+          cette réponse ne peut
+          plus être modifiée.
         </div>
       </div>
     </div>
   );
 }
+
+/*
+ * =========================================================
+ * STYLES
+ * =========================================================
+ */
 
 const styles = {
   page: {
@@ -2235,7 +2555,7 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "20px",
+    marginBottom: "15px",
   },
 
   questionNumber: {
@@ -2254,92 +2574,88 @@ const styles = {
     fontWeight: "800",
   },
 
-  readingText: {
+  sectionName: {
+    display: "inline-block",
+    background: "#0d1b2a",
+    color: "#ffffff",
+    borderRadius: "7px",
+    padding: "7px 11px",
+    fontSize: "11px",
+    fontWeight: "800",
+    marginBottom: "16px",
+  },
+
+  instruction: {
+    color: "#667085",
+    fontSize: "14px",
+    fontWeight: "700",
+    lineHeight: 1.6,
+    marginBottom: "15px",
+  },
+
+  questionText: {
     background: "#f8f4ee",
     borderLeft: "4px solid #c9a84c",
     borderRadius: "8px",
-    padding: "18px 20px",
+    padding: "20px",
     marginBottom: "25px",
-    fontSize: "15px",
+    fontSize: "17px",
     lineHeight: 1.75,
     color: "#263445",
+    fontWeight: "600",
   },
 
-  questionTitle: {
-    fontFamily:
-      '"Playfair Display", Georgia, serif',
-    fontSize: "23px",
-    lineHeight: 1.4,
-    margin: "0 0 20px",
+  answerArea: {
+    marginTop: "10px",
   },
 
-  choices: {
-    display: "grid",
-    gap: "12px",
+  answerLabel: {
+    display: "block",
+    fontSize: "12px",
+    fontWeight: "800",
+    color: "#0d1b2a",
+    marginBottom: "8px",
   },
 
-  choice: {
+  answerInput: {
     width: "100%",
-    display: "flex",
-    alignItems: "center",
-    gap: "13px",
-    textAlign: "left",
-    background: "#ffffff",
+    boxSizing: "border-box",
     border: "1px solid #d8d1c5",
     borderRadius: "11px",
-    padding: "14px",
-    cursor: "pointer",
+    padding: "15px 16px",
     fontFamily:
       '"DM Sans", Arial, sans-serif',
-    fontSize: "14px",
-    lineHeight: 1.5,
-    color: "#0d1b2a",
-  },
-
-  choiceSelected: {
-  border: "2px solid #c9a84c",
-  background: "#fff3c4",
-  boxShadow: "0 0 0 2px rgba(201,168,76,0.18)",
-  fontWeight: "800",
-},
-
-  choiceLocked: {
-    cursor: "default",
-  },
-
-  choiceLetter: {
-    width: "30px",
-    height: "30px",
-    flexShrink: 0,
-    borderRadius: "50%",
-    background: "#f1ede5",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: "800",
-    fontSize: "12px",
-  },
-
-  choiceLetterSelected: {
-  background: "#c9a84c",
-  color: "#0d1b2a",
-  fontWeight: "900",
-},
-
-  lockIcon: {
-    marginLeft: "auto",
-    color: "#24713b",
-    fontWeight: "900",
     fontSize: "16px",
+    color: "#0d1b2a",
+    background: "#ffffff",
+    outline: "none",
+  },
+
+  answerInputLocked: {
+    background: "#f1f8f3",
+    border: "1px solid #b9d9c1",
+    color: "#24713b",
+    fontWeight: "700",
   },
 
   answerLockedMessage: {
-    marginTop: "18px",
+    marginTop: "12px",
     padding: "10px 14px",
     background: "#f1f8f3",
     border: "1px solid #cce5d2",
     borderRadius: "8px",
     color: "#24713b",
+    fontSize: "12px",
+    fontWeight: "700",
+  },
+
+  answerErrorMessage: {
+    marginTop: "10px",
+    padding: "10px 14px",
+    background: "#fdecec",
+    border: "1px solid #efc4c4",
+    borderRadius: "8px",
+    color: "#a33a3a",
     fontSize: "12px",
     fontWeight: "700",
   },
@@ -2419,6 +2735,35 @@ const styles = {
     justifyContent: "center",
     fontSize: "35px",
     fontWeight: "800",
+  },
+
+  scoreBox: {
+    margin: "25px auto",
+    padding: "20px",
+    background: "#f8f4ee",
+    border: "1px solid #e8e2d8",
+    borderRadius: "14px",
+  },
+
+  scoreLabel: {
+    fontSize: "10px",
+    fontWeight: "900",
+    letterSpacing: "1.5px",
+    color: "#8a8f98",
+  },
+
+  scoreValue: {
+    fontSize: "34px",
+    fontWeight: "900",
+    color: "#0d1b2a",
+    marginTop: "5px",
+  },
+
+  percentage: {
+    fontSize: "16px",
+    fontWeight: "800",
+    color: "#8a6d1d",
+    marginTop: "3px",
   },
 
   text: {

@@ -9,6 +9,8 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
 
   useEffect(() => {
     checkExistingSession();
@@ -80,6 +82,44 @@ export default function AdminLogin() {
       console.error("Admin login error:", error);
       setMessage(error.message || "Unable to log in. Please try again.");
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setMessage("");
+    setResetMessage("");
+
+    if (!email.trim()) {
+      setResetMessage("Please enter your admin email address first.");
+      return;
+    }
+
+    setResetLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        {
+          redirectTo:
+            "https://internationalfrenchacademy.org/reset-password",
+        }
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      setResetMessage(
+        "Password reset instructions have been sent to your email."
+      );
+    } catch (error) {
+      console.error("Password reset error:", error);
+      setResetMessage(
+        error.message ||
+          "Unable to send password reset instructions. Please try again."
+      );
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -157,7 +197,7 @@ export default function AdminLogin() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="admin@example.com"
             autoComplete="email"
-            disabled={loading}
+            disabled={loading || resetLoading}
             style={{
               width: "100%",
               boxSizing: "border-box",
@@ -187,12 +227,12 @@ export default function AdminLogin() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
             autoComplete="current-password"
-            disabled={loading}
+            disabled={loading || resetLoading}
             style={{
               width: "100%",
               boxSizing: "border-box",
               padding: "14px 16px",
-              marginBottom: "20px",
+              marginBottom: "12px",
               border: "1px solid #d8d3ca",
               borderRadius: "8px",
               fontSize: "15px",
@@ -216,19 +256,37 @@ export default function AdminLogin() {
             </div>
           )}
 
+          {resetMessage && (
+            <div
+              style={{
+                marginBottom: "20px",
+                padding: "12px 14px",
+                borderRadius: "8px",
+                background: "#f3f8f4",
+                color: "#166534",
+                fontSize: "14px",
+                lineHeight: "1.5",
+              }}
+            >
+              {resetMessage}
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || resetLoading}
             style={{
               width: "100%",
               padding: "14px",
               border: "none",
               borderRadius: "8px",
-              background: loading ? "#999" : "#0d1b2a",
+              background:
+                loading || resetLoading ? "#999" : "#0d1b2a",
               color: "#ffffff",
               fontSize: "16px",
               fontWeight: "600",
-              cursor: loading ? "not-allowed" : "pointer",
+              cursor:
+                loading || resetLoading ? "not-allowed" : "pointer",
             }}
           >
             {loading ? "Signing in..." : "Admin Sign In"}
@@ -238,6 +296,7 @@ export default function AdminLogin() {
         <button
           type="button"
           onClick={() => navigate("/student-login")}
+          disabled={loading || resetLoading}
           style={{
             width: "100%",
             marginTop: "16px",
@@ -246,7 +305,8 @@ export default function AdminLogin() {
             background: "transparent",
             color: "#0d1b2a",
             fontSize: "14px",
-            cursor: "pointer",
+            cursor:
+              loading || resetLoading ? "not-allowed" : "pointer",
           }}
         >
           ← Student Login

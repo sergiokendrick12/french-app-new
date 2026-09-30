@@ -9,7 +9,7 @@ import { supabase } from "../../supabaseClient";
  * =========================================================
  *
  * One attempt only.
- * 30 minutes.
+ * 2 hours.
  * First tab switch = warning.
  * Second tab switch = automatic termination with 0.
  */
@@ -582,7 +582,7 @@ const questions = [
   },
 ];
 
-const TEST_DURATION = 30 * 60;
+const TEST_DURATION = 2 * 60 * 60;
 
 /*
  * =========================================================
@@ -1212,7 +1212,7 @@ export default function WrittenTest() {
         );
 
       /*
-       * Brand-new attempt gets full 30 minutes.
+       * Brand-new attempt gets full 2 hours.
        * Resumed attempt uses server time.
        */
 
@@ -1895,7 +1895,7 @@ export default function WrittenTest() {
 
             <p style={styles.errorText}>
               Le temps de
-              30 minutes est
+              2 heures est
               terminé.
             </p>
 

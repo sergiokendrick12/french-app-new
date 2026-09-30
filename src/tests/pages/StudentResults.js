@@ -79,8 +79,10 @@ export default function StudentResults() {
       return "Compréhension orale";
     }
 
+    // Keep the database identifier unchanged.
+    // Only the student-facing label is changed.
     if (testType === "comprehension_ecrite") {
-      return "Compréhension écrite";
+      return "Examen de français";
     }
 
     if (testType === "expression_ecrite") {
@@ -123,6 +125,7 @@ export default function StudentResults() {
       (result) => result.test_type === "comprehension_orale"
     );
 
+    // Keep the database identifier unchanged.
     const written = results.find(
       (result) => result.test_type === "comprehension_ecrite"
     );
@@ -519,7 +522,7 @@ export default function StudentResults() {
                       result: comprehensionSummary.oral,
                     },
                     {
-                      label: "Compréhension écrite",
+                      label: "Examen de français",
                       result: comprehensionSummary.written,
                     },
                   ].map((item) => (
@@ -1003,3 +1006,4 @@ export default function StudentResults() {
     </div>
   );
 }
+

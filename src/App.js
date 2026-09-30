@@ -20,6 +20,7 @@ import StudentDashboard from "./tests/pages/StudentDashboard";
 
 import AdminLogin from "./tests/pages/AdminLogin";
 import AdminDashboard from "./tests/pages/AdminDashboard";
+import ResetPassword from "./tests/pages/ResetPassword";
 
 export default function App() {
   const [lang, setLang] = useState("en");
@@ -120,6 +121,15 @@ export default function App() {
         <Route
           path="/admin-login"
           element={<AdminLogin />}
+        />
+
+        {/* =========================================================
+            PASSWORD RESET
+        ========================================================= */}
+
+        <Route
+          path="/reset-password"
+          element={<ResetPassword />}
         />
 
         {/* =========================================================

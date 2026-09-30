@@ -35,6 +35,7 @@ export default function StudentDashboard() {
 
         setUser(user);
 
+        // LOAD STUDENT PROFILE
         const { data: profile, error: profileError } = await supabase
           .from("student_profiles")
           .select("id, full_name, email, status, payment_status")
@@ -50,7 +51,7 @@ export default function StudentDashboard() {
 
         setStudentProfile(profile);
 
-        // Check compréhension orale
+        // CHECK COMPRÉHENSION ORALE
         const { data: oralResult, error: oralError } = await supabase
           .from("test_results")
           .select("id")
@@ -68,7 +69,7 @@ export default function StudentDashboard() {
 
         setHasCompletedOralTest(!!oralResult);
 
-        // Check compréhension écrite
+        // CHECK COMPRÉHENSION ÉCRITE
         const { data: writtenResult, error: writtenError } = await supabase
           .from("test_results")
           .select("id")
@@ -86,7 +87,7 @@ export default function StudentDashboard() {
 
         setHasCompletedWrittenTest(!!writtenResult);
 
-        // Check expression écrite
+        // CHECK EXPRESSION ÉCRITE
         const { data: expressionResult, error: expressionError } =
           await supabase
             .from("test_results")
@@ -139,7 +140,7 @@ export default function StudentDashboard() {
       localStorage.removeItem("ifa_listening_test_result_saved");
       localStorage.removeItem("ifa_written_test_attempt");
 
-      // Force a clean navigation to the STUDENT login page.
+      // Force clean navigation to student login.
       window.location.href = "/student-login";
     } catch (error) {
       console.error("Erreur lors de la déconnexion :", error);
@@ -148,12 +149,25 @@ export default function StudentDashboard() {
   };
 
   // COMPRÉHENSION ORALE
-  // Disabled intentionally.
   const handleStartOralTest = () => {
-    return;
+    if (
+      studentProfile?.status !== "approved" ||
+      studentProfile?.payment_status !== "paid"
+    ) {
+      return;
+    }
+
+    if (hasCompletedOralTest) {
+      return;
+    }
+
+    // Do not restore an old local attempt when starting a new approved test.
+    localStorage.removeItem("ifa_listening_test_attempt");
+
+    navigate("/tests/level-test");
   };
 
-  // START COMPRÉHENSION ÉCRITE
+  // COMPRÉHENSION ÉCRITE
   const handleStartWrittenTest = () => {
     if (
       studentProfile?.status !== "approved" ||
@@ -225,6 +239,23 @@ export default function StudentDashboard() {
   const isPaid = paymentStatus === "paid";
 
   const isApprovedAndPaid = isApproved && isPaid;
+
+  // COMMON TEST ACCESS MESSAGE
+  const getTestMessage = (completed, defaultMessage) => {
+    if (completed) {
+      return "Vous avez déjà terminé cette partie. Une seule tentative est autorisée.";
+    }
+
+    if (!isApproved) {
+      return "L'accès sera disponible après validation de votre compte.";
+    }
+
+    if (!isPaid) {
+      return "Votre compte est approuvé. L'accès sera disponible après confirmation du paiement.";
+    }
+
+    return defaultMessage;
+  };
 
   return (
     <div
@@ -403,10 +434,17 @@ export default function StudentDashboard() {
                 : "#a15c00",
             }}
           >
-            {isApprovedAndPaid && "✓ Compte approuvé et paiement confirmé"}
-            {isApproved && !isPaid && "✓ Compte approuvé — paiement en attente"}
-            {isPending && "⏳ En attente de validation"}
-            {isRejected && "✕ Demande rejetée"}
+            {isApprovedAndPaid &&
+              "✓ Compte approuvé et paiement confirmé"}
+
+            {isApproved && !isPaid &&
+              "✓ Compte approuvé — paiement en attente"}
+
+            {isPending &&
+              "⏳ En attente de validation"}
+
+            {isRejected &&
+              "✕ Demande rejetée"}
           </div>
 
           <p
@@ -432,7 +470,7 @@ export default function StudentDashboard() {
           </p>
         </div>
 
-        {/* TESTS */}
+        {/* TESTS HEADER */}
         <div
           style={{
             marginBottom: "25px",
@@ -459,28 +497,35 @@ export default function StudentDashboard() {
           </p>
         </div>
 
+        {/* TEST CARDS */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(280px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
             gap: "25px",
           }}
         >
-          {/* COMPRÉHENSION ORALE — DISABLED */}
+          {/* COMPRÉHENSION ORALE */}
           <button
             onClick={handleStartOralTest}
-            disabled={true}
+            disabled={!isApprovedAndPaid || hasCompletedOralTest}
             style={{
-              background: "#f8f9fa",
+              background:
+                isApprovedAndPaid && !hasCompletedOralTest
+                  ? "white"
+                  : "#f8f9fa",
               border: "none",
               borderRadius: "18px",
               padding: "30px",
               textAlign: "left",
-              cursor: "not-allowed",
+              cursor:
+                isApprovedAndPaid && !hasCompletedOralTest
+                  ? "pointer"
+                  : "not-allowed",
               boxShadow: "0 6px 25px rgba(0,0,0,0.08)",
               borderTop: "5px solid #c9a84c",
-              opacity: 0.65,
+              opacity:
+                isApprovedAndPaid && !hasCompletedOralTest ? 1 : 0.65,
             }}
           >
             <div
@@ -496,7 +541,7 @@ export default function StudentDashboard() {
                 marginBottom: "20px",
               }}
             >
-              🔒
+              {hasCompletedOralTest ? "🔒" : "🎧"}
             </div>
 
             <h2
@@ -506,7 +551,9 @@ export default function StudentDashboard() {
                 fontSize: "21px",
               }}
             >
-              Compréhension orale
+              {hasCompletedOralTest
+                ? "Compréhension orale terminée"
+                : "Compréhension orale"}
             </h2>
 
             <p
@@ -516,16 +563,29 @@ export default function StudentDashboard() {
                 lineHeight: "1.6",
               }}
             >
-              Ce test est actuellement indisponible.
+              {getTestMessage(
+                hasCompletedOralTest,
+                "Écoutez les enregistrements et répondez aux questions de compréhension."
+              )}
             </p>
 
             <span
               style={{
-                color: "#667085",
+                color: "#0d1b2a",
                 fontWeight: "bold",
               }}
             >
-              Indisponible 🔒
+              {!isApproved && "Accès verrouillé 🔒"}
+
+              {isApproved && !isPaid && "Paiement requis 🔒"}
+
+              {isApprovedAndPaid &&
+                !hasCompletedOralTest &&
+                "Commencer →"}
+
+              {isApprovedAndPaid &&
+                hasCompletedOralTest &&
+                "Terminé ✓"}
             </span>
           </button>
 
@@ -589,20 +649,10 @@ export default function StudentDashboard() {
                 lineHeight: "1.6",
               }}
             >
-              {!isApproved &&
-                "L'accès sera disponible après validation de votre compte."}
-
-              {isApproved &&
-                !isPaid &&
-                "Votre compte est approuvé. L'accès sera disponible après confirmation du paiement."}
-
-              {isApprovedAndPaid &&
-                !hasCompletedWrittenTest &&
-                "Lisez les textes et répondez aux questions de compréhension."}
-
-              {isApprovedAndPaid &&
-                hasCompletedWrittenTest &&
-                "Vous avez déjà terminé cette partie. Une seule tentative est autorisée."}
+              {getTestMessage(
+                hasCompletedWrittenTest,
+                "Répondez aux 50 questions de français. Vous avez 30 minutes."
+              )}
             </p>
 
             <span
@@ -613,9 +663,7 @@ export default function StudentDashboard() {
             >
               {!isApproved && "Accès verrouillé 🔒"}
 
-              {isApproved &&
-                !isPaid &&
-                "Paiement requis 🔒"}
+              {isApproved && !isPaid && "Paiement requis 🔒"}
 
               {isApprovedAndPaid &&
                 !hasCompletedWrittenTest &&
@@ -687,13 +735,10 @@ export default function StudentDashboard() {
                 lineHeight: "1.6",
               }}
             >
-              {!isApproved
-                ? "L'accès sera disponible après validation de votre compte."
-                : !isPaid
-                ? "Votre compte est approuvé. L'accès sera disponible après confirmation du paiement."
-                : hasCompletedExpressionTest
-                ? "Vous avez déjà envoyé vos réponses. Une seule tentative est autorisée."
-                : "Rédigez vos réponses aux trois tâches d'expression écrite."}
+              {getTestMessage(
+                hasCompletedExpressionTest,
+                "Rédigez vos réponses aux trois tâches d'expression écrite."
+              )}
             </p>
 
             <span
@@ -704,9 +749,7 @@ export default function StudentDashboard() {
             >
               {!isApproved && "Accès verrouillé 🔒"}
 
-              {isApproved &&
-                !isPaid &&
-                "Paiement requis 🔒"}
+              {isApproved && !isPaid && "Paiement requis 🔒"}
 
               {isApprovedAndPaid &&
                 !hasCompletedExpressionTest &&
@@ -851,15 +894,18 @@ export default function StudentDashboard() {
                   fontWeight: "bold",
                 }}
               >
-                {isApprovedAndPaid && "✓ APPROUVÉ — PAYÉ"}
+                {isApprovedAndPaid &&
+                  "✓ APPROUVÉ — PAYÉ"}
 
                 {isApproved &&
                   !isPaid &&
                   "✓ APPROUVÉ — PAIEMENT EN ATTENTE"}
 
-                {isPending && "⏳ EN ATTENTE"}
+                {isPending &&
+                  "⏳ EN ATTENTE"}
 
-                {isRejected && "✕ REJETÉ"}
+                {isRejected &&
+                  "✕ REJETÉ"}
               </p>
             </div>
           </div>
@@ -880,3 +926,4 @@ export default function StudentDashboard() {
     </div>
   );
 }
+

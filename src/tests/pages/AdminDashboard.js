@@ -214,14 +214,14 @@ export default function AdminDashboard() {
       }
 
       const { data, error } = await supabase
-        .from("test_results")
-        .select("*")
-        .eq("student_id", studentId)
-        .order("completed_at", { ascending: false });
+  .from("test_results")
+  .select("*")
+  .eq("student_id", studentId)
+  .order("completed_at", { ascending: false });
 
-      if (error) {
-        throw error;
-      }
+if (error) {
+  throw error;
+}
 
       const loadedResults = data || [];
 
@@ -650,6 +650,44 @@ export default function AdminDashboard() {
   };
 
   // =========================================================
+  // EXAM LABELS
+  // =========================================================
+
+  const getExamLabel = (testType) => {
+    if (!testType) {
+      return "Examen";
+    }
+
+    const labels = {
+      exam_kim: "Examen Kim",
+      exam_leonille: "Examen Leonille",
+    };
+
+    if (labels[testType]) {
+      return labels[testType];
+    }
+
+    return testType
+      .replace(/^exam_/, "")
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (letter) =>
+        letter.toUpperCase()
+      );
+  };
+
+  const getExamIcon = (testType) => {
+    if (testType === "exam_kim") {
+      return "📝";
+    }
+
+    if (testType === "exam_leonille") {
+      return "📝";
+    }
+
+    return "📋";
+  };
+
+  // =========================================================
   // FILTERED STUDENTS
   // =========================================================
 
@@ -772,6 +810,24 @@ export default function AdminDashboard() {
           result.test_type ===
           "expression_ecrite"
       ) || null,
+    [studentResults]
+  );
+
+  // =========================================================
+  // SELECTED OTHER EXAMS
+  // =========================================================
+
+  const selectedOtherExamResults = useMemo(
+    () =>
+      studentResults.filter(
+        (result) =>
+          result.test_type &&
+          ![
+            "comprehension_orale",
+            "comprehension_ecrite",
+            "expression_ecrite",
+          ].includes(result.test_type)
+      ),
     [studentResults]
   );
 
@@ -902,7 +958,8 @@ export default function AdminDashboard() {
   // =========================================================
   // MAIN INTERFACE
   // =========================================================
-    return (
+
+  return (
     <div style={styles.page}>
       <div style={styles.container}>
 
@@ -1366,6 +1423,159 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* =================================================
+                    OTHER EXAMS
+                ================================================= */}
+
+                {selectedOtherExamResults.length > 0 && (
+                  <div style={styles.otherExamsSection}>
+
+                    <div style={styles.sectionHeading}>
+                      Autres examens
+                    </div>
+
+                    <div style={styles.resultsGrid}>
+                      {selectedOtherExamResults.map(
+                        (examResult) => {
+                          const hasScore =
+                            examResult.score !== null &&
+                            examResult.score !== undefined;
+
+                          const hasTotalQuestions =
+                            examResult.total_questions !==
+                              null &&
+                            examResult.total_questions !==
+                              undefined;
+
+                          // =================================================
+                          // UPDATED:
+                          // Use saved percentage when available.
+                          // Otherwise calculate it from score/total.
+                          // Example: 42 / 50 = 84%
+                          // =================================================
+
+                          const calculatedPercentage =
+                            examResult.percentage !== null &&
+                            examResult.percentage !== undefined &&
+                            examResult.percentage !== ""
+                              ? Number(examResult.percentage)
+                              : Number(
+                                  examResult.total_questions
+                                ) > 0
+                              ? Math.round(
+                                  (Number(
+                                    examResult.score || 0
+                                  ) /
+                                    Number(
+                                      examResult.total_questions
+                                    )) *
+                                    100
+                                )
+                              : null;
+
+                          return (
+                            <div
+                              key={examResult.id}
+                              style={styles.resultCard}
+                            >
+                              <div
+                                style={
+                                  styles.resultCardHeader
+                                }
+                              >
+                                <div>
+                                  <div
+                                    style={
+                                      styles.resultIcon
+                                    }
+                                  >
+                                    {getExamIcon(
+                                      examResult.test_type
+                                    )}
+                                  </div>
+
+                                  <h3
+                                    style={
+                                      styles.resultTitle
+                                    }
+                                  >
+                                    {getExamLabel(
+                                      examResult.test_type
+                                    )}
+                                  </h3>
+                                </div>
+
+                                <span
+                                  style={
+                                    styles.completedBadge
+                                  }
+                                >
+                                  ✓ Terminé
+                                </span>
+                              </div>
+
+                              {hasScore ? (
+                                <div
+                                  style={
+                                    styles.bigScore
+                                  }
+                                >
+                                  {examResult.score}
+
+                                  {hasTotalQuestions && (
+                                    <span>
+                                      /
+                                      {
+                                        examResult.total_questions
+                                      }
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <div
+                                  style={
+                                    styles.notCompleted
+                                  }
+                                >
+                                  Résultat disponible
+                                </div>
+                              )}
+
+                              {calculatedPercentage !== null && (
+                                <div
+                                  style={
+                                    styles.percentage
+                                  }
+                                >
+                                  {calculatedPercentage}%
+                                </div>
+                              )}
+
+                              <div
+                                style={
+                                  styles.examTypeLabel
+                                }
+                              >
+                                {examResult.test_type}
+                              </div>
+
+                              <div
+                                style={
+                                  styles.resultDate
+                                }
+                              >
+                                {formatDateTime(
+                                  examResult.completed_at
+                                )}
+                              </div>
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* =================================================
                     EXPRESSION ANSWERS + GRADING
                 ================================================= */}
 
@@ -1607,9 +1817,14 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
+                {/* =================================================
+                    EMPTY RESULTS
+                ================================================= */}
+
                 {!selectedOralResult &&
                   !selectedWrittenResult &&
-                  !selectedExpressionResult && (
+                  !selectedExpressionResult &&
+                  selectedOtherExamResults.length === 0 && (
                     <div style={styles.emptyResults}>
                       <div style={styles.emptyIcon}>
                         📋
@@ -2711,6 +2926,23 @@ const styles = {
     color: "#999",
     fontSize: "12px",
     fontStyle: "italic",
+  },
+
+  // =========================================================
+  // OTHER EXAMS
+  // =========================================================
+
+  otherExamsSection: {
+    marginTop: "5px",
+  },
+
+  examTypeLabel: {
+    marginTop: "8px",
+    color: "#8a7444",
+    fontSize: "10px",
+    fontWeight: 700,
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
   },
 
   expressionSection: {

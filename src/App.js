@@ -12,6 +12,10 @@ import TestLandingPage from "./tests/pages/TestLandingPage";
 import ListeningTest from "./tests/pages/ListeningTest";
 import WrittenTest from "./tests/pages/WrittenTest";
 import WrittenExpressionTest from "./tests/pages/WrittenExpressionTest";
+import ExamLeonille from "./tests/pages/ExamLeonille";
+import ExamIdriss from "./tests/pages/ExamIdriss";
+import ExamJoan from "./tests/pages/ExamJoan";
+import ExamKim from "./tests/pages/ExamKim";
 
 import StudentLogin from "./tests/pages/StudentLogin";
 import StudentRegister from "./tests/pages/StudentRegister";
@@ -29,10 +33,9 @@ export default function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* =========================================================
-            HOMEPAGE
-        ========================================================= */}
-
+        {/* =========================
+            HOME
+        ========================= */}
         <Route
           path="/"
           element={
@@ -43,10 +46,9 @@ export default function App() {
           }
         />
 
-        {/* =========================================================
-            TEST LANDING PAGE
-        ========================================================= */}
-
+        {/* =========================
+            TESTS
+        ========================= */}
         <Route
           path="/tests"
           element={
@@ -57,10 +59,9 @@ export default function App() {
           }
         />
 
-        {/* =========================================================
-            STUDENT AUTHENTICATION
-        ========================================================= */}
-
+        {/* =========================
+            STUDENT AUTH
+        ========================= */}
         <Route
           path="/student-login"
           element={<StudentLogin />}
@@ -71,88 +72,107 @@ export default function App() {
           element={<StudentRegister />}
         />
 
-        {/* =========================================================
+        {/* =========================
             STUDENT DASHBOARD
-        ========================================================= */}
-
+        ========================= */}
         <Route
           path="/student-dashboard"
           element={<StudentDashboard />}
         />
 
-        {/* =========================================================
-            STUDENT TESTS
-        ========================================================= */}
-
-        {/* Compréhension orale */}
-
+        {/* =========================
+            STANDARD TESTS
+        ========================= */}
         <Route
           path="/tests/level-test"
           element={<ListeningTest />}
         />
-
-        {/* Compréhension écrite */}
 
         <Route
           path="/tests/written-test"
           element={<WrittenTest />}
         />
 
-        {/* Expression écrite */}
-
         <Route
           path="/tests/expression-ecrite"
           element={<WrittenExpressionTest />}
         />
 
-        {/* =========================================================
-            STUDENT RESULTS
-        ========================================================= */}
+        {/* =========================
+            INDIVIDUAL EXAMS
+        ========================= */}
 
+        {/* LEONILLE EXAM */}
+        <Route
+          path="/tests/exam-leonille"
+          element={<ExamLeonille />}
+        />
+
+        {/* IDRISS EXAM */}
+        <Route
+          path="/tests/exam-idriss"
+          element={<ExamIdriss />}
+        />
+
+        {/* JOAN EXAM */}
+        <Route
+          path="/tests/exam-joan"
+          element={<ExamJoan />}
+        />
+
+        {/* Also accept a trailing slash */}
+        <Route
+          path="/tests/exam-joan/"
+          element={<ExamJoan />}
+        />
+
+        {/* KIM EXAM */}
+        <Route
+          path="/tests/exam-kim"
+          element={<ExamKim />}
+        />
+
+        {/* Also accept a trailing slash */}
+        <Route
+          path="/tests/exam-kim/"
+          element={<ExamKim />}
+        />
+
+        {/* =========================
+            RESULTS
+        ========================= */}
         <Route
           path="/tests/results"
           element={<StudentResults />}
         />
 
-        {/* =========================================================
-            ADMIN AUTHENTICATION
-        ========================================================= */}
-
+        {/* =========================
+            ADMIN
+        ========================= */}
         <Route
           path="/admin-login"
           element={<AdminLogin />}
         />
-
-        {/* =========================================================
-            PASSWORD RESET
-        ========================================================= */}
-
-        <Route
-          path="/reset-password"
-          element={<ResetPassword />}
-        />
-
-        {/* =========================================================
-            ADMIN DASHBOARD
-        ========================================================= */}
 
         <Route
           path="/admin-dashboard"
           element={<AdminDashboard />}
         />
 
-        {/* =========================================================
-            FALLBACK
-        ========================================================= */}
+        {/* =========================
+            PASSWORD RESET
+        ========================= */}
+        <Route
+          path="/reset-password"
+          element={<ResetPassword />}
+        />
 
+        {/* =========================
+            FALLBACK
+        ========================= */}
         <Route
           path="*"
-          element={
-            <Navigate
-              to="/"
-              replace
-            />
-          }
+          element={<Navigate to="/" replace />}
         />
 
       </Routes>

@@ -24,9 +24,25 @@ export default function AdminDashboard() {
 
   const [savingGrade, setSavingGrade] = useState(false);
 
+  // OLD EXPRESSION ECRITE /3
   const [gradeTask1, setGradeTask1] = useState("");
   const [gradeTask2, setGradeTask2] = useState("");
   const [gradeTask3, setGradeTask3] = useState("");
+
+  // =========================================================
+  // KEYNES EXAM
+  // =========================================================
+
+  const [keynesAttempt, setKeynesAttempt] = useState(null);
+  const [keynesGrade, setKeynesGrade] = useState("");
+  const [keynesSavingGrade, setKeynesSavingGrade] = useState(false);
+
+  const [keynesOpenTasks, setKeynesOpenTasks] = useState({
+    task1: false,
+    task2: false,
+    task3: false,
+    task4: false,
+  });
 
   // =========================================================
   // INITIAL ADMIN CHECK + INITIAL DATA LOAD
@@ -106,7 +122,10 @@ export default function AdminDashboard() {
           setLoading(false);
         }
       } catch (error) {
-        console.error("Erreur initialisation administration :", error);
+        console.error(
+          "Erreur initialisation administration :",
+          error
+        );
 
         if (mounted) {
           setErrorMessage(
@@ -204,8 +223,8 @@ export default function AdminDashboard() {
       setErrorMessage("");
       setSuccessMessage("");
 
-      // student_profiles.id is the authenticated student's UUID.
-      const studentId = student?.user_id || student?.id;
+      const studentId =
+        student?.user_id || student?.id;
 
       if (!studentId) {
         throw new Error(
@@ -213,51 +232,151 @@ export default function AdminDashboard() {
         );
       }
 
-      const { data, error } = await supabase
-  .from("test_results")
-  .select("*")
-  .eq("student_id", studentId)
-  .order("completed_at", { ascending: false });
+      // -------------------------------------------------------
+      // LOAD TEST RESULTS
+      // -------------------------------------------------------
 
-if (error) {
-  throw error;
-}
+      const {
+        data,
+        error,
+      } = await supabase
+        .from("test_results")
+        .select("*")
+        .eq("student_id", studentId)
+        .order("completed_at", {
+          ascending: false,
+        });
+
+      if (error) {
+        throw error;
+      }
 
       const loadedResults = data || [];
 
       setStudentResults(loadedResults);
 
+      // -------------------------------------------------------
+      // LOAD KEYNES ATTEMPT
+      //
+      // This contains:
+      // answers.language
+      // answers.writing
+      // -------------------------------------------------------
+
+      const {
+        data: keynesAttemptData,
+        error: keynesAttemptError,
+      } = await supabase
+        .from("exam_keynes_attempts")
+        .select(
+          `
+            id,
+            student_id,
+            status,
+            started_at,
+            finished_at,
+            tab_switches,
+            termination_reason,
+            created_at,
+            answers
+          `
+        )
+        .eq("student_id", studentId)
+        .eq("status", "finished")
+        .order("created_at", {
+          ascending: false,
+        })
+        .limit(1)
+        .maybeSingle();
+
+      if (keynesAttemptError) {
+        console.error(
+          "Erreur chargement tentative Keynes :",
+          keynesAttemptError
+        );
+
+        setKeynesAttempt(null);
+      } else {
+        setKeynesAttempt(
+          keynesAttemptData || null
+        );
+      }
+
+      // -------------------------------------------------------
+      // OLD EXPRESSION ECRITE /3
+      // -------------------------------------------------------
+
       const expressionResult = loadedResults.find(
         (result) =>
-          result.test_type === "expression_ecrite"
+          result.test_type ===
+          "expression_ecrite"
       );
 
       if (expressionResult) {
         setGradeTask1(
           expressionResult.grading_task1 === null ||
-            expressionResult.grading_task1 === undefined
+            expressionResult.grading_task1 ===
+              undefined
             ? ""
-            : String(expressionResult.grading_task1)
+            : String(
+                expressionResult.grading_task1
+              )
         );
 
         setGradeTask2(
           expressionResult.grading_task2 === null ||
-            expressionResult.grading_task2 === undefined
+            expressionResult.grading_task2 ===
+              undefined
             ? ""
-            : String(expressionResult.grading_task2)
+            : String(
+                expressionResult.grading_task2
+              )
         );
 
         setGradeTask3(
           expressionResult.grading_task3 === null ||
-            expressionResult.grading_task3 === undefined
+            expressionResult.grading_task3 ===
+              undefined
             ? ""
-            : String(expressionResult.grading_task3)
+            : String(
+                expressionResult.grading_task3
+              )
         );
       } else {
         setGradeTask1("");
         setGradeTask2("");
         setGradeTask3("");
       }
+
+      // -------------------------------------------------------
+      // KEYNES WRITING GRADE /25
+      // -------------------------------------------------------
+
+      const keynesResult = loadedResults.find(
+        (result) =>
+          result.test_type === "exam_keynes"
+      );
+
+      if (keynesResult) {
+        setKeynesGrade(
+          keynesResult.grading_total === null ||
+            keynesResult.grading_total ===
+              undefined
+            ? ""
+            : String(
+                keynesResult.grading_total
+              )
+        );
+      } else {
+        setKeynesGrade("");
+      }
+
+      setKeynesOpenTasks({
+        task1: false,
+        task2: false,
+        task3: false,
+        task4: false,
+      });
     } catch (error) {
       console.error(
         "Erreur chargement résultats étudiant :",
@@ -270,6 +389,7 @@ if (error) {
       );
 
       setStudentResults([]);
+      setKeynesAttempt(null);
     } finally {
       setStudentLoading(false);
     }
@@ -296,6 +416,16 @@ if (error) {
     setGradeTask2("");
     setGradeTask3("");
 
+    setKeynesAttempt(null);
+    setKeynesGrade("");
+
+    setKeynesOpenTasks({
+      task1: false,
+      task2: false,
+      task3: false,
+      task4: false,
+    });
+
     setErrorMessage("");
     setSuccessMessage("");
   };
@@ -304,7 +434,10 @@ if (error) {
   // UPDATE ACCOUNT STATUS
   // =========================================================
 
-  const updateStudentStatus = async (student, newStatus) => {
+  const updateStudentStatus = async (
+    student,
+    newStatus
+  ) => {
     try {
       setErrorMessage("");
       setSuccessMessage("");
@@ -416,7 +549,7 @@ if (error) {
   };
 
   // =========================================================
-  // SAVE EXPRESSION GRADE
+  // SAVE OLD EXPRESSION GRADE /3
   // =========================================================
 
   const saveExpressionGrade = async () => {
@@ -425,7 +558,9 @@ if (error) {
       setSuccessMessage("");
 
       if (!selectedStudent) {
-        setErrorMessage("Aucun étudiant sélectionné.");
+        setErrorMessage(
+          "Aucun étudiant sélectionné."
+        );
         return;
       }
 
@@ -455,10 +590,12 @@ if (error) {
         return;
       }
 
-      const expressionResult = studentResults.find(
-        (result) =>
-          result.test_type === "expression_ecrite"
-      );
+      const expressionResult =
+        studentResults.find(
+          (result) =>
+            result.test_type ===
+            "expression_ecrite"
+        );
 
       if (!expressionResult) {
         setErrorMessage(
@@ -467,24 +604,28 @@ if (error) {
         return;
       }
 
-      const total = task1 + task2 + task3;
+      const total =
+        task1 + task2 + task3;
 
       setSavingGrade(true);
 
-      const { data: updatedResult, error } =
-        await supabase
-          .from("test_results")
-          .update({
-            grading_task1: task1,
-            grading_task2: task2,
-            grading_task3: task3,
-            grading_total: total,
-            grading_status: "graded",
-            graded_at: new Date().toISOString(),
-          })
-          .eq("id", expressionResult.id)
-          .select("*")
-          .single();
+      const {
+        data: updatedResult,
+        error,
+      } = await supabase
+        .from("test_results")
+        .update({
+          grading_task1: task1,
+          grading_task2: task2,
+          grading_task3: task3,
+          grading_total: total,
+          grading_status: "graded",
+          graded_at:
+            new Date().toISOString(),
+        })
+        .eq("id", expressionResult.id)
+        .select("*")
+        .single();
 
       if (error) {
         throw error;
@@ -525,6 +666,185 @@ if (error) {
   };
 
   // =========================================================
+  // KEYNES HELPERS
+  // =========================================================
+
+  const getKeynesWritingAnswers = () => {
+    const attemptAnswers =
+      keynesAttempt?.answers;
+
+    const writing =
+      attemptAnswers?.writing || {};
+
+    const keynesResult =
+      studentResults.find(
+        (result) =>
+          result.test_type ===
+          "exam_keynes"
+      );
+
+    return {
+      task1:
+        writing.task1 ??
+        keynesResult?.task1_answer ??
+        "",
+
+      task2:
+        writing.task2 ??
+        keynesResult?.task2_answer ??
+        "",
+
+      task3:
+        writing.task3 ??
+        keynesResult?.task3_answer ??
+        "",
+
+      task4:
+        writing.task4 ??
+        keynesResult?.task4_answer ??
+        "",
+    };
+  };
+
+  const toggleKeynesTask = (task) => {
+    setKeynesOpenTasks((current) => ({
+      ...current,
+      [task]: !current[task],
+    }));
+  };
+
+  // =========================================================
+  // SAVE KEYNES WRITING GRADE /25
+  // =========================================================
+
+  const saveKeynesGrade = async () => {
+    try {
+      setErrorMessage("");
+      setSuccessMessage("");
+
+      if (!selectedStudent) {
+        setErrorMessage(
+          "Aucun étudiant sélectionné."
+        );
+        return;
+      }
+
+      const keynesResult =
+        studentResults.find(
+          (result) =>
+            result.test_type ===
+            "exam_keynes"
+        );
+
+      if (!keynesResult) {
+        setErrorMessage(
+          "Aucun résultat de l'examen Keynes trouvé."
+        );
+        return;
+      }
+
+      if (
+        keynesGrade === "" ||
+        keynesGrade === null ||
+        keynesGrade === undefined
+      ) {
+        setErrorMessage(
+          "Veuillez attribuer une note d'expression écrite sur 25."
+        );
+        return;
+      }
+
+      const writingGrade =
+        Number(keynesGrade);
+
+      if (
+        !Number.isInteger(writingGrade) ||
+        writingGrade < 0 ||
+        writingGrade > 25
+      ) {
+        setErrorMessage(
+          "La note d'expression écrite doit être un nombre entier entre 0 et 25."
+        );
+        return;
+      }
+
+      const languageScore = Number(
+        keynesResult.score || 0
+      );
+
+      if (
+        languageScore < 0 ||
+        languageScore > 75
+      ) {
+        setErrorMessage(
+          "Le score de langue Keynes est invalide. Il doit être compris entre 0 et 75."
+        );
+        return;
+      }
+
+      const finalScore =
+        languageScore + writingGrade;
+
+      setKeynesSavingGrade(true);
+
+      const {
+        data: updatedResult,
+        error,
+      } = await supabase
+        .from("test_results")
+        .update({
+          grading_total: writingGrade,
+          grading_status: "graded",
+          graded_at:
+            new Date().toISOString(),
+        })
+        .eq("id", keynesResult.id)
+        .select("*")
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      setStudentResults((current) =>
+        current.map((result) =>
+          result.id === keynesResult.id
+            ? updatedResult
+            : result
+        )
+      );
+
+      setResults((current) =>
+        current.map((result) =>
+          result.id === keynesResult.id
+            ? updatedResult
+            : result
+        )
+      );
+
+      setKeynesGrade(
+        String(writingGrade)
+      );
+
+      setSuccessMessage(
+        `Examen Keynes corrigé : ${languageScore}/75 + ${writingGrade}/25 = ${finalScore}/100.`
+      );
+    } catch (error) {
+      console.error(
+        "Erreur correction examen Keynes :",
+        error
+      );
+
+      setErrorMessage(
+        error?.message ||
+          "Impossible d'enregistrer la correction de l'examen Keynes."
+      );
+    } finally {
+      setKeynesSavingGrade(false);
+    }
+  };
+
+  // =========================================================
   // LOGOUT
   // =========================================================
 
@@ -536,7 +856,10 @@ if (error) {
         replace: true,
       });
     } catch (error) {
-      console.error("Erreur déconnexion :", error);
+      console.error(
+        "Erreur déconnexion :",
+        error
+      );
 
       setErrorMessage(
         error?.message ||
@@ -590,22 +913,38 @@ if (error) {
     student?.status || "pending";
 
   const getStatusLabel = (status) => {
-    if (status === "approved") return "Approuvé";
-    if (status === "rejected") return "Refusé";
+    if (status === "approved") {
+      return "Approuvé";
+    }
+
+    if (status === "rejected") {
+      return "Refusé";
+    }
+
     return "En attente";
   };
 
   const getPaymentLabel = (payment) => {
-    if (payment === "paid") return "💳 Payé";
-    if (payment === "unpaid") return "💳 Non payé";
+    if (payment === "paid") {
+      return "💳 Payé";
+    }
+
+    if (payment === "unpaid") {
+      return "💳 Non payé";
+    }
+
     return "💳 En attente";
   };
 
   const getStudentId = (student) =>
     student?.user_id || student?.id;
 
-  const getLatestResult = (student, testType) => {
-    const studentId = getStudentId(student);
+  const getLatestResult = (
+    student,
+    testType
+  ) => {
+    const studentId =
+      getStudentId(student);
 
     return (
       results.find(
@@ -616,8 +955,11 @@ if (error) {
     );
   };
 
-  const getStudentTestCount = (student) => {
-    const studentId = getStudentId(student);
+  const getStudentTestCount = (
+    student
+  ) => {
+    const studentId =
+      getStudentId(student);
 
     return results.filter(
       (result) =>
@@ -625,7 +967,9 @@ if (error) {
     ).length;
   };
 
-  const isStudentCompleted = (student) => {
+  const isStudentCompleted = (
+    student
+  ) => {
     const oral = getLatestResult(
       student,
       "comprehension_orale"
@@ -645,7 +989,8 @@ if (error) {
       oral &&
         written &&
         expression &&
-        expression.grading_status === "graded"
+        expression.grading_status ===
+          "graded"
     );
   };
 
@@ -653,7 +998,9 @@ if (error) {
   // EXAM LABELS
   // =========================================================
 
-  const getExamLabel = (testType) => {
+  const getExamLabel = (
+    testType
+  ) => {
     if (!testType) {
       return "Examen";
     }
@@ -661,6 +1008,7 @@ if (error) {
     const labels = {
       exam_kim: "Examen Kim",
       exam_leonille: "Examen Leonille",
+      exam_keynes: "Examen Keynes — B1",
     };
 
     if (labels[testType]) {
@@ -675,12 +1023,14 @@ if (error) {
       );
   };
 
-  const getExamIcon = (testType) => {
-    if (testType === "exam_kim") {
-      return "📝";
-    }
-
-    if (testType === "exam_leonille") {
+  const getExamIcon = (
+    testType
+  ) => {
+    if (
+      testType === "exam_kim" ||
+      testType === "exam_leonille" ||
+      testType === "exam_keynes"
+    ) {
       return "📝";
     }
 
@@ -713,11 +1063,13 @@ if (error) {
 
       const matchesStatus =
         statusFilter === "all" ||
-        getStudentStatus(student) === statusFilter;
+        getStudentStatus(student) ===
+          statusFilter;
 
       const matchesPayment =
         paymentFilter === "all" ||
-        getStudentPayment(student) === paymentFilter;
+        getStudentPayment(student) ===
+          paymentFilter;
 
       return (
         matchesSearch &&
@@ -741,31 +1093,37 @@ if (error) {
 
     const approved = students.filter(
       (student) =>
-        getStudentStatus(student) === "approved"
+        getStudentStatus(student) ===
+        "approved"
     ).length;
 
     const pending = students.filter(
       (student) =>
-        getStudentStatus(student) === "pending"
+        getStudentStatus(student) ===
+        "pending"
     ).length;
 
     const rejected = students.filter(
       (student) =>
-        getStudentStatus(student) === "rejected"
+        getStudentStatus(student) ===
+        "rejected"
     ).length;
 
     const paid = students.filter(
       (student) =>
-        getStudentPayment(student) === "paid"
+        getStudentPayment(student) ===
+        "paid"
     ).length;
 
     const unpaid = students.filter(
       (student) =>
-        getStudentPayment(student) !== "paid"
+        getStudentPayment(student) !==
+        "paid"
     ).length;
 
     const completed = students.filter(
-      (student) => isStudentCompleted(student)
+      (student) =>
+        isStudentCompleted(student)
     ).length;
 
     return {
@@ -783,53 +1141,84 @@ if (error) {
   // SELECTED STUDENT RESULTS
   // =========================================================
 
-  const selectedOralResult = useMemo(
-    () =>
-      studentResults.find(
-        (result) =>
-          result.test_type ===
-          "comprehension_orale"
-      ) || null,
-    [studentResults]
-  );
+  const selectedOralResult =
+    useMemo(
+      () =>
+        studentResults.find(
+          (result) =>
+            result.test_type ===
+            "comprehension_orale"
+        ) || null,
+      [studentResults]
+    );
 
-  const selectedWrittenResult = useMemo(
-    () =>
-      studentResults.find(
-        (result) =>
-          result.test_type ===
-          "comprehension_ecrite"
-      ) || null,
-    [studentResults]
-  );
+  const selectedWrittenResult =
+    useMemo(
+      () =>
+        studentResults.find(
+          (result) =>
+            result.test_type ===
+            "comprehension_ecrite"
+        ) || null,
+      [studentResults]
+    );
 
-  const selectedExpressionResult = useMemo(
-    () =>
-      studentResults.find(
-        (result) =>
-          result.test_type ===
-          "expression_ecrite"
-      ) || null,
-    [studentResults]
-  );
+  const selectedExpressionResult =
+    useMemo(
+      () =>
+        studentResults.find(
+          (result) =>
+            result.test_type ===
+            "expression_ecrite"
+        ) || null,
+      [studentResults]
+    );
+
+  const selectedKeynesResult =
+    useMemo(
+      () =>
+        studentResults.find(
+          (result) =>
+            result.test_type ===
+            "exam_keynes"
+        ) || null,
+      [studentResults]
+    );
+
+  // =========================================================
+  // KEYNES ANSWERS
+  // =========================================================
+
+  const selectedKeynesAnswers =
+    useMemo(
+      () => getKeynesWritingAnswers(),
+      [
+        keynesAttempt,
+        studentResults,
+      ]
+    );
 
   // =========================================================
   // SELECTED OTHER EXAMS
   // =========================================================
 
-  const selectedOtherExamResults = useMemo(
-    () =>
-      studentResults.filter(
-        (result) =>
-          result.test_type &&
-          ![
-            "comprehension_orale",
-            "comprehension_ecrite",
-            "expression_ecrite",
-          ].includes(result.test_type)
-      ),
-    [studentResults]
-  );
+  const selectedOtherExamResults =
+    useMemo(
+      () =>
+        studentResults.filter(
+          (result) =>
+            result.test_type &&
+            ![
+              "comprehension_orale",
+              "comprehension_ecrite",
+              "expression_ecrite",
+              "exam_keynes",
+            ].includes(
+              result.test_type
+            )
+        ),
+      [studentResults]
+    );
 
   const selectedComprehensionSummary =
     useMemo(() => {
@@ -842,23 +1231,33 @@ if (error) {
         return null;
       }
 
-      const totalScore = completed.reduce(
-        (sum, result) =>
-          sum + Number(result.score || 0),
-        0
-      );
+      const totalScore =
+        completed.reduce(
+          (sum, result) =>
+            sum +
+            Number(
+              result.score || 0
+            ),
+          0
+        );
 
-      const totalQuestions = completed.reduce(
-        (sum, result) =>
-          sum +
-          Number(result.total_questions || 0),
-        0
-      );
+      const totalQuestions =
+        completed.reduce(
+          (sum, result) =>
+            sum +
+            Number(
+              result.total_questions ||
+                0
+            ),
+          0
+        );
 
       const percentage =
         totalQuestions > 0
           ? Math.round(
-              (totalScore / totalQuestions) * 100
+              (totalScore /
+                totalQuestions) *
+                100
             )
           : 0;
 
@@ -906,7 +1305,8 @@ if (error) {
           </h1>
 
           <p style={styles.loadingText}>
-            Vérification des accès administration...
+            Vérification des accès
+            administration...
           </p>
         </div>
       </div>
@@ -935,7 +1335,9 @@ if (error) {
             International French Academy
           </h1>
 
-          <div style={styles.adminAccessTitle}>
+          <div
+            style={styles.adminAccessTitle}
+          >
             Accès administration
           </div>
 
@@ -945,7 +1347,9 @@ if (error) {
 
           <button
             type="button"
-            onClick={() => navigate("/")}
+            onClick={() =>
+              navigate("/")
+            }
             style={styles.primaryButton}
           >
             Retour à l'accueil
@@ -980,18 +1384,24 @@ if (error) {
                 International French Academy
               </div>
 
-              <div style={styles.brandSubtitle}>
+              <div
+                style={styles.brandSubtitle}
+              >
                 Administration
               </div>
             </div>
           </div>
 
-          <div style={styles.headerActions}>
+          <div
+            style={styles.headerActions}
+          >
             <button
               type="button"
               onClick={handleRefresh}
               disabled={refreshing}
-              style={styles.secondaryButton}
+              style={
+                styles.secondaryButton
+              }
             >
               {refreshing
                 ? "↻ Actualisation..."
@@ -1019,7 +1429,9 @@ if (error) {
 
             <button
               type="button"
-              onClick={() => setErrorMessage("")}
+              onClick={() =>
+                setErrorMessage("")
+              }
               style={styles.messageClose}
             >
               ×
@@ -1028,13 +1440,17 @@ if (error) {
         )}
 
         {successMessage && (
-          <div style={styles.successBanner}>
+          <div
+            style={styles.successBanner}
+          >
             <span>✓</span>
             <span>{successMessage}</span>
 
             <button
               type="button"
-              onClick={() => setSuccessMessage("")}
+              onClick={() =>
+                setSuccessMessage("")
+              }
               style={styles.messageClose}
             >
               ×
@@ -1047,8 +1463,9 @@ if (error) {
         ===================================================== */}
 
         {selectedStudent ? (
-          <section style={styles.detailSection}>
-
+          <section
+            style={styles.detailSection}
+          >
             <button
               type="button"
               onClick={closeStudent}
@@ -1059,21 +1476,36 @@ if (error) {
 
             {/* STUDENT HEADER */}
 
-            <div style={styles.detailHeader}>
+            <div
+              style={styles.detailHeader}
+            >
               <div>
-                <div style={styles.detailEyebrow}>
+                <div
+                  style={
+                    styles.detailEyebrow
+                  }
+                >
                   DOSSIER ÉTUDIANT
                 </div>
 
-                <h1 style={styles.detailName}>
-                  {getStudentName(selectedStudent)}
+                <h1
+                  style={styles.detailName}
+                >
+                  {getStudentName(
+                    selectedStudent
+                  )}
                 </h1>
 
-                <div style={styles.detailEmail}>
-                  {selectedStudent.email || "—"}
+                <div
+                  style={styles.detailEmail}
+                >
+                  {selectedStudent.email ||
+                    "—"}
                 </div>
 
-                <div style={styles.detailDate}>
+                <div
+                  style={styles.detailDate}
+                >
                   Inscrit le{" "}
                   {formatDate(
                     selectedStudent.created_at
@@ -1081,7 +1513,9 @@ if (error) {
                 </div>
               </div>
 
-              <div style={styles.detailBadges}>
+              <div
+                style={styles.detailBadges}
+              >
                 <span
                   style={{
                     ...styles.badge,
@@ -1097,7 +1531,9 @@ if (error) {
                   }}
                 >
                   {getStatusLabel(
-                    getStudentStatus(selectedStudent)
+                    getStudentStatus(
+                      selectedStudent
+                    )
                   )}
                 </span>
 
@@ -1112,7 +1548,9 @@ if (error) {
                   }}
                 >
                   {getPaymentLabel(
-                    getStudentPayment(selectedStudent)
+                    getStudentPayment(
+                      selectedStudent
+                    )
                   )}
                 </span>
               </div>
@@ -1122,15 +1560,26 @@ if (error) {
                 ADMINISTRATION
             ================================================= */}
 
-            <div style={styles.adminCard}>
-              <div style={styles.sectionTitle}>
+            <div
+              style={styles.adminCard}
+            >
+              <div
+                style={styles.sectionTitle}
+              >
                 ADMINISTRATION
               </div>
 
-              <div style={styles.controlGrid}>
-
-                <div style={styles.controlBlock}>
-                  <label style={styles.label}>
+              <div
+                style={styles.controlGrid}
+              >
+                <div
+                  style={
+                    styles.controlBlock
+                  }
+                >
+                  <label
+                    style={styles.label}
+                  >
                     Statut du compte
                   </label>
 
@@ -1160,8 +1609,14 @@ if (error) {
                   </select>
                 </div>
 
-                <div style={styles.controlBlock}>
-                  <label style={styles.label}>
+                <div
+                  style={
+                    styles.controlBlock
+                  }
+                >
+                  <label
+                    style={styles.label}
+                  >
                     Statut du paiement
                   </label>
 
@@ -1192,8 +1647,12 @@ if (error) {
                 </div>
               </div>
 
-              <div style={styles.accessNotice}>
-                <strong>Accès aux tests :</strong>{" "}
+              <div
+                style={styles.accessNotice}
+              >
+                <strong>
+                  Accès aux tests :
+                </strong>{" "}
                 l'étudiant doit être{" "}
                 <strong>approuvé</strong> et{" "}
                 <strong>payé</strong>.
@@ -1205,8 +1664,14 @@ if (error) {
             ================================================= */}
 
             {studentLoading ? (
-              <div style={styles.loadingCardSmall}>
-                <div style={styles.spinner}>
+              <div
+                style={
+                  styles.loadingCardSmall
+                }
+              >
+                <div
+                  style={styles.spinner}
+                >
                   ↻
                 </div>
 
@@ -1216,20 +1681,36 @@ if (error) {
               </div>
             ) : (
               <>
-                <div style={styles.sectionHeading}>
+                <div
+                  style={
+                    styles.sectionHeading
+                  }
+                >
                   Résultats des tests
                 </div>
 
                 {/* COMPREHENSION SUMMARY */}
 
                 {selectedComprehensionSummary && (
-                  <div style={styles.summaryCard}>
+                  <div
+                    style={
+                      styles.summaryCard
+                    }
+                  >
                     <div>
-                      <div style={styles.summaryLabel}>
+                      <div
+                        style={
+                          styles.summaryLabel
+                        }
+                      >
                         PERFORMANCE AUX TESTS
                       </div>
 
-                      <div style={styles.summaryScore}>
+                      <div
+                        style={
+                          styles.summaryScore
+                        }
+                      >
                         {
                           selectedComprehensionSummary.totalScore
                         }
@@ -1240,14 +1721,27 @@ if (error) {
                       </div>
                     </div>
 
-                    <div style={styles.summaryRight}>
-                      <div style={styles.summaryPercentage}>
+                    <div
+                      style={
+                        styles.summaryRight
+                      }
+                    >
+                      <div
+                        style={
+                          styles.summaryPercentage
+                        }
+                      >
                         {
                           selectedComprehensionSummary.percentage
-                        }%
+                        }
+                        %
                       </div>
 
-                      <div style={styles.summaryLevel}>
+                      <div
+                        style={
+                          styles.summaryLevel
+                        }
+                      >
                         Niveau indicatif{" "}
                         <strong>
                           {
@@ -1261,25 +1755,42 @@ if (error) {
 
                 {/* RESULT CARDS */}
 
-                <div style={styles.resultsGrid}>
-
+                <div
+                  style={styles.resultsGrid}
+                >
                   {/* ORAL */}
 
-                  <div style={styles.resultCard}>
-                    <div style={styles.resultCardHeader}>
+                  <div
+                    style={styles.resultCard}
+                  >
+                    <div
+                      style={
+                        styles.resultCardHeader
+                      }
+                    >
                       <div>
-                        <div style={styles.resultIcon}>
+                        <div
+                          style={
+                            styles.resultIcon
+                          }
+                        >
                           🎧
                         </div>
 
-                        <h3 style={styles.resultTitle}>
+                        <h3
+                          style={
+                            styles.resultTitle
+                          }
+                        >
                           Compréhension orale
                         </h3>
                       </div>
 
                       {selectedOralResult && (
                         <span
-                          style={styles.completedBadge}
+                          style={
+                            styles.completedBadge
+                          }
                         >
                           ✓ Terminé
                         </span>
@@ -1288,8 +1799,13 @@ if (error) {
 
                     {selectedOralResult ? (
                       <>
-                        <div style={styles.bigScore}>
-                          {selectedOralResult.score}
+                        <div
+                          style={styles.bigScore}
+                        >
+                          {
+                            selectedOralResult.score
+                          }
+
                           <span>
                             /
                             {
@@ -1298,20 +1814,33 @@ if (error) {
                           </span>
                         </div>
 
-                        <div style={styles.percentage}>
+                        <div
+                          style={
+                            styles.percentage
+                          }
+                        >
                           {
                             selectedOralResult.percentage
-                          }%
+                          }
+                          %
                         </div>
 
-                        <div style={styles.resultDate}>
+                        <div
+                          style={
+                            styles.resultDate
+                          }
+                        >
                           {formatDateTime(
                             selectedOralResult.completed_at
                           )}
                         </div>
                       </>
                     ) : (
-                      <div style={styles.notCompleted}>
+                      <div
+                        style={
+                          styles.notCompleted
+                        }
+                      >
                         Test non terminé
                       </div>
                     )}
@@ -1319,21 +1848,37 @@ if (error) {
 
                   {/* WRITTEN */}
 
-                  <div style={styles.resultCard}>
-                    <div style={styles.resultCardHeader}>
+                  <div
+                    style={styles.resultCard}
+                  >
+                    <div
+                      style={
+                        styles.resultCardHeader
+                      }
+                    >
                       <div>
-                        <div style={styles.resultIcon}>
+                        <div
+                          style={
+                            styles.resultIcon
+                          }
+                        >
                           📖
                         </div>
 
-                        <h3 style={styles.resultTitle}>
+                        <h3
+                          style={
+                            styles.resultTitle
+                          }
+                        >
                           Examen de français
                         </h3>
                       </div>
 
                       {selectedWrittenResult && (
                         <span
-                          style={styles.completedBadge}
+                          style={
+                            styles.completedBadge
+                          }
                         >
                           ✓ Terminé
                         </span>
@@ -1342,8 +1887,13 @@ if (error) {
 
                     {selectedWrittenResult ? (
                       <>
-                        <div style={styles.bigScore}>
-                          {selectedWrittenResult.score}
+                        <div
+                          style={styles.bigScore}
+                        >
+                          {
+                            selectedWrittenResult.score
+                          }
+
                           <span>
                             /
                             {
@@ -1352,20 +1902,33 @@ if (error) {
                           </span>
                         </div>
 
-                        <div style={styles.percentage}>
+                        <div
+                          style={
+                            styles.percentage
+                          }
+                        >
                           {
                             selectedWrittenResult.percentage
-                          }%
+                          }
+                          %
                         </div>
 
-                        <div style={styles.resultDate}>
+                        <div
+                          style={
+                            styles.resultDate
+                          }
+                        >
                           {formatDateTime(
                             selectedWrittenResult.completed_at
                           )}
                         </div>
                       </>
                     ) : (
-                      <div style={styles.notCompleted}>
+                      <div
+                        style={
+                          styles.notCompleted
+                        }
+                      >
                         Test non terminé
                       </div>
                     )}
@@ -1373,14 +1936,28 @@ if (error) {
 
                   {/* EXPRESSION */}
 
-                  <div style={styles.resultCard}>
-                    <div style={styles.resultCardHeader}>
+                  <div
+                    style={styles.resultCard}
+                  >
+                    <div
+                      style={
+                        styles.resultCardHeader
+                      }
+                    >
                       <div>
-                        <div style={styles.resultIcon}>
+                        <div
+                          style={
+                            styles.resultIcon
+                          }
+                        >
                           ✍️
                         </div>
 
-                        <h3 style={styles.resultTitle}>
+                        <h3
+                          style={
+                            styles.resultTitle
+                          }
+                        >
                           Expression écrite
                         </h3>
                       </div>
@@ -1388,7 +1965,9 @@ if (error) {
                       {selectedExpressionResult?.grading_status ===
                         "graded" && (
                         <span
-                          style={styles.completedBadge}
+                          style={
+                            styles.completedBadge
+                          }
                         >
                           ✓ Corrigé
                         </span>
@@ -1397,15 +1976,24 @@ if (error) {
 
                     {selectedExpressionResult ? (
                       <>
-                        <div style={styles.bigScore}>
+                        <div
+                          style={styles.bigScore}
+                        >
                           {
                             selectedExpressionResult.grading_total ??
                             "—"
                           }
-                          <span>/3</span>
+
+                          <span>
+                            /3
+                          </span>
                         </div>
 
-                        <div style={styles.resultDate}>
+                        <div
+                          style={
+                            styles.resultDate
+                          }
+                        >
                           {selectedExpressionResult.grading_status ===
                           "graded"
                             ? `Corrigé le ${formatDate(
@@ -1415,7 +2003,11 @@ if (error) {
                         </div>
                       </>
                     ) : (
-                      <div style={styles.notCompleted}>
+                      <div
+                        style={
+                          styles.notCompleted
+                        }
+                      >
                         Test non terminé
                       </div>
                     )}
@@ -1423,22 +2015,543 @@ if (error) {
                 </div>
 
                 {/* =================================================
+                    KEYNES EXAM — ADMINISTRATION
+                ================================================= */}
+
+                {selectedKeynesResult && (
+                  <div
+                    style={
+                      styles.keynesSection
+                    }
+                  >
+                    <div
+                      style={
+                        styles.sectionHeading
+                      }
+                    >
+                      Examen Keynes — B1
+                    </div>
+
+                    <div
+                      style={
+                        styles.keynesCard
+                      }
+                    >
+                      {/* KEYNES HEADER */}
+
+                      <div
+                        style={
+                          styles.keynesHeader
+                        }
+                      >
+                        <div>
+                          <div
+                            style={
+                              styles.keynesEyebrow
+                            }
+                          >
+                            EXAMEN DE FRANÇAIS
+                          </div>
+
+                          <h2
+                            style={
+                              styles.keynesTitle
+                            }
+                          >
+                            Examen Keynes
+                          </h2>
+
+                          <div
+                            style={
+                              styles.keynesSubtitle
+                            }
+                          >
+                            Niveau B1 • 100 points
+                          </div>
+                        </div>
+
+                        <div
+                          style={
+                            styles.keynesStatus
+                          }
+                        >
+                          {selectedKeynesResult.grading_status ===
+                          "graded"
+                            ? "✓ Corrigé"
+                            : "⏳ Correction en cours"}
+                        </div>
+                      </div>
+
+                      {/* SCORE SUMMARY */}
+
+                      <div
+                        style={
+                          styles.keynesScoreGrid
+                        }
+                      >
+                        <div
+                          style={
+                            styles.keynesScoreBox
+                          }
+                        >
+                          <div
+                            style={
+                              styles.keynesScoreLabel
+                            }
+                          >
+                            PARTIE LANGUE
+                          </div>
+
+                          <div
+                            style={
+                              styles.keynesScoreValue
+                            }
+                          >
+                            {Number(
+                              selectedKeynesResult.score ||
+                                0
+                            )}
+                            <span>/75</span>
+                          </div>
+
+                          <div
+                            style={
+                              styles.keynesScoreHint
+                            }
+                          >
+                            Parts 1 à 8
+                          </div>
+                        </div>
+
+                        <div
+                          style={
+                            styles.keynesScoreBox
+                          }
+                        >
+                          <div
+                            style={
+                              styles.keynesScoreLabel
+                            }
+                          >
+                            EXPRESSION ÉCRITE
+                          </div>
+
+                          <div
+                            style={
+                              styles.keynesScoreValue
+                            }
+                          >
+                            {selectedKeynesResult.grading_status ===
+                            "graded"
+                              ? Number(
+                                  selectedKeynesResult.grading_total ||
+                                    0
+                                )
+                              : "—"}
+
+                            <span>/25</span>
+                          </div>
+
+                          <div
+                            style={
+                              styles.keynesScoreHint
+                            }
+                          >
+                            Partie 9
+                          </div>
+                        </div>
+
+                        <div
+                          style={
+                            styles.keynesScoreBoxDark
+                          }
+                        >
+                          <div
+                            style={
+                              styles.keynesScoreLabelLight
+                            }
+                          >
+                            TOTAL FINAL
+                          </div>
+
+                          <div
+                            style={
+                              styles.keynesScoreValueLight
+                            }
+                          >
+                            {selectedKeynesResult.grading_status ===
+                            "graded"
+                              ? Number(
+                                  selectedKeynesResult.score ||
+                                    0
+                                ) +
+                                Number(
+                                  selectedKeynesResult.grading_total ||
+                                    0
+                                )
+                              : "—"}
+
+                            <span>/100</span>
+                          </div>
+
+                          <div
+                            style={
+                              styles.keynesScoreHintLight
+                            }
+                          >
+                            Langue + écrit
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* ATTEMPT INFORMATION */}
+
+                      {keynesAttempt && (
+                        <div
+                          style={
+                            styles.keynesAttemptInfo
+                          }
+                        >
+                          <div>
+                            <strong>
+                              Tentative :
+                            </strong>{" "}
+                            terminée
+                          </div>
+
+                          <div>
+                            <strong>
+                              Fin :
+                            </strong>{" "}
+                            {formatDateTime(
+                              keynesAttempt.finished_at
+                            )}
+                          </div>
+
+                          <div>
+                            <strong>
+                              Changement d'onglet :
+                            </strong>{" "}
+                            {keynesAttempt.tab_switches ??
+                              0}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* WRITING TASKS */}
+
+                      <div
+                        style={
+                          styles.keynesTasksHeading
+                        }
+                      >
+                        Expression écrite — réponses
+                      </div>
+
+                      <div
+                        style={
+                          styles.keynesTasks
+                        }
+                      >
+                        {[
+                          {
+                            key: "task1",
+                            number: 1,
+                            title: "Tâche 1",
+                            points: 3,
+                          },
+                          {
+                            key: "task2",
+                            number: 2,
+                            title: "Tâche 2",
+                            points: 3,
+                          },
+                          {
+                            key: "task3",
+                            number: 3,
+                            title: "Tâche 3",
+                            points: 4,
+                          },
+                          {
+                            key: "task4",
+                            number: 4,
+                            title: "Tâche 4",
+                            points: 15,
+                          },
+                        ].map((task) => {
+                          const answer =
+                            selectedKeynesAnswers[
+                              task.key
+                            ];
+
+                          const isOpen =
+                            keynesOpenTasks[
+                              task.key
+                            ];
+
+                          return (
+                            <div
+                              key={task.key}
+                              style={
+                                styles.keynesTaskCard
+                              }
+                            >
+                              <div
+                                style={
+                                  styles.keynesTaskTop
+                                }
+                              >
+                                <div
+                                  style={
+                                    styles.keynesTaskIdentity
+                                  }
+                                >
+                                  <span
+                                    style={
+                                      styles.keynesTaskNumber
+                                    }
+                                  >
+                                    {task.number}
+                                  </span>
+
+                                  <div>
+                                    <div
+                                      style={
+                                        styles.keynesTaskTitle
+                                      }
+                                    >
+                                      {task.title}
+                                    </div>
+
+                                    <div
+                                      style={
+                                        styles.keynesTaskPoints
+                                      }
+                                    >
+                                      {task.points} point
+                                      {task.points > 1
+                                        ? "s"
+                                        : ""}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    toggleKeynesTask(
+                                      task.key
+                                    )
+                                  }
+                                  style={
+                                    styles.answerToggle
+                                  }
+                                >
+                                  {isOpen
+                                    ? "Masquer la réponse"
+                                    : "Voir la réponse"}
+                                </button>
+                              </div>
+
+                              {isOpen && (
+                                <div
+                                  style={
+                                    styles.keynesAnswerBox
+                                  }
+                                >
+                                  {answer &&
+                                  String(
+                                    answer
+                                  ).trim() ? (
+                                    String(
+                                      answer
+                                    )
+                                  ) : (
+                                    <span
+                                      style={
+                                        styles.noAnswerText
+                                      }
+                                    >
+                                      Aucune réponse enregistrée.
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* GRADING */}
+
+                      <div
+                        style={
+                          styles.keynesGradingPanel
+                        }
+                      >
+                        <div>
+                          <div
+                            style={
+                              styles.keynesGradingLabel
+                            }
+                          >
+                            NOTE EXPRESSION ÉCRITE
+                          </div>
+
+                          <div
+                            style={
+                              styles.keynesGradingDescription
+                            }
+                          >
+                            Attribuez une note de 0 à 25
+                            pour les quatre tâches.
+                          </div>
+                        </div>
+
+                        <div
+                          style={
+                            styles.keynesGradeControl
+                          }
+                        >
+                          <input
+                            type="number"
+                            min="0"
+                            max="25"
+                            step="1"
+                            value={keynesGrade}
+                            onChange={(event) =>
+                              setKeynesGrade(
+                                event.target.value
+                              )
+                            }
+                            placeholder="0–25"
+                            style={
+                              styles.keynesGradeInput
+                            }
+                          />
+
+                          <span
+                            style={
+                              styles.keynesGradeMax
+                            }
+                          >
+                            /25
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* FINAL PREVIEW */}
+
+                      <div
+                        style={
+                          styles.keynesFinalPreview
+                        }
+                      >
+                        <div>
+                          <div
+                            style={
+                              styles.keynesFinalLabel
+                            }
+                          >
+                            TOTAL FINAL
+                          </div>
+
+                          <div
+                            style={
+                              styles.keynesFinalFormula
+                            }
+                          >
+                            {Number(
+                              selectedKeynesResult.score ||
+                                0
+                            )}
+                            /75
+                            {" + "}
+                            {keynesGrade === ""
+                              ? "—"
+                              : Number(
+                                  keynesGrade
+                                )}
+                            /25
+                            {" = "}
+                            <strong>
+                              {keynesGrade === ""
+                                ? "—"
+                                : Number(
+                                    selectedKeynesResult.score ||
+                                      0
+                                  ) +
+                                  Number(
+                                    keynesGrade
+                                  )}
+                              /100
+                            </strong>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={
+                            saveKeynesGrade
+                          }
+                          disabled={
+                            keynesSavingGrade ||
+                            keynesGrade === ""
+                          }
+                          style={{
+                            ...styles.keynesSaveButton,
+                            opacity:
+                              keynesSavingGrade ||
+                              keynesGrade === ""
+                                ? 0.55
+                                : 1,
+                            cursor:
+                              keynesSavingGrade ||
+                              keynesGrade === ""
+                                ? "not-allowed"
+                                : "pointer",
+                          }}
+                        >
+                          {keynesSavingGrade
+                            ? "Enregistrement..."
+                            : "✓ Enregistrer la correction"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* =================================================
                     OTHER EXAMS
                 ================================================= */}
 
-                {selectedOtherExamResults.length > 0 && (
-                  <div style={styles.otherExamsSection}>
-
-                    <div style={styles.sectionHeading}>
+                {selectedOtherExamResults.length >
+                  0 && (
+                  <div
+                    style={
+                      styles.otherExamsSection
+                    }
+                  >
+                    <div
+                      style={
+                        styles.sectionHeading
+                      }
+                    >
                       Autres examens
                     </div>
 
-                    <div style={styles.resultsGrid}>
+                    <div
+                      style={
+                        styles.resultsGrid
+                      }
+                    >
                       {selectedOtherExamResults.map(
                         (examResult) => {
                           const hasScore =
-                            examResult.score !== null &&
-                            examResult.score !== undefined;
+                            examResult.score !==
+                              null &&
+                            examResult.score !==
+                              undefined;
 
                           const hasTotalQuestions =
                             examResult.total_questions !==
@@ -1446,24 +2559,23 @@ if (error) {
                             examResult.total_questions !==
                               undefined;
 
-                          // =================================================
-                          // UPDATED:
-                          // Use saved percentage when available.
-                          // Otherwise calculate it from score/total.
-                          // Example: 42 / 50 = 84%
-                          // =================================================
-
                           const calculatedPercentage =
-                            examResult.percentage !== null &&
-                            examResult.percentage !== undefined &&
-                            examResult.percentage !== ""
-                              ? Number(examResult.percentage)
+                            examResult.percentage !==
+                              null &&
+                            examResult.percentage !==
+                              undefined &&
+                            examResult.percentage !==
+                              ""
+                              ? Number(
+                                  examResult.percentage
+                                )
                               : Number(
                                   examResult.total_questions
                                 ) > 0
                               ? Math.round(
                                   (Number(
-                                    examResult.score || 0
+                                    examResult.score ||
+                                      0
                                   ) /
                                     Number(
                                       examResult.total_questions
@@ -1474,8 +2586,12 @@ if (error) {
 
                           return (
                             <div
-                              key={examResult.id}
-                              style={styles.resultCard}
+                              key={
+                                examResult.id
+                              }
+                              style={
+                                styles.resultCard
+                              }
                             >
                               <div
                                 style={
@@ -1519,7 +2635,9 @@ if (error) {
                                     styles.bigScore
                                   }
                                 >
-                                  {examResult.score}
+                                  {
+                                    examResult.score
+                                  }
 
                                   {hasTotalQuestions && (
                                     <span>
@@ -1540,13 +2658,17 @@ if (error) {
                                 </div>
                               )}
 
-                              {calculatedPercentage !== null && (
+                              {calculatedPercentage !==
+                                null && (
                                 <div
                                   style={
                                     styles.percentage
                                   }
                                 >
-                                  {calculatedPercentage}%
+                                  {
+                                    calculatedPercentage
+                                  }
+                                  %
                                 </div>
                               )}
 
@@ -1555,7 +2677,9 @@ if (error) {
                                   styles.examTypeLabel
                                 }
                               >
-                                {examResult.test_type}
+                                {
+                                  examResult.test_type
+                                }
                               </div>
 
                               <div
@@ -1580,24 +2704,48 @@ if (error) {
                 ================================================= */}
 
                 {selectedExpressionResult && (
-                  <div style={styles.expressionSection}>
-
-                    <div style={styles.sectionHeading}>
+                  <div
+                    style={
+                      styles.expressionSection
+                    }
+                  >
+                    <div
+                      style={
+                        styles.sectionHeading
+                      }
+                    >
                       Expression écrite — Correction
                     </div>
 
-                    <div style={styles.expressionCard}>
-
+                    <div
+                      style={
+                        styles.expressionCard
+                      }
+                    >
                       {/* TASK 1 */}
 
-                      <div style={styles.taskCard}>
-                        <div style={styles.taskHeader}>
-                          <span style={styles.taskNumber}>
+                      <div
+                        style={styles.taskCard}
+                      >
+                        <div
+                          style={
+                            styles.taskHeader
+                          }
+                        >
+                          <span
+                            style={
+                              styles.taskNumber
+                            }
+                          >
                             1
                           </span>
 
                           <div>
-                            <div style={styles.taskTitle}>
+                            <div
+                              style={
+                                styles.taskTitle
+                              }
+                            >
                               Tâche 1
                             </div>
 
@@ -1611,13 +2759,21 @@ if (error) {
                           </div>
                         </div>
 
-                        <div style={styles.answerBox}>
+                        <div
+                          style={styles.answerBox}
+                        >
                           {selectedExpressionResult.task1_answer ||
                             "Aucune réponse."}
                         </div>
 
-                        <div style={styles.gradeRow}>
-                          <label style={styles.gradeLabel}>
+                        <div
+                          style={styles.gradeRow}
+                        >
+                          <label
+                            style={
+                              styles.gradeLabel
+                            }
+                          >
                             Note
                           </label>
 
@@ -1628,7 +2784,9 @@ if (error) {
                                 event.target.value
                               )
                             }
-                            style={styles.gradeSelect}
+                            style={
+                              styles.gradeSelect
+                            }
                           >
                             <option value="">
                               Choisir
@@ -1647,14 +2805,28 @@ if (error) {
 
                       {/* TASK 2 */}
 
-                      <div style={styles.taskCard}>
-                        <div style={styles.taskHeader}>
-                          <span style={styles.taskNumber}>
+                      <div
+                        style={styles.taskCard}
+                      >
+                        <div
+                          style={
+                            styles.taskHeader
+                          }
+                        >
+                          <span
+                            style={
+                              styles.taskNumber
+                            }
+                          >
                             2
                           </span>
 
                           <div>
-                            <div style={styles.taskTitle}>
+                            <div
+                              style={
+                                styles.taskTitle
+                              }
+                            >
                               Tâche 2
                             </div>
 
@@ -1668,13 +2840,21 @@ if (error) {
                           </div>
                         </div>
 
-                        <div style={styles.answerBox}>
+                        <div
+                          style={styles.answerBox}
+                        >
                           {selectedExpressionResult.task2_answer ||
                             "Aucune réponse."}
                         </div>
 
-                        <div style={styles.gradeRow}>
-                          <label style={styles.gradeLabel}>
+                        <div
+                          style={styles.gradeRow}
+                        >
+                          <label
+                            style={
+                              styles.gradeLabel
+                            }
+                          >
                             Note
                           </label>
 
@@ -1685,7 +2865,9 @@ if (error) {
                                 event.target.value
                               )
                             }
-                            style={styles.gradeSelect}
+                            style={
+                              styles.gradeSelect
+                            }
                           >
                             <option value="">
                               Choisir
@@ -1704,14 +2886,28 @@ if (error) {
 
                       {/* TASK 3 */}
 
-                      <div style={styles.taskCard}>
-                        <div style={styles.taskHeader}>
-                          <span style={styles.taskNumber}>
+                      <div
+                        style={styles.taskCard}
+                      >
+                        <div
+                          style={
+                            styles.taskHeader
+                          }
+                        >
+                          <span
+                            style={
+                              styles.taskNumber
+                            }
+                          >
                             3
                           </span>
 
                           <div>
-                            <div style={styles.taskTitle}>
+                            <div
+                              style={
+                                styles.taskTitle
+                              }
+                            >
                               Tâche 3
                             </div>
 
@@ -1725,13 +2921,21 @@ if (error) {
                           </div>
                         </div>
 
-                        <div style={styles.answerBox}>
+                        <div
+                          style={styles.answerBox}
+                        >
                           {selectedExpressionResult.task3_answer ||
                             "Aucune réponse."}
                         </div>
 
-                        <div style={styles.gradeRow}>
-                          <label style={styles.gradeLabel}>
+                        <div
+                          style={styles.gradeRow}
+                        >
+                          <label
+                            style={
+                              styles.gradeLabel
+                            }
+                          >
                             Note
                           </label>
 
@@ -1742,7 +2946,9 @@ if (error) {
                                 event.target.value
                               )
                             }
-                            style={styles.gradeSelect}
+                            style={
+                              styles.gradeSelect
+                            }
                           >
                             <option value="">
                               Choisir
@@ -1761,7 +2967,11 @@ if (error) {
 
                       {/* GRADING TOTAL */}
 
-                      <div style={styles.gradingFooter}>
+                      <div
+                        style={
+                          styles.gradingFooter
+                        }
+                      >
                         <div>
                           <div
                             style={
@@ -1772,18 +2982,31 @@ if (error) {
                           </div>
 
                           <div
-                            style={styles.gradingTotal}
+                            style={
+                              styles.gradingTotal
+                            }
                           >
-                            {(Number(gradeTask1) || 0) +
-                              (Number(gradeTask2) || 0) +
-                              (Number(gradeTask3) || 0)}
-                            <span>/3</span>
+                            {(Number(
+                              gradeTask1
+                            ) || 0) +
+                              (Number(
+                                gradeTask2
+                              ) || 0) +
+                              (Number(
+                                gradeTask3
+                              ) || 0)}
+
+                            <span>
+                              /3
+                            </span>
                           </div>
                         </div>
 
                         <button
                           type="button"
-                          onClick={saveExpressionGrade}
+                          onClick={
+                            saveExpressionGrade
+                          }
                           disabled={
                             savingGrade ||
                             gradeTask1 === "" ||
@@ -1824,17 +3047,35 @@ if (error) {
                 {!selectedOralResult &&
                   !selectedWrittenResult &&
                   !selectedExpressionResult &&
-                  selectedOtherExamResults.length === 0 && (
-                    <div style={styles.emptyResults}>
-                      <div style={styles.emptyIcon}>
+                  !selectedKeynesResult &&
+                  selectedOtherExamResults.length ===
+                    0 && (
+                    <div
+                      style={
+                        styles.emptyResults
+                      }
+                    >
+                      <div
+                        style={
+                          styles.emptyIcon
+                        }
+                      >
                         📋
                       </div>
 
-                      <h3 style={styles.emptyTitle}>
+                      <h3
+                        style={
+                          styles.emptyTitle
+                        }
+                      >
                         Aucun résultat
                       </h3>
 
-                      <p style={styles.emptyText}>
+                      <p
+                        style={
+                          styles.emptyText
+                        }
+                      >
                         Cet étudiant n'a encore terminé
                         aucun test.
                       </p>
@@ -1842,7 +3083,11 @@ if (error) {
                   )}
 
                 {selectedComprehensionSummary && (
-                  <div style={styles.disclaimer}>
+                  <div
+                    style={
+                      styles.disclaimer
+                    }
+                  >
                     <strong>
                       Note administrative :
                     </strong>{" "}
@@ -1863,22 +3108,30 @@ if (error) {
 
             <section style={styles.hero}>
               <div>
-                <div style={styles.heroEyebrow}>
+                <div
+                  style={styles.heroEyebrow}
+                >
                   ESPACE ADMINISTRATEUR
                 </div>
 
-                <h1 style={styles.heroTitle}>
+                <h1
+                  style={styles.heroTitle}
+                >
                   Gestion des étudiants
                 </h1>
 
-                <p style={styles.heroText}>
+                <p
+                  style={styles.heroText}
+                >
                   Consultez les inscriptions, gérez les
                   approbations et suivez les résultats des
                   tests de niveau.
                 </p>
               </div>
 
-              <div style={styles.heroMark}>
+              <div
+                style={styles.heroMark}
+              >
                 IFA
               </div>
             </section>
@@ -1887,110 +3140,161 @@ if (error) {
                 STATISTICS
             ================================================= */}
 
-            <section style={styles.statsGrid}>
-
-              <div style={styles.statCard}>
-                <div style={styles.statIcon}>
+            <section
+              style={styles.statsGrid}
+            >
+              <div
+                style={styles.statCard}
+              >
+                <div
+                  style={styles.statIcon}
+                >
                   👥
                 </div>
 
                 <div>
-                  <div style={styles.statLabel}>
+                  <div
+                    style={styles.statLabel}
+                  >
                     ÉTUDIANTS
                   </div>
 
-                  <div style={styles.statValue}>
+                  <div
+                    style={styles.statValue}
+                  >
                     {statistics.total}
                   </div>
                 </div>
               </div>
 
-              <div style={styles.statCard}>
-                <div style={styles.statIcon}>
+              <div
+                style={styles.statCard}
+              >
+                <div
+                  style={styles.statIcon}
+                >
                   ✓
                 </div>
 
                 <div>
-                  <div style={styles.statLabel}>
+                  <div
+                    style={styles.statLabel}
+                  >
                     APPROUVÉS
                   </div>
 
-                  <div style={styles.statValue}>
+                  <div
+                    style={styles.statValue}
+                  >
                     {statistics.approved}
                   </div>
                 </div>
               </div>
 
-              <div style={styles.statCard}>
-                <div style={styles.statIcon}>
+              <div
+                style={styles.statCard}
+              >
+                <div
+                  style={styles.statIcon}
+                >
                   ⏳
                 </div>
 
                 <div>
-                  <div style={styles.statLabel}>
+                  <div
+                    style={styles.statLabel}
+                  >
                     EN ATTENTE
                   </div>
 
-                  <div style={styles.statValue}>
+                  <div
+                    style={styles.statValue}
+                  >
                     {statistics.pending}
                   </div>
                 </div>
               </div>
 
-              <div style={styles.statCard}>
-                <div style={styles.statIcon}>
+              <div
+                style={styles.statCard}
+              >
+                <div
+                  style={styles.statIcon}
+                >
                   💳
                 </div>
 
                 <div>
-                  <div style={styles.statLabel}>
+                  <div
+                    style={styles.statLabel}
+                  >
                     PAYÉS
                   </div>
 
-                  <div style={styles.statValue}>
+                  <div
+                    style={styles.statValue}
+                  >
                     {statistics.paid}
                   </div>
                 </div>
               </div>
 
-              <div style={styles.statCard}>
-                <div style={styles.statIcon}>
+              <div
+                style={styles.statCard}
+              >
+                <div
+                  style={styles.statIcon}
+                >
                   🎓
                 </div>
 
                 <div>
-                  <div style={styles.statLabel}>
+                  <div
+                    style={styles.statLabel}
+                  >
                     TESTS COMPLETS
                   </div>
 
-                  <div style={styles.statValue}>
+                  <div
+                    style={styles.statValue}
+                  >
                     {statistics.completed}
                   </div>
                 </div>
               </div>
-
             </section>
 
             {/* =================================================
                 FILTERS
             ================================================= */}
 
-            <section style={styles.filterCard}>
-              <div style={styles.filterTop}>
+            <section
+              style={styles.filterCard}
+            >
+              <div
+                style={styles.filterTop}
+              >
                 <div>
-                  <div style={styles.sectionTitle}>
+                  <div
+                    style={styles.sectionTitle}
+                  >
                     ÉTUDIANTS
                   </div>
 
-                  <div style={styles.filterCount}>
+                  <div
+                    style={styles.filterCount}
+                  >
                     {filteredStudents.length} étudiant
-                    {filteredStudents.length !== 1
+                    {filteredStudents.length !==
+                    1
                       ? "s"
                       : ""}
                   </div>
                 </div>
 
-                <div style={styles.filterActions}>
+                <div
+                  style={styles.filterActions}
+                >
                   <input
                     type="text"
                     value={searchQuery}
@@ -2000,7 +3304,9 @@ if (error) {
                       )
                     }
                     placeholder="Rechercher un étudiant..."
-                    style={styles.searchInput}
+                    style={
+                      styles.searchInput
+                    }
                   />
 
                   <select
@@ -2010,7 +3316,9 @@ if (error) {
                         event.target.value
                       )
                     }
-                    style={styles.filterSelect}
+                    style={
+                      styles.filterSelect
+                    }
                   >
                     <option value="all">
                       Tous les statuts
@@ -2036,7 +3344,9 @@ if (error) {
                         event.target.value
                       )
                     }
-                    style={styles.filterSelect}
+                    style={
+                      styles.filterSelect
+                    }
                   >
                     <option value="all">
                       Tous les paiements
@@ -2062,48 +3372,85 @@ if (error) {
                 STUDENT TABLE
             ================================================= */}
 
-            <section style={styles.tableCard}>
-              {filteredStudents.length === 0 ? (
-                <div style={styles.emptyStudents}>
-                  <div style={styles.emptyIcon}>
+            <section
+              style={styles.tableCard}
+            >
+              {filteredStudents.length ===
+              0 ? (
+                <div
+                  style={
+                    styles.emptyStudents
+                  }
+                >
+                  <div
+                    style={
+                      styles.emptyIcon
+                    }
+                  >
                     🔎
                   </div>
 
-                  <h3 style={styles.emptyTitle}>
+                  <h3
+                    style={
+                      styles.emptyTitle
+                    }
+                  >
                     Aucun étudiant trouvé
                   </h3>
 
-                  <p style={styles.emptyText}>
+                  <p
+                    style={
+                      styles.emptyText
+                    }
+                  >
                     Essayez de modifier votre recherche
                     ou vos filtres.
                   </p>
                 </div>
               ) : (
-                <div style={styles.tableWrapper}>
-                  <table style={styles.table}>
+                <div
+                  style={
+                    styles.tableWrapper
+                  }
+                >
+                  <table
+                    style={styles.table}
+                  >
                     <thead>
                       <tr>
-                        <th style={styles.th}>
+                        <th
+                          style={styles.th}
+                        >
                           ÉTUDIANT
                         </th>
 
-                        <th style={styles.th}>
+                        <th
+                          style={styles.th}
+                        >
                           INSCRIPTION
                         </th>
 
-                        <th style={styles.th}>
+                        <th
+                          style={styles.th}
+                        >
                           STATUT
                         </th>
 
-                        <th style={styles.th}>
+                        <th
+                          style={styles.th}
+                        >
                           PAIEMENT
                         </th>
 
-                        <th style={styles.th}>
+                        <th
+                          style={styles.th}
+                        >
                           TESTS
                         </th>
 
-                        <th style={styles.th}>
+                        <th
+                          style={styles.th}
+                        >
                           ACTION
                         </th>
                       </tr>
@@ -2124,10 +3471,18 @@ if (error) {
 
                           return (
                             <tr
-                              key={student.id}
-                              style={styles.tr}
+                              key={
+                                student.id
+                              }
+                              style={
+                                styles.tr
+                              }
                             >
-                              <td style={styles.td}>
+                              <td
+                                style={
+                                  styles.td
+                                }
+                              >
                                 <div
                                   style={
                                     styles.studentCell
@@ -2144,7 +3499,9 @@ if (error) {
                                       student.email ||
                                       "E"
                                     )
-                                      .charAt(0)
+                                      .charAt(
+                                        0
+                                      )
                                       .toUpperCase()}
                                   </div>
 
@@ -2171,7 +3528,11 @@ if (error) {
                                 </div>
                               </td>
 
-                              <td style={styles.td}>
+                              <td
+                                style={
+                                  styles.td
+                                }
+                              >
                                 <span
                                   style={
                                     styles.dateText
@@ -2183,17 +3544,23 @@ if (error) {
                                 </span>
                               </td>
 
-                              <td style={styles.td}>
+                              <td
+                                style={
+                                  styles.td
+                                }
+                              >
                                 <span
                                   style={{
                                     ...styles.badge,
                                     ...(getStudentStatus(
                                       student
-                                    ) === "approved"
+                                    ) ===
+                                    "approved"
                                       ? styles.badgeApproved
                                       : getStudentStatus(
                                           student
-                                        ) === "rejected"
+                                        ) ===
+                                        "rejected"
                                       ? styles.badgeRejected
                                       : styles.badgePending),
                                   }}
@@ -2206,13 +3573,18 @@ if (error) {
                                 </span>
                               </td>
 
-                              <td style={styles.td}>
+                              <td
+                                style={
+                                  styles.td
+                                }
+                              >
                                 <span
                                   style={{
                                     ...styles.badge,
                                     ...(getStudentPayment(
                                       student
-                                    ) === "paid"
+                                    ) ===
+                                    "paid"
                                       ? styles.badgePaid
                                       : styles.badgePending),
                                   }}
@@ -2225,7 +3597,11 @@ if (error) {
                                 </span>
                               </td>
 
-                              <td style={styles.td}>
+                              <td
+                                style={
+                                  styles.td
+                                }
+                              >
                                 <div
                                   style={
                                     styles.testsCell
@@ -2259,7 +3635,11 @@ if (error) {
                                 </div>
                               </td>
 
-                              <td style={styles.td}>
+                              <td
+                                style={
+                                  styles.td
+                                }
+                              >
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -2288,7 +3668,9 @@ if (error) {
                 FOOTER
             ================================================= */}
 
-            <footer style={styles.footer}>
+            <footer
+              style={styles.footer}
+            >
               <div>
                 <strong>
                   International French Academy
@@ -2300,7 +3682,11 @@ if (error) {
                 </span>
               </div>
 
-              <div style={styles.footerSmall}>
+              <div
+                style={
+                  styles.footerSmall
+                }
+              >
                 Administration • Test de niveau
               </div>
             </footer>
@@ -2310,7 +3696,6 @@ if (error) {
     </div>
   );
 }
-
 // =============================================================
 // STYLES
 // =============================================================
@@ -2577,7 +3962,8 @@ const styles = {
     textAlign: "left",
     padding: "14px 18px",
     background: "#f8f4ee",
-    borderBottom: "1px solid #e4ded4",
+    borderBottom:
+      "1px solid #e4ded4",
     fontSize: "9px",
     letterSpacing: "0.12em",
     color: "#777",
@@ -2585,7 +3971,8 @@ const styles = {
   },
 
   tr: {
-    borderBottom: "1px solid #eeeae4",
+    borderBottom:
+      "1px solid #eeeae4",
   },
 
   td: {
@@ -2799,7 +4186,8 @@ const styles = {
   accessNotice: {
     marginTop: "16px",
     background: "#f8f4ee",
-    borderLeft: "3px solid #c9a84c",
+    borderLeft:
+      "3px solid #c9a84c",
     padding: "12px 14px",
     fontSize: "12px",
     color: "#59636d",
@@ -2852,7 +4240,8 @@ const styles = {
 
   summaryLevel: {
     marginTop: "4px",
-    color: "rgba(255,255,255,0.7)",
+    color:
+      "rgba(255,255,255,0.7)",
     fontSize: "11px",
   },
 
@@ -2929,6 +4318,331 @@ const styles = {
   },
 
   // =========================================================
+  // KEYNES
+  // =========================================================
+
+  keynesSection: {
+    marginTop: "5px",
+  },
+
+  keynesCard: {
+    background: "#ffffff",
+    border:
+      "1px solid rgba(13, 27, 42, 0.08)",
+    borderRadius: "16px",
+    padding: "24px",
+    boxShadow:
+      "0 8px 24px rgba(13, 27, 42, 0.05)",
+  },
+
+  keynesHeader: {
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: "20px",
+    paddingBottom: "20px",
+    borderBottom:
+      "1px solid #eeeae4",
+  },
+
+  keynesEyebrow: {
+    color: "#8a7444",
+    fontSize: "9px",
+    fontWeight: 800,
+    letterSpacing: "0.17em",
+  },
+
+  keynesTitle: {
+    margin: "5px 0 0",
+    fontFamily:
+      '"Playfair Display", Georgia, serif',
+    fontSize: "28px",
+  },
+
+  keynesSubtitle: {
+    marginTop: "4px",
+    color: "#777",
+    fontSize: "12px",
+  },
+
+  keynesStatus: {
+    background: "#fffaf0",
+    border:
+      "1px solid #e6d6ad",
+    color: "#80652a",
+    borderRadius: "999px",
+    padding: "7px 11px",
+    fontSize: "10px",
+    fontWeight: 800,
+    whiteSpace: "nowrap",
+  },
+
+  keynesScoreGrid: {
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(3, minmax(0, 1fr))",
+    gap: "12px",
+    marginTop: "20px",
+  },
+
+  keynesScoreBox: {
+    background: "#f8f4ee",
+    border:
+      "1px solid #e7e0d5",
+    borderRadius: "11px",
+    padding: "18px",
+  },
+
+  keynesScoreBoxDark: {
+    background: "#0d1b2a",
+    color: "#ffffff",
+    borderRadius: "11px",
+    padding: "18px",
+  },
+
+  keynesScoreLabel: {
+    fontSize: "9px",
+    letterSpacing: "0.13em",
+    fontWeight: 800,
+    color: "#8a7444",
+  },
+
+  keynesScoreLabelLight: {
+    fontSize: "9px",
+    letterSpacing: "0.13em",
+    fontWeight: 800,
+    color: "#c9a84c",
+  },
+
+  keynesScoreValue: {
+    marginTop: "6px",
+    fontFamily:
+      '"Playfair Display", Georgia, serif',
+    fontSize: "30px",
+    fontWeight: 700,
+    color: "#0d1b2a",
+  },
+
+  keynesScoreValueLight: {
+    marginTop: "6px",
+    fontFamily:
+      '"Playfair Display", Georgia, serif',
+    fontSize: "30px",
+    fontWeight: 700,
+    color: "#ffffff",
+  },
+
+  keynesScoreHint: {
+    marginTop: "3px",
+    color: "#888",
+    fontSize: "10px",
+  },
+
+  keynesScoreHintLight: {
+    marginTop: "3px",
+    color:
+      "rgba(255,255,255,0.65)",
+    fontSize: "10px",
+  },
+
+  keynesAttemptInfo: {
+    marginTop: "14px",
+    padding: "11px 13px",
+    background: "#faf8f4",
+    border:
+      "1px solid #e8e2d8",
+    borderRadius: "8px",
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "18px",
+    color: "#66707a",
+    fontSize: "10px",
+  },
+
+  keynesTasksHeading: {
+    marginTop: "25px",
+    marginBottom: "12px",
+    fontSize: "15px",
+    fontWeight: 800,
+    color: "#0d1b2a",
+  },
+
+  keynesTasks: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+  },
+
+  keynesTaskCard: {
+    border:
+      "1px solid #e4ded4",
+    borderRadius: "10px",
+    background: "#ffffff",
+    overflow: "hidden",
+  },
+
+  keynesTaskTop: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "15px",
+    padding: "13px 15px",
+  },
+
+  keynesTaskIdentity: {
+    display: "flex",
+    alignItems: "center",
+    gap: "11px",
+  },
+
+  keynesTaskNumber: {
+    width: "31px",
+    height: "31px",
+    borderRadius: "50%",
+    background: "#0d1b2a",
+    color: "#c9a84c",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 800,
+    fontSize: "12px",
+    flexShrink: 0,
+  },
+
+  keynesTaskTitle: {
+    fontWeight: 800,
+    fontSize: "13px",
+  },
+
+  keynesTaskPoints: {
+    marginTop: "2px",
+    color: "#888",
+    fontSize: "10px",
+  },
+
+  answerToggle: {
+    border:
+      "1px solid #d6c69e",
+    background: "#fffaf0",
+    color: "#80652a",
+    borderRadius: "7px",
+    padding: "8px 11px",
+    fontWeight: 800,
+    fontSize: "10px",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  },
+
+  keynesAnswerBox: {
+    margin: "0 15px 15px",
+    padding: "16px",
+    background: "#faf8f4",
+    border:
+      "1px solid #e8e2d8",
+    borderRadius: "9px",
+    color: "#333",
+    fontSize: "13px",
+    lineHeight: 1.7,
+    whiteSpace: "pre-wrap",
+    minHeight: "70px",
+  },
+
+  noAnswerText: {
+    color: "#999",
+    fontStyle: "italic",
+  },
+
+  keynesGradingPanel: {
+    marginTop: "20px",
+    padding: "18px",
+    background: "#f8f4ee",
+    border:
+      "1px solid #e4ded4",
+    borderRadius: "11px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "20px",
+  },
+
+  keynesGradingLabel: {
+    fontSize: "10px",
+    letterSpacing: "0.14em",
+    color: "#8a7444",
+    fontWeight: 800,
+  },
+
+  keynesGradingDescription: {
+    marginTop: "5px",
+    color: "#777",
+    fontSize: "11px",
+  },
+
+  keynesGradeControl: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    flexShrink: 0,
+  },
+
+  keynesGradeInput: {
+    width: "90px",
+    border:
+      "1px solid #d8d3ca",
+    background: "#ffffff",
+    borderRadius: "8px",
+    padding: "11px 12px",
+    fontSize: "17px",
+    fontWeight: 800,
+    color: "#0d1b2a",
+    textAlign: "center",
+    outline: "none",
+  },
+
+  keynesGradeMax: {
+    fontSize: "16px",
+    fontWeight: 800,
+    color: "#59636d",
+  },
+
+  keynesFinalPreview: {
+    marginTop: "14px",
+    paddingTop: "18px",
+    borderTop:
+      "1px solid #e4ded4",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "20px",
+  },
+
+  keynesFinalLabel: {
+    fontSize: "9px",
+    letterSpacing: "0.15em",
+    color: "#8a7444",
+    fontWeight: 800,
+  },
+
+  keynesFinalFormula: {
+    marginTop: "5px",
+    fontFamily:
+      '"Playfair Display", Georgia, serif',
+    fontSize: "20px",
+    color: "#0d1b2a",
+  },
+
+  keynesSaveButton: {
+    border: "none",
+    background: "#0d1b2a",
+    color: "#ffffff",
+    borderRadius: "8px",
+    padding: "12px 18px",
+    fontWeight: 800,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  },
+
+  // =========================================================
   // OTHER EXAMS
   // =========================================================
 
@@ -2958,7 +4672,8 @@ const styles = {
   },
 
   taskCard: {
-    borderBottom: "1px solid #eeeae4",
+    borderBottom:
+      "1px solid #eeeae4",
     paddingBottom: "22px",
     marginBottom: "22px",
   },
@@ -2996,7 +4711,8 @@ const styles = {
     marginTop: "14px",
     padding: "16px",
     background: "#faf8f4",
-    border: "1px solid #e8e2d8",
+    border:
+      "1px solid #e8e2d8",
     borderRadius: "9px",
     color: "#333",
     fontSize: "13px",
@@ -3020,7 +4736,8 @@ const styles = {
   },
 
   gradeSelect: {
-    border: "1px solid #d8d3ca",
+    border:
+      "1px solid #d8d3ca",
     borderRadius: "7px",
     background: "#ffffff",
     padding: "8px 10px",
@@ -3064,7 +4781,8 @@ const styles = {
     marginTop: "18px",
     padding: "14px 16px",
     background: "#fffaf0",
-    border: "1px solid #e6d6ad",
+    border:
+      "1px solid #e6d6ad",
     borderRadius: "9px",
     color: "#705b29",
     fontSize: "11px",
@@ -3186,7 +4904,8 @@ const styles = {
 
   errorBox: {
     background: "#fff0f0",
-    border: "1px solid #efcaca",
+    border:
+      "1px solid #efcaca",
     color: "#8d2d2d",
     borderRadius: "9px",
     padding: "14px 16px",
@@ -3225,7 +4944,8 @@ const styles = {
     marginTop: "15px",
     padding: "12px 14px",
     background: "#fff0f0",
-    border: "1px solid #efcaca",
+    border:
+      "1px solid #efcaca",
     color: "#8d2d2d",
     borderRadius: "8px",
     display: "flex",
@@ -3238,7 +4958,8 @@ const styles = {
     marginTop: "15px",
     padding: "12px 14px",
     background: "#edf8f0",
-    border: "1px solid #c8e8d0",
+    border:
+      "1px solid #c8e8d0",
     color: "#176b35",
     borderRadius: "8px",
     display: "flex",

@@ -79,14 +79,16 @@ export default function StudentResults() {
       return "Compréhension orale";
     }
 
-    // Keep the database identifier unchanged.
-    // Only the student-facing label is changed.
     if (testType === "comprehension_ecrite") {
       return "Examen de français";
     }
 
     if (testType === "expression_ecrite") {
       return "Expression écrite";
+    }
+
+    if (testType === "exam_keynes") {
+      return "Examen Keynes — Niveau B1";
     }
 
     return testType || "Test de niveau";
@@ -120,12 +122,88 @@ export default function StudentResults() {
     return result.grading_total;
   };
 
+  /*
+   * KEYNES EXAM
+   *
+   * Language = 75 points
+   * Writing = 25 points
+   * Final = 100 points
+   *
+   * IMPORTANT:
+   * The current score saved by ExamKeynes.js is the automatic
+   * language score. Therefore, we must NOT display it as
+   * "75 / 100" while writing is still pending.
+   */
+  const isKeynesExam = (result) => {
+    return result?.test_type === "exam_keynes";
+  };
+
+  const getKeynesLanguageScore = (result) => {
+    if (!isKeynesExam(result)) {
+      return null;
+    }
+
+    return Number(result.score || 0);
+  };
+
+  const getKeynesWritingScore = (result) => {
+    if (!isKeynesExam(result)) {
+      return null;
+    }
+
+    if (
+      result.grading_status !== "graded" ||
+      result.grading_total === null ||
+      result.grading_total === undefined
+    ) {
+      return null;
+    }
+
+    return Number(result.grading_total);
+  };
+
+  const isKeynesGraded = (result) => {
+    if (!isKeynesExam(result)) {
+      return false;
+    }
+
+    return (
+      result.grading_status === "graded" &&
+      result.grading_total !== null &&
+      result.grading_total !== undefined
+    );
+  };
+
+  const getKeynesFinalScore = (result) => {
+    if (!isKeynesGraded(result)) {
+      return null;
+    }
+
+    const languageScore = getKeynesLanguageScore(result);
+    const writingScore = getKeynesWritingScore(result);
+
+    if (languageScore === null || writingScore === null) {
+      return null;
+    }
+
+    return languageScore + writingScore;
+  };
+
+  const getKeynesPercentage = (result) => {
+    const finalScore = getKeynesFinalScore(result);
+
+    if (finalScore === null) {
+      return null;
+    }
+
+    return Math.round(finalScore);
+  };
+
   const comprehensionSummary = useMemo(() => {
     const oral = results.find(
       (result) => result.test_type === "comprehension_orale"
     );
 
-    // Keep the database identifier unchanged.
     const written = results.find(
       (result) => result.test_type === "comprehension_ecrite"
     );
@@ -679,6 +757,403 @@ export default function StudentResults() {
                   const expressionScore =
                     getExpressionScore(result);
 
+                  /*
+                   * =====================================================
+                   * KEYNES EXAM RESULT
+                   * =====================================================
+                   */
+
+                  if (isKeynesExam(result)) {
+                    const languageScore =
+                      getKeynesLanguageScore(result);
+
+                    const writingScore =
+                      getKeynesWritingScore(result);
+
+                    const finalScore =
+                      getKeynesFinalScore(result);
+
+                    const finalPercentage =
+                      getKeynesPercentage(result);
+
+                    const graded =
+                      isKeynesGraded(result);
+
+                    return (
+                      <div
+                        key={result.id}
+                        style={{
+                          background: "#ffffff",
+                          border: "1px solid #e4ddd2",
+                          borderRadius: "16px",
+                          padding: "24px",
+                          boxShadow:
+                            "0 6px 18px rgba(13,27,42,0.06)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: "15px",
+                            flexWrap: "wrap",
+                            marginBottom: "20px",
+                          }}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: "#c9a84c",
+                                fontSize: "12px",
+                                fontWeight: "700",
+                                letterSpacing: "1px",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              Résultat de l'examen
+                            </div>
+
+                            <h2
+                              style={{
+                                margin: "5px 0 0",
+                                color: "#0d1b2a",
+                                fontSize: "21px",
+                                fontFamily:
+                                  "Playfair Display, Georgia, serif",
+                              }}
+                            >
+                              Examen Keynes — Niveau B1
+                            </h2>
+                          </div>
+
+                          <div
+                            style={{
+                              color: "#667085",
+                              fontSize: "13px",
+                            }}
+                          >
+                            {formatDate(result.completed_at)}
+                          </div>
+                        </div>
+
+                        {/* STATUS */}
+                        <div
+                          style={{
+                            background: graded
+                              ? "#f0fdf4"
+                              : "#fff8df",
+                            border: graded
+                              ? "1px solid #bbf7d0"
+                              : "1px solid #ead9a7",
+                            borderRadius: "12px",
+                            padding: "16px",
+                            marginBottom: "18px",
+                            textAlign: "center",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: "13px",
+                              color: "#667085",
+                              marginBottom: "6px",
+                            }}
+                          >
+                            Statut de l'examen
+                          </div>
+
+                          <div
+                            style={{
+                              color: graded
+                                ? "#16803c"
+                                : "#a16207",
+                              fontSize: "17px",
+                              fontWeight: "700",
+                            }}
+                          >
+                            {graded
+                              ? "✓ Examen entièrement corrigé"
+                              : "⏳ Correction en cours"}
+                          </div>
+
+                          {!graded && (
+                            <div
+                              style={{
+                                marginTop: "7px",
+                                color: "#667085",
+                                fontSize: "12px",
+                              }}
+                            >
+                              La partie écrite de 25 points
+                              doit encore être corrigée par
+                              votre enseignant.
+                            </div>
+                          )}
+                        </div>
+
+                        {/* SCORE CARDS */}
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns:
+                              "repeat(auto-fit, minmax(180px, 1fr))",
+                            gap: "12px",
+                          }}
+                        >
+                          {/* LANGUAGE */}
+                          <div
+                            style={{
+                              background: "#f8f4ee",
+                              borderRadius: "12px",
+                              padding: "20px",
+                              textAlign: "center",
+                            }}
+                          >
+                            <div
+                              style={{
+                                color: "#667085",
+                                fontSize: "13px",
+                                marginBottom: "7px",
+                              }}
+                            >
+                              Partie langue
+                            </div>
+
+                            <div
+                              style={{
+                                color: "#0d1b2a",
+                                fontSize: "30px",
+                                fontWeight: "700",
+                              }}
+                            >
+                              {languageScore} / 75
+                            </div>
+
+                            <div
+                              style={{
+                                color: "#16803c",
+                                fontSize: "12px",
+                                marginTop: "5px",
+                                fontWeight: "600",
+                              }}
+                            >
+                              Correction automatique
+                            </div>
+                          </div>
+
+                          {/* WRITING */}
+                          <div
+                            style={{
+                              background: graded
+                                ? "#f0fdf4"
+                                : "#fff8df",
+                              borderRadius: "12px",
+                              padding: "20px",
+                              textAlign: "center",
+                            }}
+                          >
+                            <div
+                              style={{
+                                color: "#667085",
+                                fontSize: "13px",
+                                marginBottom: "7px",
+                              }}
+                            >
+                              Expression écrite
+                            </div>
+
+                            {graded ? (
+                              <>
+                                <div
+                                  style={{
+                                    color: "#16803c",
+                                    fontSize: "30px",
+                                    fontWeight: "700",
+                                  }}
+                                >
+                                  {writingScore} / 25
+                                </div>
+
+                                <div
+                                  style={{
+                                    color: "#16803c",
+                                    fontSize: "12px",
+                                    marginTop: "5px",
+                                    fontWeight: "600",
+                                  }}
+                                >
+                                  ✓ Corrigé
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div
+                                  style={{
+                                    color: "#a16207",
+                                    fontSize: "20px",
+                                    fontWeight: "700",
+                                  }}
+                                >
+                                  En attente
+                                </div>
+
+                                <div
+                                  style={{
+                                    color: "#667085",
+                                    fontSize: "12px",
+                                    marginTop: "8px",
+                                  }}
+                                >
+                                  / 25 points
+                                </div>
+                              </>
+                            )}
+                          </div>
+
+                          {/* TOTAL */}
+                          <div
+                            style={{
+                              background: graded
+                                ? "#eef4ff"
+                                : "#f8f4ee",
+                              borderRadius: "12px",
+                              padding: "20px",
+                              textAlign: "center",
+                            }}
+                          >
+                            <div
+                              style={{
+                                color: "#667085",
+                                fontSize: "13px",
+                                marginBottom: "7px",
+                              }}
+                            >
+                              Total
+                            </div>
+
+                            {graded ? (
+                              <>
+                                <div
+                                  style={{
+                                    color: "#0d1b2a",
+                                    fontSize: "30px",
+                                    fontWeight: "700",
+                                  }}
+                                >
+                                  {finalScore} / 100
+                                </div>
+
+                                <div
+                                  style={{
+                                    color: "#c9a84c",
+                                    fontSize: "12px",
+                                    marginTop: "5px",
+                                    fontWeight: "700",
+                                  }}
+                                >
+                                  {finalPercentage}%
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div
+                                  style={{
+                                    color: "#667085",
+                                    fontSize: "18px",
+                                    fontWeight: "700",
+                                  }}
+                                >
+                                  En attente
+                                </div>
+
+                                <div
+                                  style={{
+                                    color: "#667085",
+                                    fontSize: "12px",
+                                    marginTop: "8px",
+                                  }}
+                                >
+                                  Total final / 100
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* EXPLANATION */}
+                        <div
+                          style={{
+                            marginTop: "18px",
+                            padding: "16px",
+                            background: "#f8f4ee",
+                            borderRadius: "12px",
+                            color: "#667085",
+                            fontSize: "13px",
+                            lineHeight: "1.6",
+                          }}
+                        >
+                          <strong
+                            style={{
+                              color: "#0d1b2a",
+                            }}
+                          >
+                            Composition de votre résultat :
+                          </strong>
+
+                          <br />
+
+                          • Partie langue :{" "}
+                          <strong
+                            style={{
+                              color: "#0d1b2a",
+                            }}
+                          >
+                            {languageScore} / 75
+                          </strong>
+
+                          <br />
+
+                          • Expression écrite :{" "}
+                          <strong
+                            style={{
+                              color: graded
+                                ? "#16803c"
+                                : "#a16207",
+                            }}
+                          >
+                            {graded
+                              ? `${writingScore} / 25`
+                              : "En attente de correction / 25"}
+                          </strong>
+
+                          {!graded && (
+                            <>
+                              <br />
+                              <br />
+
+                              <span
+                                style={{
+                                  color: "#667085",
+                                }}
+                              >
+                                Votre score de langue est déjà
+                                disponible. Le résultat final
+                                sera calculé après la correction
+                                de votre expression écrite.
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  /*
+                   * =====================================================
+                   * EXPRESSION ÉCRITE STANDARD
+                   * =====================================================
+                   */
+
                   return (
                     <div
                       key={result.id}
@@ -1006,4 +1481,3 @@ export default function StudentResults() {
     </div>
   );
 }
-

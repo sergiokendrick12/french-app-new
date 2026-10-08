@@ -190,8 +190,7 @@ const questions = [
     id: 15,
     part: 3,
     title: "Adverbes",
-    question:
-      "Elle travaille sérieusement pour réussir son examen.",
+    question: "Elle travaille sérieusement pour réussir son examen.",
     prompt: "Quel est l’adverbe ?",
     answer: "sérieusement",
     points: 2,
@@ -223,18 +222,8 @@ const questions = [
     id: 18,
     part: 4,
     title: "Prépositions",
-    question:
-      "Il habite ______ une petite maison près de l’école.",
-    options: [
-      "à",
-      "de",
-      "en",
-      "chez",
-      "pour",
-      "avec",
-      "dans",
-      "sur",
-    ],
+    question: "Il habite ______ une petite maison près de l’école.",
+    options: ["à", "de", "en", "chez", "pour", "avec", "dans", "sur"],
     answer: "dans",
     points: 2,
   },
@@ -242,18 +231,8 @@ const questions = [
     id: 19,
     part: 4,
     title: "Prépositions",
-    question:
-      "Nous partirons ______ France l’année prochaine.",
-    options: [
-      "à",
-      "de",
-      "en",
-      "chez",
-      "pour",
-      "avec",
-      "dans",
-      "sur",
-    ],
+    question: "Nous partirons ______ France l’année prochaine.",
+    options: ["à", "de", "en", "chez", "pour", "avec", "dans", "sur"],
     answer: "en",
     points: 2,
   },
@@ -262,16 +241,7 @@ const questions = [
     part: 4,
     title: "Prépositions",
     question: "Je vais ______ mon médecin demain matin.",
-    options: [
-      "à",
-      "de",
-      "en",
-      "chez",
-      "pour",
-      "avec",
-      "dans",
-      "sur",
-    ],
+    options: ["à", "de", "en", "chez", "pour", "avec", "dans", "sur"],
     answer: "chez",
     points: 2,
   },
@@ -279,18 +249,8 @@ const questions = [
     id: 21,
     part: 4,
     title: "Prépositions",
-    question:
-      "Elle travaille ______ ses collègues depuis trois ans.",
-    options: [
-      "à",
-      "de",
-      "en",
-      "chez",
-      "pour",
-      "avec",
-      "dans",
-      "sur",
-    ],
+    question: "Elle travaille ______ ses collègues depuis trois ans.",
+    options: ["à", "de", "en", "chez", "pour", "avec", "dans", "sur"],
     answer: "avec",
     points: 1,
   },
@@ -299,16 +259,7 @@ const questions = [
     part: 4,
     title: "Prépositions",
     question: "Ce cadeau est ______ toi.",
-    options: [
-      "à",
-      "de",
-      "en",
-      "chez",
-      "pour",
-      "avec",
-      "dans",
-      "sur",
-    ],
+    options: ["à", "de", "en", "chez", "pour", "avec", "dans", "sur"],
     answer: "pour",
     points: 1,
   },
@@ -321,8 +272,7 @@ const questions = [
     id: 23,
     part: 5,
     title: "Temps verbaux",
-    question:
-      "Quand j’étais enfant, je ______ souvent au football. (jouer)",
+    question: "Quand j’étais enfant, je ______ souvent au football. (jouer)",
     answer: "jouais",
     points: 2,
   },
@@ -330,8 +280,7 @@ const questions = [
     id: 24,
     part: 5,
     title: "Temps verbaux",
-    question:
-      "Nous ______ toujours ensemble après les cours. (sortir)",
+    question: "Nous ______ toujours ensemble après les cours. (sortir)",
     answer: "sortions",
     points: 2,
   },
@@ -339,8 +288,7 @@ const questions = [
     id: 25,
     part: 5,
     title: "Temps verbaux",
-    question:
-      "Elle ______ très timide quand elle était petite. (être)",
+    question: "Elle ______ très timide quand elle était petite. (être)",
     answer: "était",
     points: 2,
   },
@@ -348,8 +296,7 @@ const questions = [
     id: 26,
     part: 5,
     title: "Temps verbaux",
-    question:
-      "Hier, nous ______ un excellent film. (regarder)",
+    question: "Hier, nous ______ un excellent film. (regarder)",
     answer: "avons regardé",
     points: 2,
   },
@@ -357,8 +304,7 @@ const questions = [
     id: 27,
     part: 5,
     title: "Temps verbaux",
-    question:
-      "Elle ______ très tôt ce matin. (se lever)",
+    question: "Elle ______ très tôt ce matin. (se lever)",
     answer: "s’est levée",
     points: 2,
   },
@@ -366,8 +312,7 @@ const questions = [
     id: 28,
     part: 5,
     title: "Temps verbaux",
-    question:
-      "Ils ______ leurs devoirs avant de sortir. (finir)",
+    question: "Ils ______ leurs devoirs avant de sortir. (finir)",
     answer: "ont fini",
     points: 1,
   },
@@ -375,8 +320,7 @@ const questions = [
     id: 29,
     part: 5,
     title: "Temps verbaux",
-    question:
-      "Demain, je ______ mes grands-parents. (visiter)",
+    question: "Demain, je ______ mes grands-parents. (visiter)",
     answer: "visiterai",
     points: 1,
   },
@@ -384,8 +328,7 @@ const questions = [
     id: 30,
     part: 5,
     title: "Temps verbaux",
-    question:
-      "Nous ______ beaucoup de choses pendant ce voyage. (découvrir)",
+    question: "Nous ______ beaucoup de choses pendant ce voyage. (découvrir)",
     answer: "découvrirons",
     points: 1,
   },
@@ -409,12 +352,7 @@ const questions = [
     title: "Types de phrases",
     question: "Quelle magnifique journée !",
     prompt: "Quel est le type de phrase ?",
-    options: [
-      "déclarative",
-      "interrogative",
-      "impérative",
-      "exclamative",
-    ],
+    options: ["déclarative", "interrogative", "impérative", "exclamative"],
     answer: "exclamative",
     points: 2,
   },
@@ -422,15 +360,9 @@ const questions = [
     id: 33,
     part: 6,
     title: "Types de phrases",
-    question:
-      "Est-ce que tu as terminé ton travail ?",
+    question: "Est-ce que tu as terminé ton travail ?",
     prompt: "Quel est le type de phrase ?",
-    options: [
-      "déclarative",
-      "interrogative",
-      "impérative",
-      "exclamative",
-    ],
+    options: ["déclarative", "interrogative", "impérative", "exclamative"],
     answer: "interrogative",
     points: 2,
   },
@@ -440,12 +372,7 @@ const questions = [
     title: "Types de phrases",
     question: "Fermez la porte immédiatement.",
     prompt: "Quel est le type de phrase ?",
-    options: [
-      "déclarative",
-      "interrogative",
-      "impérative",
-      "exclamative",
-    ],
+    options: ["déclarative", "interrogative", "impérative", "exclamative"],
     answer: "impérative",
     points: 2,
   },
@@ -481,13 +408,7 @@ const questions = [
     part: 7,
     title: "Déterminants",
     question: "______ étudiant doit apporter son livre.",
-    options: [
-      "chaque",
-      "plusieurs",
-      "aucun",
-      "certaines",
-      "tous",
-    ],
+    options: ["chaque", "plusieurs", "aucun", "certaines", "tous"],
     answer: "chaque",
     points: 2,
   },
@@ -495,15 +416,8 @@ const questions = [
     id: 38,
     part: 7,
     title: "Déterminants",
-    question:
-      "______ personnes préfèrent travailler le matin.",
-    options: [
-      "chaque",
-      "plusieurs",
-      "aucun",
-      "certaines",
-      "tous",
-    ],
+    question: "______ personnes préfèrent travailler le matin.",
+    options: ["chaque", "plusieurs", "aucun", "certaines", "tous"],
     answer: "plusieurs",
     points: 2,
   },
@@ -511,15 +425,8 @@ const questions = [
     id: 39,
     part: 7,
     title: "Déterminants",
-    question:
-      "______ les enfants jouent dans le jardin.",
-    options: [
-      "chaque",
-      "plusieurs",
-      "aucun",
-      "certaines",
-      "tous",
-    ],
+    question: "______ les enfants jouent dans le jardin.",
+    options: ["chaque", "plusieurs", "aucun", "certaines", "tous"],
     answer: "tous",
     points: 2,
   },
@@ -527,14 +434,8 @@ const questions = [
     id: 40,
     part: 7,
     title: "Déterminants",
-    question:
-      "Il n’y a ______ solution facile à ce problème.",
-    options: [
-      "aucune",
-      "plusieurs",
-      "certaines",
-      "chaque",
-    ],
+    question: "Il n’y a ______ solution facile à ce problème.",
+    options: ["aucune", "plusieurs", "certaines", "chaque"],
     answer: "aucune",
     points: 1,
   },
@@ -542,15 +443,8 @@ const questions = [
     id: 41,
     part: 7,
     title: "Déterminants",
-    question:
-      "______ jours, je fais de la lecture.",
-    options: [
-      "chaque",
-      "plusieurs",
-      "aucun",
-      "certaines",
-      "tous",
-    ],
+    question: "______ jours, je fais de la lecture.",
+    options: ["chaque", "plusieurs", "aucun", "certaines", "tous"],
     answer: "chaque",
     points: 1,
   },
@@ -564,18 +458,8 @@ const questions = [
     part: 8,
     title: "Vocabulaire",
     question: "merveilleux → ______",
-    options: [
-      "magnifique",
-      "splendide",
-      "formidable",
-      "extraordinaire",
-    ],
-    answer: [
-      "magnifique",
-      "splendide",
-      "formidable",
-      "extraordinaire",
-    ],
+    options: ["magnifique", "splendide", "formidable", "extraordinaire"],
+    answer: ["magnifique", "splendide", "formidable", "extraordinaire"],
     points: 2,
   },
   {
@@ -620,8 +504,7 @@ const writingTasks = [
     id: "task1",
     title: "Tâche 1",
     points: 3,
-    question:
-      "Pourquoi la personne est-elle partie très tôt de chez elle ?",
+    question: "Pourquoi la personne est-elle partie très tôt de chez elle ?",
   },
   {
     id: "task2",
@@ -633,8 +516,7 @@ const writingTasks = [
     id: "task3",
     title: "Tâche 3",
     points: 4,
-    question:
-      "Qu’aurais-tu fait si tu avais trouvé ce portefeuille ?",
+    question: "Qu’aurais-tu fait si tu avais trouvé ce portefeuille ?",
   },
   {
     id: "task4",
@@ -691,14 +573,35 @@ function calculateLanguageScore(answers) {
   }, 0);
 }
 
+// ============================================================
+// FULL BREAKDOWN SAVED WITH THE RESULT
+// ============================================================
+
+function buildAnswerDetails(answers) {
+  return questions.map((q) => {
+    const correct = isQuestionCorrect(q, answers[q.id]);
+
+    return {
+      id: q.id,
+      part: q.part,
+      title: q.title,
+      question: q.question,
+      prompt: q.prompt || null,
+      student_answer: answers[q.id] ?? "",
+      correct_answer: q.answer,
+      alternatives: q.alternatives || null,
+      correct,
+      points_possible: q.points,
+      points_awarded: correct ? q.points : 0,
+    };
+  });
+}
+
 function calculateAnsweredCount(answers) {
   return questions.filter((question) => {
     const value = answers[question.id];
 
-    return (
-      value !== undefined &&
-      String(value).trim() !== ""
-    );
+    return value !== undefined && String(value).trim() !== "";
   }).length;
 }
 
@@ -722,19 +625,45 @@ function normalizeWritingAnswers(value) {
   };
 }
 
-function restoreStoredState(
-  attemptId,
-  setAnswers,
-  setWritingAnswers
-) {
+// ============================================================
+// NEW: SAVE COMPLETE ANSWER SNAPSHOT IN THE ATTEMPT
+// ============================================================
+// This allows administration to retrieve:
+//   - every language answer
+//   - every writing answer
+// from exam_keynes_attempts.answers
+//
+// Example:
+// {
+//   language: {
+//     "1": "leur",
+//     "2": "les"
+//   },
+//   writing: {
+//     task1: "...",
+//     task2: "...",
+//     task3: "...",
+//     task4: "..."
+//   }
+// }
+// ============================================================
+
+function buildAttemptAnswerSnapshot(answers, writingAnswers) {
+  return {
+    language: {
+      ...answers,
+    },
+    writing: normalizeWritingAnswers(writingAnswers),
+  };
+}
+
+function restoreStoredState(attemptId, setAnswers, setWritingAnswers) {
   if (!attemptId) {
     return;
   }
 
   try {
-    const raw = localStorage.getItem(
-      getStorageKey(attemptId)
-    );
+    const raw = localStorage.getItem(getStorageKey(attemptId));
 
     if (!raw) {
       return;
@@ -745,24 +674,16 @@ function restoreStoredState(
     if (
       parsed &&
       typeof parsed === "object" &&
-      ("answers" in parsed ||
-        "writingAnswers" in parsed)
+      ("answers" in parsed || "writingAnswers" in parsed)
     ) {
       setAnswers(parsed.answers || {});
-      setWritingAnswers(
-        normalizeWritingAnswers(
-          parsed.writingAnswers
-        )
-      );
+      setWritingAnswers(normalizeWritingAnswers(parsed.writingAnswers));
     } else {
       // Backward compatibility with the previous storage format.
       setAnswers(parsed || {});
     }
   } catch (error) {
-    console.error(
-      "Unable to restore saved exam state:",
-      error
-    );
+    console.error("Unable to restore saved exam state:", error);
   }
 }
 
@@ -776,54 +697,35 @@ export default function ExamKeynes() {
   const [saving, setSaving] = useState(false);
 
   const [answers, setAnswers] = useState({});
-  const [writingAnswers, setWritingAnswers] =
-    useState({
-      task1: "",
-      task2: "",
-      task3: "",
-      task4: "",
-    });
+  const [writingAnswers, setWritingAnswers] = useState({
+    task1: "",
+    task2: "",
+    task3: "",
+    task4: "",
+  });
 
-  const [currentQuestion, setCurrentQuestion] =
-    useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
 
   const [attemptId, setAttemptId] = useState(null);
   const [startedAt, setStartedAt] = useState(null);
 
-  const [remainingSeconds, setRemainingSeconds] =
-    useState(TEST_DURATION);
+  const [remainingSeconds, setRemainingSeconds] = useState(TEST_DURATION);
 
-  const [tabSwitches, setTabSwitches] =
-    useState(0);
+  const [tabSwitches, setTabSwitches] = useState(0);
+  const [showTabWarning, setShowTabWarning] = useState(false);
+  const [terminatedByTabSwitch, setTerminatedByTabSwitch] = useState(false);
 
-  const [showTabWarning, setShowTabWarning] =
-    useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
 
-  const [
-    terminatedByTabSwitch,
-    setTerminatedByTabSwitch,
-  ] = useState(false);
-
-  const [submitted, setSubmitted] =
-    useState(false);
-
-  const [alreadySubmitted, setAlreadySubmitted] =
-    useState(false);
-
-  const [errorMessage, setErrorMessage] =
-    useState("");
-
-  const [writingSection, setWritingSection] =
-    useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [writingSection, setWritingSection] = useState(false);
 
   const timeoutRef = useRef(false);
   const submittingRef = useRef(false);
   const visibilityHandledRef = useRef(false);
 
-  const allActivities = useMemo(
-    () => [...questions],
-    []
-  );
+  const allActivities = useMemo(() => [...questions], []);
 
   const languageScore = useMemo(
     () => calculateLanguageScore(answers),
@@ -837,84 +739,49 @@ export default function ExamKeynes() {
 
   const answeredPercentage =
     questions.length > 0
-      ? Math.round(
-          (answeredCount / questions.length) * 100
-        )
+      ? Math.round((answeredCount / questions.length) * 100)
       : 0;
 
-  const current =
-    allActivities[currentQuestion];
+  const current = allActivities[currentQuestion];
 
   const currentPartQuestions = useMemo(() => {
     if (!current) {
       return [];
     }
 
-    return questions.filter(
-      (question) =>
-        question.part === current.part
-    );
+    return questions.filter((question) => question.part === current.part);
   }, [current]);
 
-  const currentPartNumber =
-    current?.part || 1;
+  const currentPartNumber = current?.part || 1;
 
   const formattedTime = useMemo(() => {
-    const safeSeconds = Math.max(
-      0,
-      remainingSeconds
-    );
+    const safeSeconds = Math.max(0, remainingSeconds);
 
-    const hours = Math.floor(
-      safeSeconds / 3600
-    );
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    const seconds = safeSeconds % 60;
 
-    const minutes = Math.floor(
-      (safeSeconds % 3600) / 60
-    );
-
-    const seconds =
-      safeSeconds % 60;
-
-    return `${String(hours).padStart(
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
       2,
       "0"
-    )}:${String(minutes).padStart(
-      2,
-      "0"
-    )}:${String(seconds).padStart(
-      2,
-      "0"
-    )}`;
+    )}:${String(seconds).padStart(2, "0")}`;
   }, [remainingSeconds]);
 
-  const isLastLanguageQuestion =
-    currentQuestion ===
-    allActivities.length - 1;
+  const isLastLanguageQuestion = currentQuestion === allActivities.length - 1;
 
-  const canGoPrevious =
-    currentQuestion > 0;
+  const canGoPrevious = currentQuestion > 0;
 
-  const canGoNext =
-    currentQuestion <
-    allActivities.length - 1;
+  const canGoNext = currentQuestion < allActivities.length - 1;
 
-  const isWritingComplete =
-    writingTasks.every(
-      (task) =>
-        String(
-          writingAnswers[task.id] || ""
-        ).trim() !== ""
-    );
+  const isWritingComplete = writingTasks.every(
+    (task) => String(writingAnswers[task.id] || "").trim() !== ""
+  );
 
   // ============================================================
   // SAVE COMPLETE EXAM STATE
   // ============================================================
 
-  const saveExamState = (
-    nextAnswers,
-    nextWritingAnswers = writingAnswers
-  ) => {
+  const saveExamState = (nextAnswers, nextWritingAnswers = writingAnswers) => {
     try {
       if (!attemptId) {
         return;
@@ -924,17 +791,11 @@ export default function ExamKeynes() {
         getStorageKey(attemptId),
         JSON.stringify({
           answers: nextAnswers,
-          writingAnswers:
-            normalizeWritingAnswers(
-              nextWritingAnswers
-            ),
+          writingAnswers: normalizeWritingAnswers(nextWritingAnswers),
         })
       );
     } catch (error) {
-      console.error(
-        "Unable to save exam state:",
-        error
-      );
+      console.error("Unable to save exam state:", error);
     }
   };
 
@@ -960,9 +821,7 @@ export default function ExamKeynes() {
         }
 
         if (!currentUser) {
-          navigate("/student-login", {
-            replace: true,
-          });
+          navigate("/student-login", { replace: true });
           return;
         }
 
@@ -972,14 +831,9 @@ export default function ExamKeynes() {
 
         setUser(currentUser);
 
-        const {
-          data: profile,
-          error: profileError,
-        } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from("student_profiles")
-          .select(
-            "id, full_name, email, status, payment_status"
-          )
+          .select("id, full_name, email, status, payment_status")
           .eq("id", currentUser.id)
           .maybeSingle();
 
@@ -988,9 +842,7 @@ export default function ExamKeynes() {
         }
 
         if (!profile) {
-          setErrorMessage(
-            "Votre profil étudiant est introuvable."
-          );
+          setErrorMessage("Votre profil étudiant est introuvable.");
           return;
         }
 
@@ -1010,22 +862,14 @@ export default function ExamKeynes() {
         // CHECK IF EXAM WAS ALREADY COMPLETED
         // --------------------------------------------------------
 
-        const {
-          data: existingResult,
-          error: resultError,
-        } = await supabase
+        const { data: existingResult, error: resultError } = await supabase
           .from("test_results")
-          .select(
-            "id, completed_at, score, percentage"
-          )
+          .select("id, completed_at, score, percentage")
           .eq("student_id", currentUser.id)
           .eq("test_type", EXAM_TYPE)
           .maybeSingle();
 
-        if (
-          resultError &&
-          resultError.code !== "PGRST116"
-        ) {
+        if (resultError && resultError.code !== "PGRST116") {
           throw resultError;
         }
 
@@ -1038,54 +882,31 @@ export default function ExamKeynes() {
         // CHECK EXISTING ATTEMPT
         // --------------------------------------------------------
 
-        const {
-          data: existingAttempt,
-          error: attemptError,
-        } = await supabase
+        const { data: existingAttempt, error: attemptError } = await supabase
           .from(EXAM_TABLE_ATTEMPTS)
           .select("*")
-          .eq(
-            "student_id",
-            currentUser.id
-          )
-          .eq(
-            "status",
-            "in_progress"
-          )
+          .eq("student_id", currentUser.id)
+          .eq("status", "in_progress")
           .maybeSingle();
 
-        if (
-          attemptError &&
-          attemptError.code !== "PGRST116"
-        ) {
+        if (attemptError && attemptError.code !== "PGRST116") {
           throw attemptError;
         }
 
-        let activeAttempt =
-          existingAttempt;
+        let activeAttempt = existingAttempt;
 
         // --------------------------------------------------------
         // RESUME EXISTING ATTEMPT
         // --------------------------------------------------------
 
         if (activeAttempt) {
-          setAttemptId(
-            activeAttempt.id
-          );
+          setAttemptId(activeAttempt.id);
 
-          const startDate =
-            new Date(
-              activeAttempt.started_at
-            );
+          const startDate = new Date(activeAttempt.started_at);
 
-          setStartedAt(
-            startDate.toISOString()
-          );
+          setStartedAt(startDate.toISOString());
 
-          setTabSwitches(
-            activeAttempt.tab_switches ||
-              0
-          );
+          setTabSwitches(activeAttempt.tab_switches || 0);
 
           restoreStoredState(
             activeAttempt.id,
@@ -1093,23 +914,13 @@ export default function ExamKeynes() {
             setWritingAnswers
           );
 
-          const elapsedSeconds =
-            Math.floor(
-              (Date.now() -
-                startDate.getTime()) /
-                1000
-            );
-
-          const remaining =
-            Math.max(
-              0,
-              TEST_DURATION -
-                elapsedSeconds
-            );
-
-          setRemainingSeconds(
-            remaining
+          const elapsedSeconds = Math.floor(
+            (Date.now() - startDate.getTime()) / 1000
           );
+
+          const remaining = Math.max(0, TEST_DURATION - elapsedSeconds);
+
+          setRemainingSeconds(remaining);
 
           if (remaining <= 0) {
             setTimeout(() => {
@@ -1126,19 +937,12 @@ export default function ExamKeynes() {
         // CREATE NEW ATTEMPT
         // --------------------------------------------------------
 
-        const now =
-          new Date().toISOString();
+        const now = new Date().toISOString();
 
-        const {
-          data: newAttempt,
-          error: createError,
-        } = await supabase
-          .from(
-            EXAM_TABLE_ATTEMPTS
-          )
+        const { data: newAttempt, error: createError } = await supabase
+          .from(EXAM_TABLE_ATTEMPTS)
           .insert({
-            student_id:
-              currentUser.id,
+            student_id: currentUser.id,
             status: "in_progress",
             started_at: now,
             tab_switches: 0,
@@ -1154,18 +958,13 @@ export default function ExamKeynes() {
           return;
         }
 
-        activeAttempt =
-          newAttempt;
+        activeAttempt = newAttempt;
 
-        setAttemptId(
-          newAttempt.id
-        );
+        setAttemptId(newAttempt.id);
 
         setStartedAt(now);
 
-        setRemainingSeconds(
-          TEST_DURATION
-        );
+        setRemainingSeconds(TEST_DURATION);
 
         setTabSwitches(0);
 
@@ -1175,10 +974,7 @@ export default function ExamKeynes() {
           setWritingAnswers
         );
       } catch (error) {
-        console.error(
-          "Exam initialization error:",
-          error
-        );
+        console.error("Exam initialization error:", error);
 
         if (!cancelled) {
           setErrorMessage(
@@ -1205,11 +1001,7 @@ export default function ExamKeynes() {
   // ============================================================
 
   useEffect(() => {
-    if (
-      !startedAt ||
-      submitted ||
-      terminatedByTabSwitch
-    ) {
+    if (!startedAt || submitted || terminatedByTabSwitch) {
       return undefined;
     }
 
@@ -1217,10 +1009,7 @@ export default function ExamKeynes() {
 
     const updateTimer = async () => {
       try {
-        const {
-          data: serverTime,
-          error,
-        } = await supabase.rpc(
+        const { data: serverTime, error } = await supabase.rpc(
           "get_server_time"
         );
 
@@ -1228,74 +1017,40 @@ export default function ExamKeynes() {
           throw error;
         }
 
-        const serverNow =
-          new Date(serverTime);
+        const serverNow = new Date(serverTime);
 
-        const start =
-          new Date(startedAt);
+        const start = new Date(startedAt);
 
-        const elapsed =
-          Math.floor(
-            (serverNow.getTime() -
-              start.getTime()) /
-              1000
-          );
+        const elapsed = Math.floor(
+          (serverNow.getTime() - start.getTime()) / 1000
+        );
 
-        const remaining =
-          Math.max(
-            0,
-            TEST_DURATION -
-              elapsed
-          );
+        const remaining = Math.max(0, TEST_DURATION - elapsed);
 
         if (cancelled) {
           return;
         }
 
-        setRemainingSeconds(
-          remaining
-        );
+        setRemainingSeconds(remaining);
 
-        if (
-          remaining <= 0 &&
-          !timeoutRef.current
-        ) {
+        if (remaining <= 0 && !timeoutRef.current) {
           timeoutRef.current = true;
           await handleTimeout();
         }
       } catch (error) {
-        console.error(
-          "Timer error:",
-          error
-        );
+        console.error("Timer error:", error);
 
         // Fallback to local time if server RPC is temporarily unavailable.
-        const start =
-          new Date(startedAt);
+        const start = new Date(startedAt);
 
-        const elapsed =
-          Math.floor(
-            (Date.now() -
-              start.getTime()) /
-              1000
-          );
+        const elapsed = Math.floor((Date.now() - start.getTime()) / 1000);
 
-        const remaining =
-          Math.max(
-            0,
-            TEST_DURATION -
-              elapsed
-          );
+        const remaining = Math.max(0, TEST_DURATION - elapsed);
 
         if (!cancelled) {
-          setRemainingSeconds(
-            remaining
-          );
+          setRemainingSeconds(remaining);
 
-          if (
-            remaining <= 0 &&
-            !timeoutRef.current
-          ) {
+          if (remaining <= 0 && !timeoutRef.current) {
             timeoutRef.current = true;
             await handleTimeout();
           }
@@ -1305,98 +1060,61 @@ export default function ExamKeynes() {
 
     updateTimer();
 
-    const interval =
-      setInterval(
-        updateTimer,
-        1000
-      );
+    const interval = setInterval(updateTimer, 1000);
 
     return () => {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [
-    startedAt,
-    submitted,
-    terminatedByTabSwitch,
-  ]);
+  }, [startedAt, submitted, terminatedByTabSwitch]);
 
   // ============================================================
   // VISIBILITY / TAB SWITCH SECURITY
   // ============================================================
 
   useEffect(() => {
-    if (
-      !attemptId ||
-      submitted ||
-      terminatedByTabSwitch
-    ) {
+    if (!attemptId || submitted || terminatedByTabSwitch) {
       return undefined;
     }
 
-    const handleVisibilityChange =
-      async () => {
-        if (
-          document.visibilityState !==
-          "hidden"
-        ) {
-          return;
-        }
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState !== "hidden") {
+        return;
+      }
 
-        if (
-          visibilityHandledRef.current
-        ) {
-          return;
-        }
+      if (visibilityHandledRef.current) {
+        return;
+      }
 
-        visibilityHandledRef.current =
-          true;
+      visibilityHandledRef.current = true;
 
-        const newCount =
-          tabSwitches + 1;
+      const newCount = tabSwitches + 1;
 
-        setTabSwitches(
-          newCount
-        );
+      setTabSwitches(newCount);
 
-        try {
-          await supabase
-            .from(
-              EXAM_TABLE_ATTEMPTS
-            )
-            .update({
-              tab_switches:
-                newCount,
-            })
-            .eq(
-              "id",
-              attemptId
-            );
-        } catch (error) {
-          console.error(
-            "Unable to update tab switch count:",
-            error
-          );
-        }
+      try {
+        await supabase
+          .from(EXAM_TABLE_ATTEMPTS)
+          .update({
+            tab_switches: newCount,
+          })
+          .eq("id", attemptId);
+      } catch (error) {
+        console.error("Unable to update tab switch count:", error);
+      }
 
-        if (newCount === 1) {
-          setShowTabWarning(true);
-        } else if (
-          newCount >= 2
-        ) {
-          await terminateExamByTabSwitch();
-        }
+      if (newCount === 1) {
+        setShowTabWarning(true);
+      } else if (newCount >= 2) {
+        await terminateExamByTabSwitch();
+      }
 
-        setTimeout(() => {
-          visibilityHandledRef.current =
-            false;
-        }, 1000);
-      };
+      setTimeout(() => {
+        visibilityHandledRef.current = false;
+      }, 1000);
+    };
 
-    document.addEventListener(
-      "visibilitychange",
-      handleVisibilityChange
-    );
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       document.removeEventListener(
@@ -1404,21 +1122,13 @@ export default function ExamKeynes() {
         handleVisibilityChange
       );
     };
-  }, [
-    attemptId,
-    tabSwitches,
-    submitted,
-    terminatedByTabSwitch,
-  ]);
+  }, [attemptId, tabSwitches, submitted, terminatedByTabSwitch]);
 
   // ============================================================
   // ANSWER HANDLERS
   // ============================================================
 
-  const handleAnswerChange = (
-    questionId,
-    value
-  ) => {
+  const handleAnswerChange = (questionId, value) => {
     const nextAnswers = {
       ...answers,
       [questionId]: value,
@@ -1426,29 +1136,18 @@ export default function ExamKeynes() {
 
     setAnswers(nextAnswers);
 
-    saveExamState(
-      nextAnswers,
-      writingAnswers
-    );
+    saveExamState(nextAnswers, writingAnswers);
   };
 
-  const handleWritingChange = (
-    taskId,
-    value
-  ) => {
+  const handleWritingChange = (taskId, value) => {
     const nextWritingAnswers = {
       ...writingAnswers,
       [taskId]: value,
     };
 
-    setWritingAnswers(
-      nextWritingAnswers
-    );
+    setWritingAnswers(nextWritingAnswers);
 
-    saveExamState(
-      answers,
-      nextWritingAnswers
-    );
+    saveExamState(answers, nextWritingAnswers);
   };
 
   // ============================================================
@@ -1456,10 +1155,7 @@ export default function ExamKeynes() {
   // ============================================================
 
   async function terminateExamByTabSwitch() {
-    if (
-      submittingRef.current ||
-      submitted
-    ) {
+    if (submittingRef.current || submitted) {
       return;
     }
 
@@ -1473,105 +1169,75 @@ export default function ExamKeynes() {
       } = await supabase.auth.getUser();
 
       if (!currentUser) {
-        throw new Error(
-          "Session utilisateur introuvable."
-        );
+        throw new Error("Session utilisateur introuvable.");
       }
 
-      const partialLanguageScore =
-        calculateLanguageScore(
-          answers
-        );
+      const partialLanguageScore = calculateLanguageScore(answers);
 
-      const {
-        error: resultError,
-      } = await supabase
+      const { error: resultError } = await supabase
         .from("test_results")
         .insert({
-          student_id:
-            currentUser.id,
-
-          score:
-            partialLanguageScore,
-
+          student_id: currentUser.id,
+          score: partialLanguageScore,
           total_questions: 100,
-
-          percentage:
-            partialLanguageScore,
-
-          test_type:
-            EXAM_TYPE,
-
-          task1_answer:
-            writingAnswers.task1.trim(),
-
-          task2_answer:
-            writingAnswers.task2.trim(),
-
-          task3_answer:
-            writingAnswers.task3.trim(),
-
-          task4_answer:
-            writingAnswers.task4.trim(),
-
-          grading_status:
-            "pending",
+          percentage: partialLanguageScore,
+          test_type: EXAM_TYPE,
+          task1_answer: writingAnswers.task1.trim(),
+          task2_answer: writingAnswers.task2.trim(),
+          task3_answer: writingAnswers.task3.trim(),
+          task4_answer: writingAnswers.task4.trim(),
+          grading_status: "pending",
+          answers_detail: buildAnswerDetails(answers),
         });
 
-      if (
-        resultError &&
-        resultError.code !== "23505"
-      ) {
+      if (resultError && resultError.code !== "23505") {
         throw resultError;
       }
 
+      // --------------------------------------------------------
+      // NEW:
+      // Save ALL answers into exam_keynes_attempts.answers
+      // --------------------------------------------------------
+
       if (attemptId) {
-        await supabase
-          .from(
-            EXAM_TABLE_ATTEMPTS
-          )
+        const answerSnapshot = buildAttemptAnswerSnapshot(
+          answers,
+          writingAnswers
+        );
+
+        const { error: updateAttemptError } = await supabase
+          .from(EXAM_TABLE_ATTEMPTS)
           .update({
             status: "finished",
-            finished_at:
-              new Date().toISOString(),
-            termination_reason:
-              "tab_switch",
-            tab_switches:
-              Math.max(
-                2,
-                tabSwitches
-              ),
+            finished_at: new Date().toISOString(),
+            termination_reason: "tab_switch",
+            tab_switches: Math.max(2, tabSwitches),
+            answers: answerSnapshot,
           })
-          .eq(
-            "id",
-            attemptId
+          .eq("id", attemptId);
+
+        if (updateAttemptError) {
+          console.error(
+            "Unable to save tab-switch attempt answers:",
+            updateAttemptError
           );
+        }
       }
 
       if (attemptId) {
-        localStorage.removeItem(
-          getStorageKey(
-            attemptId
-          )
-        );
+        localStorage.removeItem(getStorageKey(attemptId));
       }
 
-      setTerminatedByTabSwitch(
-        true
-      );
+      setTerminatedByTabSwitch(true);
     } catch (error) {
-      console.error(
-        "Tab switch termination error:",
-        error
-      );
+      console.error("Tab switch termination error:", error);
 
       setErrorMessage(
         error?.message ||
           "L’examen a rencontré un problème lors de sa clôture."
       );
     } finally {
-      submittingRef.current =
-        false;
+      submittingRef.current = false;
 
       setSaving(false);
     }
@@ -1581,44 +1247,25 @@ export default function ExamKeynes() {
   // SUBMIT EXAM
   // ============================================================
 
-  async function submitExam(
-    reason = "manual"
-  ) {
-    if (
-      submittingRef.current ||
-      submitted
-    ) {
+  async function submitExam(reason = "manual") {
+    if (submittingRef.current || submitted) {
       return;
     }
 
-    const isTimeout =
-      reason === "time";
+    const isTimeout = reason === "time";
 
     // ----------------------------------------------------------
     // MANUAL SUBMISSION VALIDATION
     // ----------------------------------------------------------
 
     if (!isTimeout) {
-      const unansweredQuestions =
-        questions.filter(
-          (question) => {
-            const value =
-              answers[
-                question.id
-              ];
+      const unansweredQuestions = questions.filter((question) => {
+        const value = answers[question.id];
 
-            return (
-              value === undefined ||
-              String(value).trim() ===
-                ""
-            );
-          }
-        );
+        return value === undefined || String(value).trim() === "";
+      });
 
-      if (
-        unansweredQuestions.length >
-        0
-      ) {
+      if (unansweredQuestions.length > 0) {
         setErrorMessage(
           `Veuillez répondre à toutes les questions de langue. Il reste ${unansweredQuestions.length} question(s).`
         );
@@ -1628,34 +1275,19 @@ export default function ExamKeynes() {
         setCurrentQuestion(
           questions.findIndex(
             (question) =>
-              answers[
-                question.id
-              ] === undefined ||
-              String(
-                answers[
-                  question.id
-                ]
-              ).trim() === ""
+              answers[question.id] === undefined ||
+              String(answers[question.id]).trim() === ""
           )
         );
 
         return;
       }
 
-      const missingWritingTasks =
-        writingTasks.filter(
-          (task) =>
-            String(
-              writingAnswers[
-                task.id
-              ] || ""
-            ).trim() === ""
-        );
+      const missingWritingTasks = writingTasks.filter(
+        (task) => String(writingAnswers[task.id] || "").trim() === ""
+      );
 
-      if (
-        missingWritingTasks.length >
-        0
-      ) {
+      if (missingWritingTasks.length > 0) {
         setErrorMessage(
           `Veuillez répondre à toutes les tâches d’expression écrite. Il reste ${missingWritingTasks.length} tâche(s).`
         );
@@ -1665,18 +1297,16 @@ export default function ExamKeynes() {
         return;
       }
 
-      const confirmed =
-        window.confirm(
-          "Êtes-vous certain de vouloir terminer l’examen ? Vous ne pourrez plus modifier vos réponses."
-        );
+      const confirmed = window.confirm(
+        "Êtes-vous certain de vouloir terminer l’examen ? Vous ne pourrez plus modifier vos réponses."
+      );
 
       if (!confirmed) {
         return;
       }
     }
 
-    submittingRef.current =
-      true;
+    submittingRef.current = true;
 
     setSaving(true);
     setErrorMessage("");
@@ -1692,27 +1322,17 @@ export default function ExamKeynes() {
       }
 
       if (!currentUser) {
-        throw new Error(
-          "Session utilisateur introuvable."
-        );
+        throw new Error("Session utilisateur introuvable.");
       }
 
       // --------------------------------------------------------
       // RECHECK PROFILE
       // --------------------------------------------------------
 
-      const {
-        data: profile,
-        error: profileError,
-      } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("student_profiles")
-        .select(
-          "id, full_name, email, status, payment_status"
-        )
-        .eq(
-          "id",
-          currentUser.id
-        )
+        .select("id, full_name, email, status, payment_status")
+        .eq("id", currentUser.id)
         .maybeSingle();
 
       if (profileError) {
@@ -1720,46 +1340,31 @@ export default function ExamKeynes() {
       }
 
       if (!profile) {
-        throw new Error(
-          "Votre profil étudiant est introuvable."
-        );
+        throw new Error("Votre profil étudiant est introuvable.");
       }
 
       if (
         profile.status !== "approved" ||
-        profile.payment_status !==
-          "paid"
+        profile.payment_status !== "paid"
       ) {
-        throw new Error(
-          "Votre accès à cet examen n’est plus autorisé."
-        );
+        throw new Error("Votre accès à cet examen n’est plus autorisé.");
       }
 
       // --------------------------------------------------------
       // PREVENT DUPLICATE RESULT
       // --------------------------------------------------------
 
-      const {
-        data: existingResult,
-        error:
-          existingResultError,
-      } = await supabase
-        .from("test_results")
-        .select("id")
-        .eq(
-          "student_id",
-          currentUser.id
-        )
-        .eq(
-          "test_type",
-          EXAM_TYPE
-        )
-        .maybeSingle();
+      const { data: existingResult, error: existingResultError } =
+        await supabase
+          .from("test_results")
+          .select("id")
+          .eq("student_id", currentUser.id)
+          .eq("test_type", EXAM_TYPE)
+          .maybeSingle();
 
       if (
         existingResultError &&
-        existingResultError.code !==
-          "PGRST116"
+        existingResultError.code !== "PGRST116"
       ) {
         throw existingResultError;
       }
@@ -1773,10 +1378,7 @@ export default function ExamKeynes() {
       // CALCULATE LANGUAGE SCORE
       // --------------------------------------------------------
 
-      const finalLanguageScore =
-        calculateLanguageScore(
-          answers
-        );
+      const finalLanguageScore = calculateLanguageScore(answers);
 
       // --------------------------------------------------------
       // INSERT RESULT
@@ -1785,112 +1387,78 @@ export default function ExamKeynes() {
       // language section for now.
       //
       // Writing is manually graded later.
+      // answers_detail keeps every question, the student's answer,
+      // the correct answer and the points awarded.
       // --------------------------------------------------------
 
-      const {
-        error: insertError,
-      } = await supabase
+      const { error: insertError } = await supabase
         .from("test_results")
         .insert({
-          student_id:
-            currentUser.id,
-
-          score:
-            finalLanguageScore,
-                      total_questions: 100,
-
-          percentage:
-            finalLanguageScore,
-
-          test_type:
-            EXAM_TYPE,
-
-          task1_answer:
-            writingAnswers.task1.trim(),
-
-          task2_answer:
-            writingAnswers.task2.trim(),
-
-          task3_answer:
-            writingAnswers.task3.trim(),
-
-          task4_answer:
-            writingAnswers.task4.trim(),
-
-          grading_status:
-            "pending",
+          student_id: currentUser.id,
+          score: finalLanguageScore,
+          total_questions: 100,
+          percentage: finalLanguageScore,
+          test_type: EXAM_TYPE,
+          task1_answer: writingAnswers.task1.trim(),
+          task2_answer: writingAnswers.task2.trim(),
+          task3_answer: writingAnswers.task3.trim(),
+          task4_answer: writingAnswers.task4.trim(),
+          grading_status: "pending",
+          answers_detail: buildAnswerDetails(answers),
         });
 
-      if (
-        insertError &&
-        insertError.code !==
-          "23505"
-      ) {
+      if (insertError && insertError.code !== "23505") {
         throw insertError;
       }
 
       // --------------------------------------------------------
       // FINISH ATTEMPT
+      //
+      // NEW:
+      // Save the complete language + writing answers in the
+      // exam_keynes_attempts.answers JSONB column.
       // --------------------------------------------------------
 
       if (attemptId) {
         const terminationReason =
-          reason === "time"
-            ? "timeout"
-            : "manual";
+          reason === "time" ? "timeout" : "manual";
 
-        const {
-          error:
-            updateAttemptError,
-        } = await supabase
-          .from(
-            EXAM_TABLE_ATTEMPTS
-          )
+        const answerSnapshot = buildAttemptAnswerSnapshot(
+          answers,
+          writingAnswers
+        );
+
+        const { error: updateAttemptError } = await supabase
+          .from(EXAM_TABLE_ATTEMPTS)
           .update({
             status: "finished",
-
-            finished_at:
-              new Date().toISOString(),
-
-            termination_reason:
-              terminationReason,
-
-            tab_switches:
-              tabSwitches,
+            finished_at: new Date().toISOString(),
+            termination_reason: terminationReason,
+            tab_switches: tabSwitches,
+            answers: answerSnapshot,
           })
-          .eq(
-            "id",
-            attemptId
-          );
+          .eq("id", attemptId);
 
         if (updateAttemptError) {
           console.error(
-            "Unable to finish attempt:",
+            "Unable to finish attempt and save answers:",
             updateAttemptError
           );
         }
 
-        localStorage.removeItem(
-          getStorageKey(
-            attemptId
-          )
-        );
+        localStorage.removeItem(getStorageKey(attemptId));
       }
 
       setSubmitted(true);
     } catch (error) {
-      console.error(
-        "Submit exam error:",
-        error
-      );
+      console.error("Submit exam error:", error);
 
       setErrorMessage(
         error?.message ||
           "Une erreur est survenue lors de l’enregistrement de votre examen."
       );
     } finally {
-      submittingRef.current =
-        false;
+      submittingRef.current = false;
 
       setSaving(false);
     }
@@ -1901,10 +1469,7 @@ export default function ExamKeynes() {
   // ============================================================
 
   async function handleTimeout() {
-    if (
-      submitted ||
-      terminatedByTabSwitch
-    ) {
+    if (submitted || terminatedByTabSwitch) {
       return;
     }
 
@@ -1915,14 +1480,8 @@ export default function ExamKeynes() {
   // NAVIGATION
   // ============================================================
 
-  const goToQuestion = (
-    index
-  ) => {
-    if (
-      index < 0 ||
-      index >=
-        allActivities.length
-    ) {
+  const goToQuestion = (index) => {
+    if (index < 0 || index >= allActivities.length) {
       return;
     }
 
@@ -1949,9 +1508,7 @@ export default function ExamKeynes() {
       return;
     }
 
-    goToQuestion(
-      currentQuestion + 1
-    );
+    goToQuestion(currentQuestion + 1);
   };
 
   const goPrevious = () => {
@@ -1959,9 +1516,7 @@ export default function ExamKeynes() {
       return;
     }
 
-    goToQuestion(
-      currentQuestion - 1
-    );
+    goToQuestion(currentQuestion - 1);
   };
 
   // ============================================================
@@ -1974,9 +1529,7 @@ export default function ExamKeynes() {
         <div style={styles.centerCard}>
           <div style={styles.spinner} />
 
-          <h2 style={styles.centerTitle}>
-            Chargement de l’examen
-          </h2>
+          <h2 style={styles.centerTitle}>Chargement de l’examen</h2>
 
           <p style={styles.centerText}>
             Veuillez patienter quelques secondes...
@@ -1990,33 +1543,19 @@ export default function ExamKeynes() {
   // ACCESS ERROR
   // ============================================================
 
-  if (
-    errorMessage &&
-    !student &&
-    !alreadySubmitted
-  ) {
+  if (errorMessage && !student && !alreadySubmitted) {
     return (
       <div style={styles.page}>
         <div style={styles.centerCard}>
-          <div style={styles.errorIcon}>
-            !
-          </div>
+          <div style={styles.errorIcon}>!</div>
 
-          <h2 style={styles.centerTitle}>
-            Accès impossible
-          </h2>
+          <h2 style={styles.centerTitle}>Accès impossible</h2>
 
-          <p style={styles.centerText}>
-            {errorMessage}
-          </p>
+          <p style={styles.centerText}>{errorMessage}</p>
 
           <button
             type="button"
-            onClick={() =>
-              navigate(
-                "/student-dashboard"
-              )
-            }
+            onClick={() => navigate("/student-dashboard")}
             style={styles.primaryButton}
           >
             Retour au tableau de bord
@@ -2034,26 +1573,18 @@ export default function ExamKeynes() {
     return (
       <div style={styles.page}>
         <div style={styles.centerCard}>
-          <div style={styles.successIcon}>
-            ✓
-          </div>
+          <div style={styles.successIcon}>✓</div>
 
-          <h2 style={styles.centerTitle}>
-            Examen déjà terminé
-          </h2>
+          <h2 style={styles.centerTitle}>Examen déjà terminé</h2>
 
           <p style={styles.centerText}>
-            Vous avez déjà soumis cet examen. Une deuxième
-            tentative n’est pas autorisée.
+            Vous avez déjà soumis cet examen. Une deuxième tentative n’est pas
+            autorisée.
           </p>
 
           <button
             type="button"
-            onClick={() =>
-              navigate(
-                "/student-dashboard"
-              )
-            }
+            onClick={() => navigate("/student-dashboard")}
             style={styles.primaryButton}
           >
             Retour au tableau de bord
@@ -2067,37 +1598,27 @@ export default function ExamKeynes() {
   // TAB SWITCH TERMINATED
   // ============================================================
 
-  if (
-    terminatedByTabSwitch
-  ) {
+  if (terminatedByTabSwitch) {
     return (
       <div style={styles.page}>
         <div style={styles.centerCard}>
-          <div style={styles.dangerIcon}>
-            !
-          </div>
+          <div style={styles.dangerIcon}>!</div>
 
-          <h2 style={styles.centerTitle}>
-            Examen terminé
-          </h2>
+          <h2 style={styles.centerTitle}>Examen terminé</h2>
 
           <p style={styles.centerText}>
-            L’examen a été automatiquement terminé après
-            plusieurs changements d’onglet ou de fenêtre.
+            L’examen a été automatiquement terminé après plusieurs changements
+            d’onglet ou de fenêtre.
           </p>
 
           <p style={styles.smallText}>
-            Votre résultat automatique a été enregistré.
-            L’expression écrite reste en attente de correction.
+            Votre résultat automatique a été enregistré. L’expression écrite
+            reste en attente de correction.
           </p>
 
           <button
             type="button"
-            onClick={() =>
-              navigate(
-                "/student-dashboard"
-              )
-            }
+            onClick={() => navigate("/student-dashboard")}
             style={styles.primaryButton}
           >
             Retour au tableau de bord
@@ -2115,9 +1636,7 @@ export default function ExamKeynes() {
     return (
       <div style={styles.page}>
         <div style={styles.centerCard}>
-          <div style={styles.successIcon}>
-            ✓
-          </div>
+          <div style={styles.successIcon}>✓</div>
 
           <h2 style={styles.centerTitle}>
             Examen terminé avec succès
@@ -2128,13 +1647,9 @@ export default function ExamKeynes() {
           </p>
 
           <div style={styles.scoreBox}>
-            <div style={styles.scoreLabel}>
-              Partie automatique
-            </div>
+            <div style={styles.scoreLabel}>Partie automatique</div>
 
-            <div style={styles.scoreValue}>
-              {languageScore} / 75
-            </div>
+            <div style={styles.scoreValue}>{languageScore} / 75</div>
 
             <div style={styles.scoreSubtext}>
               Expression écrite : correction en attente
@@ -2143,11 +1658,7 @@ export default function ExamKeynes() {
 
           <button
             type="button"
-            onClick={() =>
-              navigate(
-                "/student-dashboard"
-              )
-            }
+            onClick={() => navigate("/student-dashboard")}
             style={styles.primaryButton}
           >
             Voir mon tableau de bord
@@ -2179,32 +1690,25 @@ export default function ExamKeynes() {
             </h1>
 
             <p style={styles.subtitle}>
-              Évaluation de grammaire, vocabulaire et expression
-              écrite
+              Évaluation de grammaire, vocabulaire et expression écrite
             </p>
           </div>
 
           <div style={styles.headerMeta}>
             <div style={styles.metaItem}>
-              <span style={styles.metaLabel}>
-                Durée
-              </span>
+              <span style={styles.metaLabel}>Durée</span>
 
               <strong>1h30</strong>
             </div>
 
             <div style={styles.metaItem}>
-              <span style={styles.metaLabel}>
-                Activités
-              </span>
+              <span style={styles.metaLabel}>Activités</span>
 
               <strong>50</strong>
             </div>
 
             <div style={styles.metaItem}>
-              <span style={styles.metaLabel}>
-                Total
-              </span>
+              <span style={styles.metaLabel}>Total</span>
 
               <strong>100 pts</strong>
             </div>
@@ -2217,9 +1721,7 @@ export default function ExamKeynes() {
 
         {showTabWarning && (
           <div style={styles.warningBox}>
-            <div style={styles.warningIcon}>
-              ⚠
-            </div>
+            <div style={styles.warningIcon}>⚠</div>
 
             <div>
               <strong>
@@ -2227,18 +1729,15 @@ export default function ExamKeynes() {
               </strong>
 
               <p style={styles.warningText}>
-                Ne quittez pas la page de l’examen. Après ce
-                premier avertissement, un nouveau changement
-                d’onglet entraînera automatiquement la fin de
-                votre examen.
+                Ne quittez pas la page de l’examen. Après ce premier
+                avertissement, un nouveau changement d’onglet entraînera
+                automatiquement la fin de votre examen.
               </p>
             </div>
 
             <button
               type="button"
-              onClick={() =>
-                setShowTabWarning(false)
-              }
+              onClick={() => setShowTabWarning(false)}
               style={styles.warningButton}
             >
               J’ai compris
@@ -2253,22 +1752,18 @@ export default function ExamKeynes() {
         <div style={styles.topBar}>
           <div>
             <div style={styles.studentName}>
-              {student?.full_name ||
-                user?.email}
+              {student?.full_name || user?.email}
             </div>
 
             <div style={styles.progressText}>
-              Questions de langue :{" "}
-              {answeredCount} /{" "}
-              {questions.length}
+              Questions de langue : {answeredCount} / {questions.length}
             </div>
           </div>
 
           <div
             style={{
               ...styles.timer,
-              ...(remainingSeconds <=
-              300
+              ...(remainingSeconds <= 300
                 ? styles.timerDanger
                 : {}),
             }}
@@ -2277,9 +1772,7 @@ export default function ExamKeynes() {
               Temps restant
             </span>
 
-            <strong>
-              {formattedTime}
-            </strong>
+            <strong>{formattedTime}</strong>
           </div>
         </div>
 
@@ -2299,13 +1792,11 @@ export default function ExamKeynes() {
 
           <div style={styles.progressFooter}>
             <span>
-              Progression :{" "}
-              {answeredPercentage}%
+              Progression : {answeredPercentage}%
             </span>
 
             <span>
-              Partie{" "}
-              {currentPartNumber} / 8
+              Partie {currentPartNumber} / 8
             </span>
           </div>
         </div>
@@ -2316,9 +1807,7 @@ export default function ExamKeynes() {
 
         {errorMessage && (
           <div style={styles.errorBox}>
-            <strong>
-              Attention
-            </strong>
+            <strong>Attention</strong>
 
             <p style={styles.errorText}>
               {errorMessage}
@@ -2341,118 +1830,62 @@ export default function ExamKeynes() {
                 Navigation
               </h3>
 
-              {[
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-              ].map((part) => {
-                const partQuestions =
-                  questions.filter(
-                    (question) =>
-                      question.part ===
-                      part
-                  );
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((part) => {
+                const partQuestions = questions.filter(
+                  (question) => question.part === part
+                );
 
-                const partAnswered =
-                  partQuestions.filter(
-                    (question) =>
-                      answers[
-                        question.id
-                      ] !== undefined &&
-                      String(
-                        answers[
-                          question.id
-                        ]
-                      ).trim() !== ""
-                  ).length;
+                const partAnswered = partQuestions.filter(
+                  (question) =>
+                    answers[question.id] !== undefined &&
+                    String(answers[question.id]).trim() !== ""
+                ).length;
 
                 return (
-                  <div
-                    key={part}
-                    style={
-                      styles.partGroup
-                    }
-                  >
-                    {/* FIXED SIDEBAR HEADER */}
-                    <div
-                      style={
-                        styles.partHeader
-                      }
-                    >
-                      <span>
-                        Partie {part}
-                      </span>
+                  <div key={part} style={styles.partGroup}>
+                    <div style={styles.partHeader}>
+                      <span>Partie {part}</span>
 
-                      <span
-                        style={
-                          styles.partCount
-                        }
-                      >
-                        — {partAnswered} /{" "}
-                        {partQuestions.length}
+                      <span style={styles.partCount}>
+                        — {partAnswered} / {partQuestions.length}
                       </span>
                     </div>
 
-                    <div
-                      style={
-                        styles.questionGrid
-                      }
-                    >
-                      {partQuestions.map(
-                        (question) => {
-                          const isAnswered =
-                            answers[
-                              question.id
-                            ] !==
-                              undefined &&
-                            String(
-                              answers[
-                                question.id
-                              ]
-                            ).trim() !==
-                              "";
+                    <div style={styles.questionGrid}>
+                      {partQuestions.map((question) => {
+                        const isAnswered =
+                          answers[question.id] !== undefined &&
+                          String(answers[question.id]).trim() !== "";
 
-                          const isCurrent =
-                            current?.id ===
-                            question.id;
+                        const isCurrent =
+                          current?.id === question.id;
 
-                          return (
-                            <button
-                              key={
-                                question.id
-                              }
-                              type="button"
-                              onClick={() =>
-                                goToQuestion(
-                                  allActivities.findIndex(
-                                    (item) =>
-                                      item.id ===
-                                      question.id
-                                  )
+                        return (
+                          <button
+                            key={question.id}
+                            type="button"
+                            onClick={() =>
+                              goToQuestion(
+                                allActivities.findIndex(
+                                  (item) =>
+                                    item.id === question.id
                                 )
-                              }
-                              style={{
-                                ...styles.questionNumber,
-                                ...(isAnswered
-                                  ? styles.questionAnswered
-                                  : {}),
-                                ...(isCurrent
-                                  ? styles.questionCurrent
-                                  : {}),
-                              }}
-                            >
-                              {
-                                question.id
-                              }
-                            </button>
-                          );
-                        }
-                      )}
+                              )
+                            }
+                            style={{
+                              ...styles.questionNumber,
+                              ...(isAnswered
+                                ? styles.questionAnswered
+                                : {}),
+                              ...(isCurrent
+                                ? styles.questionCurrent
+                                : {}),
+                            }}
+                          >
+                            {question.id}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 );
@@ -2461,16 +1894,13 @@ export default function ExamKeynes() {
               <button
                 type="button"
                 onClick={() => {
-                  setWritingSection(
-                    true
-                  );
+                  setWritingSection(true);
 
                   setErrorMessage("");
 
                   window.scrollTo({
                     top: 0,
-                    behavior:
-                      "smooth",
+                    behavior: "smooth",
                   });
                 }}
                 style={{
@@ -2480,45 +1910,23 @@ export default function ExamKeynes() {
                     : {}),
                 }}
               >
-                <span>
-                  Partie 9
-                </span>
+                <span>Partie 9</span>
 
-                <span>
-                  Expression
-                </span>
+                <span>Expression</span>
               </button>
             </div>
 
-            <div
-              style={
-                styles.securityCard
-              }
-            >
-              <div
-                style={
-                  styles.securityTitle
-                }
-              >
+            <div style={styles.securityCard}>
+              <div style={styles.securityTitle}>
                 Sécurité
               </div>
 
-              <div
-                style={
-                  styles.securityItem
-                }
-              >
+              <div style={styles.securityItem}>
                 Changements d’onglet :{" "}
-                <strong>
-                  {tabSwitches}
-                </strong>
+                <strong>{tabSwitches}</strong>
               </div>
 
-              <div
-                style={
-                  styles.securityItem
-                }
-              >
+              <div style={styles.securityItem}>
                 Après un premier changement d’onglet, un deuxième
                 changement termine automatiquement l’examen.
               </div>
@@ -2529,195 +1937,116 @@ export default function ExamKeynes() {
               CONTENT
           ==================================================== */}
 
-          <main
-            style={styles.mainContent}
-          >
+          <main style={styles.mainContent}>
             {!writingSection ? (
               <>
                 {/* ----------------------------------------------
                     QUESTION CARD
                 ---------------------------------------------- */}
 
-                <section
-                  style={
-                    styles.questionCard
-                  }
-                >
-                  <div
-                    style={
-                      styles.questionHeader
-                    }
-                  >
+                <section style={styles.questionCard}>
+                  <div style={styles.questionHeader}>
                     <div>
-                      <div
-                        style={
-                          styles.partBadge
-                        }
-                      >
-                        Partie{" "}
-                        {current.part}
+                      <div style={styles.partBadge}>
+                        Partie {current.part}
                       </div>
 
-                      <div
-                        style={
-                          styles.questionTitle
-                        }
-                      >
-                        Question{" "}
-                        {current.id}
+                      <div style={styles.questionTitle}>
+                        Question {current.id}
                       </div>
                     </div>
 
-                    <div
-                      style={
-                        styles.pointsBadge
-                      }
-                    >
+                    <div style={styles.pointsBadge}>
                       {current.points} pt
-                      {current.points >
-                      1
-                        ? "s"
-                        : ""}
+                      {current.points > 1 ? "s" : ""}
                     </div>
                   </div>
 
-                  <div
-                    style={
-                      styles.questionBody
-                    }
-                  >
-                    <p
-                      style={
-                        styles.questionText
-                      }
-                    >
+                  <div style={styles.questionBody}>
+                    <p style={styles.questionText}>
                       {current.question}
                     </p>
 
                     {current.prompt && (
-                      <p
-                        style={
-                          styles.promptText
-                        }
-                      >
+                      <p style={styles.promptText}>
                         {current.prompt}
                       </p>
                     )}
 
                     {current.options ? (
-                      <div
-                        style={
-                          styles.options
-                        }
-                      >
-                        {current.options.map(
-                          (option) => {
-                            const selected =
-                              answers[
-                                current.id
-                              ] ===
-                              option;
+                      <div style={styles.options}>
+                        {current.options.map((option) => {
+                          const selected =
+                            answers[current.id] === option;
 
-                            return (
-                              <button
-                                key={
+                          return (
+                            <button
+                              key={option}
+                              type="button"
+                              disabled={
+                                Boolean(answers[current.id]) ||
+                                saving
+                              }
+                              onClick={() =>
+                                handleAnswerChange(
+                                  current.id,
                                   option
-                                }
-                                type="button"
-                                disabled={
-                                  Boolean(
-                                    answers[
-                                      current.id
-                                    ]
-                                  ) ||
-                                  saving
-                                }
-                                onClick={() =>
-                                  handleAnswerChange(
-                                    current.id,
-                                    option
-                                  )
-                                }
-                                style={{
-                                  ...styles.optionButton,
-                                  ...(selected
-                                    ? styles.optionSelected
-                                    : {}),
-                                  ...(answers[
-                                    current.id
-                                  ]
-                                    ? styles.optionLocked
-                                    : {}),
-                                }}
+                                )
+                              }
+                              style={{
+                                ...styles.optionButton,
+                                ...(selected
+                                  ? styles.optionSelected
+                                  : {}),
+                                ...(answers[current.id]
+                                  ? styles.optionLocked
+                                  : {}),
+                              }}
+                            >
+                              <span
+                                style={styles.optionLetter}
                               >
+                                {String.fromCharCode(
+                                  65 +
+                                    current.options.indexOf(
+                                      option
+                                    )
+                                )}
+                              </span>
+
+                              <span>{option}</span>
+
+                              {selected && (
                                 <span
                                   style={
-                                    styles.optionLetter
+                                    styles.selectedCheck
                                   }
                                 >
-                                  {String.fromCharCode(
-                                    65 +
-                                      current.options.indexOf(
-                                        option
-                                      )
-                                  )}
+                                  ✓
                                 </span>
-
-                                <span>
-                                  {option}
-                                </span>
-
-                                {selected && (
-                                  <span
-                                    style={
-                                      styles.selectedCheck
-                                    }
-                                  >
-                                    ✓
-                                  </span>
-                                )}
-                              </button>
-                            );
-                          }
-                        )}
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     ) : (
-                      <div
-                        style={
-                          styles.textAnswerBox
-                        }
-                      >
+                      <div style={styles.textAnswerBox}>
                         <input
                           type="text"
-                          value={
-                            answers[
-                              current.id
-                            ] || ""
-                          }
-                          disabled={
-                            saving
-                          }
-                          onChange={(
-                            event
-                          ) =>
+                          value={answers[current.id] || ""}
+                          disabled={saving}
+                          onChange={(event) =>
                             handleAnswerChange(
                               current.id,
-                              event.target
-                                .value
+                              event.target.value
                             )
                           }
                           placeholder="Écrivez votre réponse..."
-                          style={
-                            styles.textInput
-                          }
+                          style={styles.textInput}
                           autoComplete="off"
                         />
 
-                        <div
-                          style={
-                            styles.inputHint
-                          }
-                        >
+                        <div style={styles.inputHint}>
                           Votre réponse sera enregistrée
                           automatiquement.
                         </div>
@@ -2730,64 +2059,42 @@ export default function ExamKeynes() {
                     PART QUESTIONS MINI NAV
                 ---------------------------------------------- */}
 
-                <section
-                  style={
-                    styles.partNavigator
-                  }
-                >
+                <section style={styles.partNavigator}>
                   <div>
                     <strong>
-                      Partie{" "}
-                      {current.part}
+                      Partie {current.part}
                     </strong>
 
                     <span
-                      style={
-                        styles.partNavigatorText
-                      }
+                      style={styles.partNavigatorText}
                     >
                       {" "}
-                      —{" "}
-                      {current.title}
+                      — {current.title}
                     </span>
                   </div>
 
-                  <div
-                    style={
-                      styles.partQuestionList
-                    }
-                  >
+                  <div style={styles.partQuestionList}>
                     {currentPartQuestions.map(
                       (question) => {
                         const index =
                           allActivities.findIndex(
                             (item) =>
-                              item.id ===
-                              question.id
+                              item.id === question.id
                           );
 
                         const answered =
-                          answers[
-                            question.id
-                          ] !==
+                          answers[question.id] !==
                             undefined &&
                           String(
-                            answers[
-                              question.id
-                            ]
-                          ).trim() !==
-                            "";
+                            answers[question.id]
+                          ).trim() !== "";
 
                         return (
                           <button
-                            key={
-                              question.id
-                            }
+                            key={question.id}
                             type="button"
                             onClick={() =>
-                              goToQuestion(
-                                index
-                              )
+                              goToQuestion(index)
                             }
                             style={{
                               ...styles.miniQuestion,
@@ -2800,9 +2107,7 @@ export default function ExamKeynes() {
                                 : {}),
                             }}
                           >
-                            {
-                              question.id
-                            }
+                            {question.id}
                           </button>
                         );
                       }
@@ -2814,55 +2119,32 @@ export default function ExamKeynes() {
                     NAVIGATION BUTTONS
                 ---------------------------------------------- */}
 
-                <div
-                  style={
-                    styles.navigation
-                  }
-                >
+                <div style={styles.navigation}>
                   <button
                     type="button"
-                    onClick={
-                      goPrevious
-                    }
-                    disabled={
-                      !canGoPrevious ||
-                      saving
-                    }
+                    onClick={goPrevious}
+                    disabled={!canGoPrevious || saving}
                     style={{
                       ...styles.secondaryButton,
-                      ...((!canGoPrevious ||
-                        saving) &&
+                      ...((!canGoPrevious || saving) &&
                         styles.disabledButton),
                     }}
                   >
                     ← Précédent
                   </button>
 
-                  <div
-                    style={
-                      styles.navigationCenter
-                    }
-                  >
+                  <div style={styles.navigationCenter}>
                     <span>
-                      Question{" "}
-                      {currentQuestion +
-                        1}{" "}
-                      /{" "}
-                      {
-                        allActivities.length
-                      }
+                      Question {currentQuestion + 1} /{" "}
+                      {allActivities.length}
                     </span>
                   </div>
 
                   <button
                     type="button"
                     onClick={goNext}
-                    disabled={
-                      saving
-                    }
-                    style={
-                      styles.primaryButton
-                    }
+                    disabled={saving}
+                    style={styles.primaryButton}
                   >
                     {isLastLanguageQuestion
                       ? "Continuer vers l’expression →"
@@ -2876,224 +2158,139 @@ export default function ExamKeynes() {
                     WRITING SECTION
                 ================================================== */}
 
-                <section
-                  style={
-                    styles.writingIntro
-                  }
-                >
-                  <div
-                    style={
-                      styles.partBadge
-                    }
-                  >
+                <section style={styles.writingIntro}>
+                  <div style={styles.partBadge}>
                     Partie 9
                   </div>
 
-                  <h2
-                    style={
-                      styles.writingTitle
-                    }
-                  >
+                  <h2 style={styles.writingTitle}>
                     Expression écrite
                   </h2>
 
-                  <p
-                    style={
-                      styles.writingDescription
-                    }
-                  >
-                    Cette partie comporte 4 tâches pour un
-                    total de{" "}
-                    <strong>
-                      25 points
-                    </strong>
-                    . Vos réponses seront corrigées
-                    manuellement par l’administration.
+                  <p style={styles.writingDescription}>
+                    Cette partie comporte 4 tâches pour un total
+                    de <strong>25 points</strong>. Vos réponses
+                    seront corrigées manuellement par
+                    l’administration.
                   </p>
 
-                  <div
-                    style={
-                      styles.storyBox
-                    }
-                  >
-                    <div
-                      style={
-                        styles.storyLabel
-                      }
-                    >
+                  <div style={styles.storyBox}>
+                    <div style={styles.storyLabel}>
                       Texte support
                     </div>
 
-                    <p
-                      style={
-                        styles.storyText
-                      }
-                    >
+                    <p style={styles.storyText}>
                       {writingText}
                     </p>
                   </div>
                 </section>
 
-                <div
-                  style={
-                    styles.writingTasks
-                  }
-                >
-                  {writingTasks.map(
-                    (task) => {
-                      const value =
-                        writingAnswers[
-                          task.id
-                        ] || "";
+                <div style={styles.writingTasks}>
+                  {writingTasks.map((task) => {
+                    const value =
+                      writingAnswers[task.id] || "";
 
-                      return (
-                        <section
-                          key={
-                            task.id
-                          }
+                    return (
+                      <section
+                        key={task.id}
+                        style={styles.writingCard}
+                      >
+                        <div
                           style={
-                            styles.writingCard
+                            styles.writingCardHeader
                           }
                         >
-                          <div
-                            style={
-                              styles.writingCardHeader
-                            }
-                          >
-                            <div>
-                              <div
-                                style={
-                                  styles.taskBadge
-                                }
-                              >
-                                {
-                                  task.title
-                                }
-                              </div>
-
-                              <h3
-                                style={
-                                  styles.writingQuestion
-                                }
-                              >
-                                {
-                                  task.question
-                                }
-                              </h3>
+                          <div>
+                            <div
+                              style={styles.taskBadge}
+                            >
+                              {task.title}
                             </div>
 
-                            <div
+                            <h3
                               style={
-                                styles.pointsBadge
+                                styles.writingQuestion
                               }
                             >
-                              {
-                                task.points
-                              }{" "}
-                              pts
-                            </div>
+                              {task.question}
+                            </h3>
                           </div>
-
-                          <textarea
-                            value={
-                              value
-                            }
-                            onChange={(
-                              event
-                            ) =>
-                              handleWritingChange(
-                                task.id,
-                                event
-                                  .target
-                                  .value
-                              )
-                            }
-                            disabled={
-                              saving
-                            }
-                            rows={
-                              task.id ===
-                              "task4"
-                                ? 10
-                                : 5
-                            }
-                            placeholder="Écrivez votre réponse ici..."
-                            style={
-                              styles.writingTextarea
-                            }
-                          />
 
                           <div
-                            style={
-                              styles.writingFooter
-                            }
+                            style={styles.pointsBadge}
                           >
-                            <span>
-                              {countWords(
-                                value
-                              )}{" "}
-                              mot
-                              {countWords(
-                                value
-                              ) !== 1
-                                ? "s"
-                                : ""}
-                            </span>
-
-                            {task.id ===
-                              "task4" && (
-                              <span>
-                                Recommandé : 6 à 8 phrases
-                              </span>
-                            )}
+                            {task.points} pts
                           </div>
-                        </section>
-                      );
-                    }
-                  )}
+                        </div>
+
+                        <textarea
+                          value={value}
+                          onChange={(event) =>
+                            handleWritingChange(
+                              task.id,
+                              event.target.value
+                            )
+                          }
+                          disabled={saving}
+                          rows={
+                            task.id === "task4"
+                              ? 10
+                              : 5
+                          }
+                          placeholder="Écrivez votre réponse ici..."
+                          style={
+                            styles.writingTextarea
+                          }
+                        />
+
+                        <div
+                          style={styles.writingFooter}
+                        >
+                          <span>
+                            {countWords(value)} mot
+                            {countWords(value) !== 1
+                              ? "s"
+                              : ""}
+                          </span>
+
+                          {task.id === "task4" && (
+                            <span>
+                              Recommandé : 6 à 8 phrases
+                            </span>
+                          )}
+                        </div>
+                      </section>
+                    );
+                  })}
                 </div>
 
                 {/* ----------------------------------------------
                     WRITING NAVIGATION
                 ---------------------------------------------- */}
 
-                <div
-                  style={
-                    styles.navigation
-                  }
-                >
+                <div style={styles.navigation}>
                   <button
                     type="button"
                     onClick={() => {
-                      setWritingSection(
-                        false
-                      );
+                      setWritingSection(false);
 
                       setCurrentQuestion(
-                        allActivities.length -
-                          1
+                        allActivities.length - 1
                       );
 
                       window.scrollTo({
                         top: 0,
-                        behavior:
-                          "smooth",
+                        behavior: "smooth",
                       });
                     }}
-                    disabled={
-                      saving
-                    }
-                    style={
-                      styles.secondaryButton
-                    }
+                    disabled={saving}
+                    style={styles.secondaryButton}
                   >
                     ← Retour aux questions
                   </button>
 
                   <div
-                    style={
-                      styles.navigationCenter
-                    }
+                    style={styles.navigationCenter}
                   >
                     <span>
                       Expression écrite :{" "}
@@ -3104,27 +2301,19 @@ export default function ExamKeynes() {
                               writingAnswers[
                                 task.id
                               ] || ""
-                            ).trim() !==
-                            ""
+                            ).trim() !== ""
                         ).length
                       }{" "}
-                      /{" "}
-                      {
-                        writingTasks.length
-                      }
+                      / {writingTasks.length}
                     </span>
                   </div>
 
                   <button
                     type="button"
                     onClick={() =>
-                      submitExam(
-                        "manual"
-                      )
+                      submitExam("manual")
                     }
-                    disabled={
-                      saving
-                    }
+                    disabled={saving}
                     style={{
                       ...styles.submitButton,
                       ...(saving
@@ -3139,11 +2328,7 @@ export default function ExamKeynes() {
                 </div>
 
                 {!isWritingComplete && (
-                  <div
-                    style={
-                      styles.finalWarning
-                    }
-                  >
+                  <div style={styles.finalWarning}>
                     <strong>
                       Avant de terminer
                     </strong>
@@ -3154,8 +2339,8 @@ export default function ExamKeynes() {
                       }
                     >
                       Toutes les tâches d’expression
-                      écrite doivent être complétées avant
-                      la soumission.
+                      écrite doivent être complétées
+                      avant la soumission.
                     </p>
                   </div>
                 )}
@@ -3168,9 +2353,7 @@ export default function ExamKeynes() {
             FOOTER
         ====================================================== */}
 
-        <footer
-          style={styles.footer}
-        >
+        <footer style={styles.footer}>
           <div>
             International French Academy — Kigali, Rwanda
           </div>
@@ -3238,8 +2421,7 @@ const styles = {
 
   subtitle: {
     margin: "10px 0 0",
-    color:
-      "rgba(255,255,255,0.75)",
+    color: "rgba(255,255,255,0.75)",
     fontSize: "14px",
   },
 
@@ -3254,8 +2436,7 @@ const styles = {
     minWidth: "85px",
     padding: "12px 14px",
     borderRadius: "12px",
-    background:
-      "rgba(255,255,255,0.08)",
+    background: "rgba(255,255,255,0.08)",
     border:
       "1px solid rgba(255,255,255,0.1)",
     textAlign: "center",
@@ -3264,8 +2445,7 @@ const styles = {
   metaLabel: {
     display: "block",
     fontSize: "11px",
-    color:
-      "rgba(255,255,255,0.65)",
+    color: "rgba(255,255,255,0.65)",
     marginBottom: "4px",
   },
 
@@ -3331,15 +2511,13 @@ const styles = {
     height: "100%",
     background: "#c9a84c",
     borderRadius: "999px",
-    transition:
-      "width 0.25s ease",
+    transition: "width 0.25s ease",
   },
 
   progressFooter: {
     marginTop: "8px",
     display: "flex",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
     fontSize: "12px",
     color: "#667085",
   },
@@ -3347,8 +2525,7 @@ const styles = {
   warningBox: {
     marginTop: "14px",
     background: "#fff7dc",
-    border:
-      "1px solid #e3c766",
+    border: "1px solid #e3c766",
     borderRadius: "12px",
     padding: "15px 18px",
     display: "flex",
@@ -3380,8 +2557,7 @@ const styles = {
   errorBox: {
     marginTop: "14px",
     background: "#fff0f0",
-    border:
-      "1px solid #e2a4a4",
+    border: "1px solid #e2a4a4",
     color: "#8c1d1d",
     borderRadius: "12px",
     padding: "14px 18px",
@@ -3424,16 +2600,14 @@ const styles = {
   },
 
   partGroup: {
-    borderTop:
-      "1px solid #eee7dc",
+    borderTop: "1px solid #eee7dc",
     paddingTop: "10px",
     marginTop: "10px",
   },
 
   partHeader: {
     display: "flex",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
     fontSize: "12px",
     fontWeight: 700,
     marginBottom: "7px",
@@ -3455,8 +2629,7 @@ const styles = {
     width: "31px",
     height: "31px",
     borderRadius: "7px",
-    border:
-      "1px solid #ddd5c8",
+    border: "1px solid #ddd5c8",
     background: "#fff",
     color: "#0d1b2a",
     fontWeight: 700,
@@ -3470,8 +2643,7 @@ const styles = {
   },
 
   questionCurrent: {
-    border:
-      "2px solid #c9a84c",
+    border: "2px solid #c9a84c",
   },
 
   writingNavButton: {
@@ -3479,15 +2651,13 @@ const styles = {
     marginTop: "16px",
     padding: "12px",
     borderRadius: "10px",
-    border:
-      "1px solid #c9a84c",
+    border: "1px solid #c9a84c",
     background: "#fffaf0",
     color: "#0d1b2a",
     cursor: "pointer",
     fontWeight: 700,
     display: "flex",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
   },
 
   writingNavButtonActive: {
@@ -3511,8 +2681,7 @@ const styles = {
 
   securityItem: {
     marginTop: "6px",
-    color:
-      "rgba(255,255,255,0.78)",
+    color: "rgba(255,255,255,0.78)",
     lineHeight: 1.45,
   },
 
@@ -3530,11 +2699,9 @@ const styles = {
 
   questionHeader: {
     padding: "20px 24px",
-    borderBottom:
-      "1px solid #eee7dc",
+    borderBottom: "1px solid #eee7dc",
     display: "flex",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
     alignItems: "center",
     gap: "15px",
   },
@@ -3568,8 +2735,7 @@ const styles = {
   },
 
   questionBody: {
-    padding:
-      "28px 24px 32px",
+    padding: "28px 24px 32px",
   },
 
   questionText: {
@@ -3584,12 +2750,9 @@ const styles = {
     fontSize: "19px",
     lineHeight: 1.6,
     fontWeight: 700,
-    textDecoration:
-      "underline",
-    textDecorationThickness:
-      "2px",
-    textUnderlineOffset:
-      "5px",
+    textDecoration: "underline",
+    textDecorationThickness: "2px",
+    textUnderlineOffset: "5px",
   },
 
   options: {
@@ -3606,14 +2769,12 @@ const styles = {
     textAlign: "left",
     padding: "14px 15px",
     borderRadius: "11px",
-    border:
-      "1px solid #ddd5c8",
+    border: "1px solid #ddd5c8",
     background: "#fff",
     color: "#0d1b2a",
     cursor: "pointer",
     fontSize: "15px",
-    transition:
-      "all 0.15s ease",
+    transition: "all 0.15s ease",
   },
 
   optionSelected: {
@@ -3632,8 +2793,7 @@ const styles = {
     height: "29px",
     display: "inline-flex",
     alignItems: "center",
-    justifyContent:
-      "center",
+    justifyContent: "center",
     borderRadius: "50%",
     background: "#f1ede5",
     fontWeight: 800,
@@ -3654,8 +2814,7 @@ const styles = {
   textInput: {
     width: "100%",
     boxSizing: "border-box",
-    border:
-      "1px solid #cfc6b8",
+    border: "1px solid #cfc6b8",
     borderRadius: "10px",
     padding: "14px 15px",
     fontSize: "16px",
@@ -3675,8 +2834,7 @@ const styles = {
     borderRadius: "12px",
     padding: "14px 16px",
     display: "flex",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
     gap: "15px",
     alignItems: "center",
     flexWrap: "wrap",
@@ -3696,8 +2854,7 @@ const styles = {
     width: "30px",
     height: "30px",
     borderRadius: "7px",
-    border:
-      "1px solid #ddd5c8",
+    border: "1px solid #ddd5c8",
     background: "#fff",
     cursor: "pointer",
     fontSize: "11px",
@@ -3710,15 +2867,13 @@ const styles = {
   },
 
   miniQuestionCurrent: {
-    border:
-      "2px solid #c9a84c",
+    border: "2px solid #c9a84c",
   },
 
   navigation: {
     marginTop: "16px",
     display: "grid",
-    gridTemplateColumns:
-      "1fr auto 1fr",
+    gridTemplateColumns: "1fr auto 1fr",
     gap: "12px",
     alignItems: "center",
   },
@@ -3740,8 +2895,7 @@ const styles = {
   },
 
   secondaryButton: {
-    border:
-      "1px solid #cfc6b8",
+    border: "1px solid #cfc6b8",
     borderRadius: "10px",
     background: "#fff",
     color: "#0d1b2a",
@@ -3789,8 +2943,7 @@ const styles = {
   storyBox: {
     marginTop: "22px",
     background: "#f8f4ee",
-    borderLeft:
-      "4px solid #c9a84c",
+    borderLeft: "4px solid #c9a84c",
     borderRadius: "8px",
     padding: "16px 18px",
   },
@@ -3826,8 +2979,7 @@ const styles = {
 
   writingCardHeader: {
     display: "flex",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
     gap: "15px",
     alignItems: "flex-start",
   },
@@ -3853,8 +3005,7 @@ const styles = {
     boxSizing: "border-box",
     resize: "vertical",
     minHeight: "110px",
-    border:
-      "1px solid #cfc6b8",
+    border: "1px solid #cfc6b8",
     borderRadius: "10px",
     padding: "14px",
     fontFamily:
@@ -3866,8 +3017,7 @@ const styles = {
 
   writingFooter: {
     display: "flex",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
     gap: "10px",
     marginTop: "7px",
     color: "#7a746a",
@@ -3879,8 +3029,7 @@ const styles = {
     padding: "14px 17px",
     borderRadius: "10px",
     background: "#fff7dc",
-    border:
-      "1px solid #e3c766",
+    border: "1px solid #e3c766",
     color: "#6d5a1c",
   },
 
@@ -3892,8 +3041,7 @@ const styles = {
     marginTop: "25px",
     padding: "16px 5px",
     display: "flex",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
     gap: "15px",
     color: "#77716a",
     fontSize: "12px",
@@ -3916,8 +3064,7 @@ const styles = {
     width: "42px",
     height: "42px",
     borderRadius: "50%",
-    border:
-      "4px solid #e7e0d5",
+    border: "4px solid #e7e0d5",
     borderTopColor: "#c9a84c",
     margin: "0 auto 20px",
     animation:

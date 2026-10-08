@@ -1242,7 +1242,7 @@ const styles = `
   }
 
   .about-card::before {
-    content: '🇫🇷';
+    content: '';
     position: absolute;
     top: -15px;
     right: -15px;
@@ -2566,7 +2566,7 @@ export default function Home({ lang, setLang }) {
 
         <div className="hero-inner">
           <div className="hero-badge">
-            🇫🇷 {t.hero.badge}
+            <span aria-hidden="true" style={{display:"inline-flex",width:"18px",height:"12px",borderRadius:"2px",overflow:"hidden"}}><span style={{flex:1,background:"#002395"}} /><span style={{flex:1,background:"#fff"}} /><span style={{flex:1,background:"#ED2939"}} /></span> {t.hero.badge}
           </div>
 
           <h1 className="hero-title">

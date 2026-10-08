@@ -851,6 +851,27 @@ function getLevelDescription(level, lang) {
   return descriptions[lang][level];
 }
 
+function Flag() {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        display: "inline-flex",
+        width: "1.3em",
+        height: "0.9em",
+        borderRadius: "2px",
+        overflow: "hidden",
+        verticalAlign: "-0.1em",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+      }}
+    >
+      <span style={{ flex: 1, background: "#002395" }} />
+      <span style={{ flex: 1, background: "#fff" }} />
+      <span style={{ flex: 1, background: "#ED2939" }} />
+    </span>
+  );
+}
+
 const WELCOME_MSG = {
   en: {
     A1: "Every great journey starts with a first step. Let's take it together.",
@@ -977,7 +998,7 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
           welcomeTitle2: "Académie Française Internationale",
           welcomeText: "Votre résultat n'est qu'un début. À l'IFA, nous croyons que chacun peut apprendre le français avec le bon accompagnement. Apprendre. Pratiquer. Progresser. Certifier.",
           whyTitle: "Pourquoi apprendre avec l'IFA ?",
-          why: [["🇫🇷", "Apprentissage expert"], ["📚", "Programmes A1 → C2"], ["🎓", "Certification"], ["💻", "Plateforme moderne"], ["👨‍🏫", "Apprentissage structuré"]],
+          why: [[<Flag />, "Apprentissage expert"], ["📚", "Programmes A1 → C2"], ["🎓", "Certification"], ["💻", "Plateforme moderne"], ["👨‍🏫", "Apprentissage structuré"]],
           ready: "Prêt(e) à passer au niveau supérieur ?",
           enroll: "🚀 Je suis prêt(e) — M'inscrire à l'IFA",
           courses: "Découvrir nos cours",
@@ -1009,7 +1030,7 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
           welcomeTitle2: "International French Academy",
           welcomeText: "Your result is only the beginning. At IFA we believe everyone can learn French with the right guidance, practice and support. Learn. Practice. Progress. Certify.",
           whyTitle: "Why learn with IFA?",
-          why: [["🇫🇷", "Expert French Learning"], ["📚", "A1 → C2 Programs"], ["🎓", "Certification"], ["💻", "Modern Student Platform"], ["👨‍🏫", "Structured Learning"]],
+          why: [[<Flag />, "Expert French Learning"], ["📚", "A1 → C2 Programs"], ["🎓", "Certification"], ["💻", "Modern Student Platform"], ["👨‍🏫", "Structured Learning"]],
           ready: "Ready to take your French to the next level?",
           enroll: "🚀 I'm Ready — Enroll at IFA",
           courses: "Explore Our French Courses",
@@ -1059,7 +1080,7 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
           <div className="free-intro">
             <div className="free-kicker">
               <span className="free-kicker-dot" />
-              🇫🇷 {labels.kicker}
+              <Flag /> {labels.kicker}
             </div>
 
             <h1>
@@ -1209,7 +1230,7 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
                 <div className="welcome-block">
                   <h2>
                     {labels.welcomeTitle1}
-                    <span>{labels.welcomeTitle2}</span> 🇫🇷
+                    <span>{labels.welcomeTitle2}</span> <Flag />
                   </h2>
 
                   <p>{labels.welcomeText}</p>

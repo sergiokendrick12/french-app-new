@@ -819,6 +819,25 @@ const styles = `
   }
 `;
 
+const LEVEL_LABELS = {
+  en: {
+    A1: "Beginner",
+    A2: "Elementary",
+    B1: "Intermediate",
+    B2: "Upper Intermediate",
+    C1: "Advanced",
+    C2: "Mastery",
+  },
+  fr: {
+    A1: "Débutant",
+    A2: "Élémentaire",
+    B1: "Intermédiaire",
+    B2: "Intermédiaire supérieur",
+    C1: "Avancé",
+    C2: "Maîtrise",
+  },
+};
+
 function getLevel(score) {
   if (score <= 1) return "A1";
   if (score <= 3) return "A2";
@@ -1215,7 +1234,7 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
                   🎉 {labels.congrats} {level}
                 </div>
 
-                <div className="result-levelname">{LEVELS[finalIdx].label}</div>
+                <div className="result-levelname">{LEVEL_LABELS[lang]?.[level] || LEVELS[finalIdx].label}</div>
 
                 <div className="result-score">
                   {labels.score}: {score} / {QUESTIONS.length}

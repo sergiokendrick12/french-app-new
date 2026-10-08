@@ -8,6 +8,8 @@ import {
 
 import Home from "./Home";
 
+import FreeFrenchTest from "./tests/pages/FreeFrenchTest";
+
 import TestLandingPage from "./tests/pages/TestLandingPage";
 import ListeningTest from "./tests/pages/ListeningTest";
 import WrittenTest from "./tests/pages/WrittenTest";
@@ -49,7 +51,20 @@ export default function App() {
         />
 
         {/* =========================
-            TESTS
+            FREE FRENCH TEST
+        ========================= */}
+        <Route
+          path="/free-test"
+          element={
+            <FreeFrenchTest
+              lang={lang}
+              setLang={setLang}
+            />
+          }
+        />
+
+        {/* =========================
+            OFFICIAL TESTS
         ========================= */}
         <Route
           path="/tests"
@@ -103,20 +118,16 @@ export default function App() {
         {/* =========================
             INDIVIDUAL EXAMS
         ========================= */}
-
-        {/* LEONILLE EXAM */}
         <Route
           path="/tests/exam-leonille"
           element={<ExamLeonille />}
         />
 
-        {/* IDRISS EXAM */}
         <Route
           path="/tests/exam-idriss"
           element={<ExamIdriss />}
         />
 
-        {/* JOAN EXAM */}
         <Route
           path="/tests/exam-joan"
           element={<ExamJoan />}
@@ -127,7 +138,6 @@ export default function App() {
           element={<ExamJoan />}
         />
 
-        {/* KIM EXAM */}
         <Route
           path="/tests/exam-kim"
           element={<ExamKim />}
@@ -138,7 +148,6 @@ export default function App() {
           element={<ExamKim />}
         />
 
-        {/* KEYNES EXAM */}
         <Route
           path="/tests/exam-keynes"
           element={<ExamKeynes />}

@@ -16,6 +16,9 @@ export default function StudentDashboard() {
   const [hasCompletedExpressionTest, setHasCompletedExpressionTest] =
     useState(false);
 
+  // SPECIAL EXAMS
+  const [hasCompletedKeynesExam, setHasCompletedKeynesExam] = useState(false);
+
   useEffect(() => {
     const checkStudent = async () => {
       try {
@@ -105,6 +108,24 @@ export default function StudentDashboard() {
         }
 
         setHasCompletedExpressionTest(!!expressionResult);
+
+        // CHECK KEYNES EXAM
+        const { data: keynesResult, error: keynesError } = await supabase
+          .from("test_results")
+          .select("id")
+          .eq("student_id", user.id)
+          .eq("test_type", "exam_keynes")
+          .limit(1)
+          .maybeSingle();
+
+        if (keynesError) {
+          console.error(
+            "Erreur lors de la vérification du résultat Keynes :",
+            keynesError
+          );
+        }
+
+        setHasCompletedKeynesExam(!!keynesResult);
       } catch (error) {
         console.error(
           "Erreur lors de la vérification de l'étudiant :",
@@ -139,6 +160,11 @@ export default function StudentDashboard() {
       localStorage.removeItem("ifa_listening_test_attempt");
       localStorage.removeItem("ifa_listening_test_result_saved");
       localStorage.removeItem("ifa_written_test_attempt");
+
+      // Clear Keynes local answer data for this student's current attempts.
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith("ifa_exam_keynes_answers_"))
+        .forEach((key) => localStorage.removeItem(key));
 
       // Force clean navigation to student login.
       window.location.href = "/student-login";
@@ -199,6 +225,22 @@ export default function StudentDashboard() {
     }
 
     navigate("/tests/expression-ecrite");
+  };
+
+  // KEYNES EXAM
+  const handleStartKeynesExam = () => {
+    if (
+      studentProfile?.status !== "approved" ||
+      studentProfile?.payment_status !== "paid"
+    ) {
+      return;
+    }
+
+    if (hasCompletedKeynesExam) {
+      return;
+    }
+
+    navigate("/tests/exam-keynes");
   };
 
   if (loading) {
@@ -437,7 +479,8 @@ export default function StudentDashboard() {
             {isApprovedAndPaid &&
               "✓ Compte approuvé et paiement confirmé"}
 
-            {isApproved && !isPaid &&
+            {isApproved &&
+              !isPaid &&
               "✓ Compte approuvé — paiement en attente"}
 
             {isPending &&
@@ -761,6 +804,90 @@ export default function StudentDashboard() {
             </span>
           </button>
 
+          {/* KEYNES SPECIAL EXAM */}
+          <button
+            onClick={handleStartKeynesExam}
+            disabled={!isApprovedAndPaid || hasCompletedKeynesExam}
+            style={{
+              background:
+                isApprovedAndPaid && !hasCompletedKeynesExam
+                  ? "white"
+                  : "#f8f9fa",
+              border: "none",
+              borderRadius: "18px",
+              padding: "30px",
+              textAlign: "left",
+              cursor:
+                isApprovedAndPaid && !hasCompletedKeynesExam
+                  ? "pointer"
+                  : "not-allowed",
+              boxShadow: "0 6px 25px rgba(0,0,0,0.08)",
+              borderTop: "5px solid #c9a84c",
+              opacity:
+                isApprovedAndPaid && !hasCompletedKeynesExam ? 1 : 0.65,
+            }}
+          >
+            <div
+              style={{
+                width: "60px",
+                height: "60px",
+                borderRadius: "14px",
+                background: "#f8f4ee",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "30px",
+                marginBottom: "20px",
+              }}
+            >
+              {hasCompletedKeynesExam ? "🔒" : "📝"}
+            </div>
+
+            <h2
+              style={{
+                margin: "0 0 10px",
+                color: "#0d1b2a",
+                fontSize: "21px",
+              }}
+            >
+              {hasCompletedKeynesExam
+                ? "Examen B1 — Keynes terminé"
+                : "Examen B1 — Keynes"}
+            </h2>
+
+            <p
+              style={{
+                margin: "0 0 20px",
+                color: "#667085",
+                lineHeight: "1.6",
+              }}
+            >
+              {getTestMessage(
+                hasCompletedKeynesExam,
+                "Examen personnalisé B1 — 50 activités, 1 h 30."
+              )}
+            </p>
+
+            <span
+              style={{
+                color: "#0d1b2a",
+                fontWeight: "bold",
+              }}
+            >
+              {!isApproved && "Accès verrouillé 🔒"}
+
+              {isApproved && !isPaid && "Paiement requis 🔒"}
+
+              {isApprovedAndPaid &&
+                !hasCompletedKeynesExam &&
+                "Commencer →"}
+
+              {isApprovedAndPaid &&
+                hasCompletedKeynesExam &&
+                "Terminé ✓"}
+            </span>
+          </button>
+
           {/* RESULTS */}
           <button
             onClick={() => navigate("/tests/results")}
@@ -926,4 +1053,3 @@ export default function StudentDashboard() {
     </div>
   );
 }
-

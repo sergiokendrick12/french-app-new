@@ -12,10 +12,12 @@ import TestLandingPage from "./tests/pages/TestLandingPage";
 import ListeningTest from "./tests/pages/ListeningTest";
 import WrittenTest from "./tests/pages/WrittenTest";
 import WrittenExpressionTest from "./tests/pages/WrittenExpressionTest";
+
 import ExamLeonille from "./tests/pages/ExamLeonille";
 import ExamIdriss from "./tests/pages/ExamIdriss";
 import ExamJoan from "./tests/pages/ExamJoan";
 import ExamKim from "./tests/pages/ExamKim";
+import ExamKeynes from "./tests/pages/ExamKeynes";
 
 import StudentLogin from "./tests/pages/StudentLogin";
 import StudentRegister from "./tests/pages/StudentRegister";
@@ -120,7 +122,6 @@ export default function App() {
           element={<ExamJoan />}
         />
 
-        {/* Also accept a trailing slash */}
         <Route
           path="/tests/exam-joan/"
           element={<ExamJoan />}
@@ -132,10 +133,20 @@ export default function App() {
           element={<ExamKim />}
         />
 
-        {/* Also accept a trailing slash */}
         <Route
           path="/tests/exam-kim/"
           element={<ExamKim />}
+        />
+
+        {/* KEYNES EXAM */}
+        <Route
+          path="/tests/exam-keynes"
+          element={<ExamKeynes />}
+        />
+
+        <Route
+          path="/tests/exam-keynes/"
+          element={<ExamKeynes />}
         />
 
         {/* =========================

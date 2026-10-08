@@ -20,6 +20,7 @@ import ExamIdriss from "./tests/pages/ExamIdriss";
 import ExamJoan from "./tests/pages/ExamJoan";
 import ExamKim from "./tests/pages/ExamKim";
 import ExamKeynes from "./tests/pages/ExamKeynes";
+import ExamVerification from "./tests/pages/ExamVerification";
 
 import StudentLogin from "./tests/pages/StudentLogin";
 import StudentRegister from "./tests/pages/StudentRegister";
@@ -39,7 +40,7 @@ export default function App() {
 
         {/* =========================
             HOME
-        ========================= */}
+        ========================== */}
         <Route
           path="/"
           element={
@@ -52,7 +53,7 @@ export default function App() {
 
         {/* =========================
             FREE FRENCH TEST
-        ========================= */}
+        ========================== */}
         <Route
           path="/free-test"
           element={
@@ -64,8 +65,8 @@ export default function App() {
         />
 
         {/* =========================
-            OFFICIAL TESTS
-        ========================= */}
+            TEST LANDING PAGE
+        ========================== */}
         <Route
           path="/tests"
           element={
@@ -77,8 +78,8 @@ export default function App() {
         />
 
         {/* =========================
-            STUDENT AUTH
-        ========================= */}
+            STUDENT AUTHENTICATION
+        ========================== */}
         <Route
           path="/student-login"
           element={<StudentLogin />}
@@ -91,43 +92,51 @@ export default function App() {
 
         {/* =========================
             STUDENT DASHBOARD
-        ========================= */}
+        ========================== */}
         <Route
           path="/student-dashboard"
           element={<StudentDashboard />}
         />
 
         {/* =========================
-            STANDARD TESTS
-        ========================= */}
+            OFFICIAL LEVEL TESTS
+        ========================== */}
+
+        {/* Listening / Oral */}
         <Route
           path="/tests/level-test"
           element={<ListeningTest />}
         />
 
+        {/* Written comprehension */}
         <Route
           path="/tests/written-test"
           element={<WrittenTest />}
         />
 
+        {/* Written expression */}
         <Route
           path="/tests/expression-ecrite"
           element={<WrittenExpressionTest />}
         />
 
         {/* =========================
-            INDIVIDUAL EXAMS
-        ========================= */}
+            SPECIAL EXAMS
+        ========================== */}
+
+        {/* Leonille */}
         <Route
           path="/tests/exam-leonille"
           element={<ExamLeonille />}
         />
 
+        {/* Idriss */}
         <Route
           path="/tests/exam-idriss"
           element={<ExamIdriss />}
         />
 
+        {/* Joan */}
         <Route
           path="/tests/exam-joan"
           element={<ExamJoan />}
@@ -138,6 +147,7 @@ export default function App() {
           element={<ExamJoan />}
         />
 
+        {/* Kim */}
         <Route
           path="/tests/exam-kim"
           element={<ExamKim />}
@@ -148,6 +158,7 @@ export default function App() {
           element={<ExamKim />}
         />
 
+        {/* Keynes B1 */}
         <Route
           path="/tests/exam-keynes"
           element={<ExamKeynes />}
@@ -159,8 +170,16 @@ export default function App() {
         />
 
         {/* =========================
-            RESULTS
-        ========================= */}
+            TEACHER VERIFICATION TEST
+        ========================== */}
+        <Route
+          path="/tests/exam-verification"
+          element={<ExamVerification />}
+        />
+
+        {/* =========================
+            STUDENT RESULTS
+        ========================== */}
         <Route
           path="/tests/results"
           element={<StudentResults />}
@@ -168,7 +187,7 @@ export default function App() {
 
         {/* =========================
             ADMIN
-        ========================= */}
+        ========================== */}
         <Route
           path="/admin-login"
           element={<AdminLogin />}
@@ -181,21 +200,27 @@ export default function App() {
 
         {/* =========================
             PASSWORD RESET
-        ========================= */}
+        ========================== */}
         <Route
           path="/reset-password"
           element={<ResetPassword />}
         />
 
         {/* =========================
-            FALLBACK
-        ========================= */}
+            UNKNOWN ROUTES
+        ========================== */}
         <Route
           path="*"
-          element={<Navigate to="/" replace />}
+          element={
+            <Navigate
+              to="/"
+              replace
+            />
+          }
         />
 
       </Routes>
     </BrowserRouter>
   );
 }
+

@@ -549,8 +549,8 @@ export default function AdminDashboard() {
   };
 
   // =========================================================
-  // SAVE OLD EXPRESSION GRADE /3
-  // =========================================================
+    // SAVE EXPRESSION GRADE /30
+    // =========================================================
 
   const saveExpressionGrade = async () => {
     try {
@@ -580,12 +580,15 @@ export default function AdminDashboard() {
       const task3 = Number(gradeTask3);
 
       if (
-        ![0, 1].includes(task1) ||
-        ![0, 1].includes(task2) ||
-        ![0, 1].includes(task3)
+        !Number.isInteger(task1) ||
+        !Number.isInteger(task2) ||
+        !Number.isInteger(task3) ||
+        task1 < 0 || task1 > 10 ||
+        task2 < 0 || task2 > 10 ||
+        task3 < 0 || task3 > 10
       ) {
         setErrorMessage(
-          "Chaque tâche doit recevoir une note de 0 ou 1."
+          "Chaque tâche doit recevoir une note entière entre 0 et 10."
         );
         return;
       }
@@ -648,7 +651,7 @@ export default function AdminDashboard() {
       );
 
       setSuccessMessage(
-        `Expression écrite corrigée : ${total}/3.`
+        `Expression écrite corrigée : ${total}/30.`
       );
     } catch (error) {
       console.error(
@@ -1983,10 +1986,10 @@ export default function AdminDashboard() {
                             selectedExpressionResult.grading_total ??
                             "—"
                           }
-
                           <span>
-                            /3
+                            /30
                           </span>
+
                         </div>
 
                         <div
@@ -2788,17 +2791,12 @@ export default function AdminDashboard() {
                               styles.gradeSelect
                             }
                           >
-                            <option value="">
-                              Choisir
-                            </option>
-
-                            <option value="0">
-                              0 / 1
-                            </option>
-
-                            <option value="1">
-                              1 / 1
-                            </option>
+                            <option value="">Choisir une note</option>
+                            {Array.from({ length: 11 }, (_, index) => (
+                              <option key={index} value={index}>
+                                {index} / 10
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </div>
@@ -2869,17 +2867,13 @@ export default function AdminDashboard() {
                               styles.gradeSelect
                             }
                           >
-                            <option value="">
-                              Choisir
-                            </option>
+                            <option value="">Choisir une note</option>
+                            {Array.from({ length: 11 }, (_, index) => (
+                              <option key={index} value={index}>
+                                {index} / 10
+                              </option>
+                            ))}
 
-                            <option value="0">
-                              0 / 1
-                            </option>
-
-                            <option value="1">
-                              1 / 1
-                            </option>
                           </select>
                         </div>
                       </div>
@@ -2950,17 +2944,13 @@ export default function AdminDashboard() {
                               styles.gradeSelect
                             }
                           >
-                            <option value="">
-                              Choisir
-                            </option>
+                            <option value="">Choisir une note</option>
+                            {Array.from({ length: 11 }, (_, index) => (
+                              <option key={index} value={index}>
+                                {index} / 10
+                              </option>
+                            ))}
 
-                            <option value="0">
-                              0 / 1
-                            </option>
-
-                            <option value="1">
-                              1 / 1
-                            </option>
                           </select>
                         </div>
                       </div>
@@ -2997,7 +2987,7 @@ export default function AdminDashboard() {
                               ) || 0)}
 
                             <span>
-                              /3
+                              /30
                             </span>
                           </div>
                         </div>

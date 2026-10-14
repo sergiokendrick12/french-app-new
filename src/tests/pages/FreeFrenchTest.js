@@ -1,13 +1,8 @@
+
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const QUESTIONS = [
-  {
-    level: "A1",
-    question: "Bonjour ! Comment ___ vous ?",
-    options: ["allez", "allez-vous", "va", "être"],
-    answer: "allez",
-  },
   {
     level: "A1",
     question: "Je ___ étudiant à Kigali.",
@@ -16,49 +11,25 @@ const QUESTIONS = [
   },
   {
     level: "A2",
-    question: "Hier, nous ___ au restaurant avec nos amis.",
+    question: "Hier, nous ___ au restaurant.",
     options: ["allons", "sommes allés", "irons", "allions"],
     answer: "sommes allés",
   },
   {
-    level: "A2",
-    question: "Quand j'étais enfant, je ___ beaucoup au football.",
-    options: ["joue", "jouerai", "jouais", "ai joué"],
-    answer: "jouais",
-  },
-  {
     level: "B1",
-    question: "Si j'avais plus de temps, je ___ le français tous les jours.",
+    question: "Si j'avais plus de temps, je ___ le français.",
     options: ["étudie", "étudierai", "étudierais", "étudiais"],
     answer: "étudierais",
   },
   {
-    level: "B1",
-    question: "Elle travaille ici ___ trois ans.",
-    options: ["depuis", "pendant", "il y a", "dans"],
-    answer: "depuis",
-  },
-  {
     level: "B2",
-    question: "Bien qu'il ___ très fatigué, il a continué à travailler.",
+    question: "Bien qu'il ___ fatigué, il a continué à travailler.",
     options: ["est", "soit", "sera", "était"],
     answer: "soit",
   },
   {
-    level: "B2",
-    question: "Cette décision pourrait avoir de graves ___ sur l'économie.",
-    options: ["conséquences", "réalisations", "conditions", "productions"],
-    answer: "conséquences",
-  },
-  {
-    level: "C1",
-    question: "Il est essentiel que les étudiants ___ conscients de leurs responsabilités.",
-    options: ["sont", "seront", "soient", "étaient"],
-    answer: "soient",
-  },
-  {
     level: "C2",
-    question: "Cette mesure, loin de résoudre le problème, risque de l'___ davantage.",
+    question: "Cette mesure risque d'___ le problème davantage.",
     options: ["aggraver", "améliorer", "atténuer", "éviter"],
     answer: "aggraver",
   },
@@ -72,6 +43,97 @@ const LEVELS = [
   { name: "C1", label: "Avancé" },
   { name: "C2", label: "Maîtrise" },
 ];
+
+// Five questions: map the score to an estimated level.
+function getLevel(score) {
+  if (score <= 1) return "A1";
+  if (score === 2) return "A2";
+  if (score === 3) return "B1";
+  if (score === 4) return "B2";
+  return "C2";
+}
+
+function getLevelDescription(level, lang) {
+  const descriptions = {
+    en: {
+      A1: "Your result suggests a beginner level. You can work on basic French expressions and everyday communication.",
+      A2: "Your result suggests an elementary level. You can build confidence in simple everyday conversations.",
+      B1: "Your result suggests an intermediate level. You can develop your independence in familiar situations.",
+      B2: "Your result suggests an upper-intermediate level. You can refine your communication in professional and social situations.",
+      C1: "Your result suggests an advanced level. A more complete assessment can help confirm your strengths.",
+      C2: "Your result suggests a very strong performance on this short test. A complete assessment is needed to confirm C1 or C2.",
+    },
+    fr: {
+      A1: "Votre résultat indique un niveau débutant. Vous pouvez travailler les expressions de base et la communication quotidienne.",
+      A2: "Votre résultat indique un niveau élémentaire. Vous pouvez renforcer votre confiance dans les conversations simples.",
+      B1: "Votre résultat indique un niveau intermédiaire. Vous pouvez développer votre autonomie dans les situations familières.",
+      B2: "Votre résultat indique un niveau intermédiaire supérieur. Vous pouvez perfectionner votre communication dans les situations professionnelles et sociales.",
+      C1: "Votre résultat indique un niveau avancé. Une évaluation plus complète permettra de confirmer vos compétences.",
+      C2: "Votre résultat indique une très bonne performance à ce court test. Une évaluation complète est nécessaire pour confirmer un niveau C1 ou C2.",
+    },
+  };
+
+  return descriptions[lang][level];
+}
+
+function Flag() {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        display: "inline-flex",
+        width: "1.3em",
+        height: "0.9em",
+        borderRadius: "2px",
+        overflow: "hidden",
+        verticalAlign: "-0.1em",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+      }}
+    >
+      <span style={{ flex: 1, background: "#002395" }} />
+      <span style={{ flex: 1, background: "#fff" }} />
+      <span style={{ flex: 1, background: "#ED2939" }} />
+    </span>
+  );
+}
+
+const LEVEL_LABELS = {
+  en: {
+    A1: "Beginner",
+    A2: "Elementary",
+    B1: "Intermediate",
+    B2: "Upper Intermediate",
+    C1: "Advanced",
+    C2: "Mastery",
+  },
+  fr: {
+    A1: "Débutant",
+    A2: "Élémentaire",
+    B1: "Intermédiaire",
+    B2: "Intermédiaire supérieur",
+    C1: "Avancé",
+    C2: "Maîtrise",
+  },
+};
+
+const WELCOME_MSG = {
+  en: {
+    A1: "Every great journey starts with a first step. Let's take it together.",
+    A2: "You already know the basics. Let's build real confidence.",
+    B1: "You have a solid foundation in French. Now let's help you go further.",
+    B2: "Impressive! Let's refine your French and help you progress.",
+    C1: "Excellent work. Let's confirm and strengthen your advanced skills.",
+    C2: "Outstanding result on this short test. Let's confirm your level with a complete assessment.",
+  },
+  fr: {
+    A1: "Tout grand voyage commence par un premier pas. Faisons-le ensemble.",
+    A2: "Vous connaissez déjà les bases. Construisons une vraie confiance.",
+    B1: "Vous avez une base solide en français. Allons plus loin ensemble.",
+    B2: "Impressionnant ! Perfectionnons votre français pour vous faire progresser.",
+    C1: "Excellent travail. Confirmons et renforçons vos compétences avancées.",
+    C2: "Excellent résultat à ce court test. Confirmons votre niveau avec une évaluation complète.",
+  },
+};
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@400;500;600;700&display=swap');
@@ -113,8 +175,6 @@ const styles = `
       radial-gradient(circle at 90% 80%, rgba(30,58,95,0.08), transparent 30%),
       var(--cream);
   }
-
-  /* HEADER */
 
   .free-header {
     height: 74px;
@@ -176,8 +236,6 @@ const styles = `
   .free-home:hover {
     color: var(--gold-light);
   }
-
-  /* INTRO */
 
   .free-intro {
     max-width: 900px;
@@ -249,8 +307,6 @@ const styles = `
     color: var(--gold);
     margin-right: 4px;
   }
-
-  /* TEST CARD */
 
   .free-test-shell {
     max-width: 820px;
@@ -411,8 +467,6 @@ const styles = `
     cursor: not-allowed;
   }
 
-  /* RESULT */
-
   .free-result {
     max-width: 820px;
     margin: 1.5rem auto 5rem;
@@ -535,9 +589,9 @@ const styles = `
   .result-btn-secondary:hover {
     border-color: var(--gold);
   }
+`;
 
-  /* FOOTER */
-
+const additionalStyles = `
   .free-footer {
     text-align: center;
     padding: 0 1.5rem 2.5rem;
@@ -548,9 +602,6 @@ const styles = `
   .free-footer strong {
     color: var(--gold);
   }
-
-
-  /* ANALYZING + WOW RESULT */
 
   .analyzing-wrap {
     max-width: 620px;
@@ -779,138 +830,19 @@ const styles = `
   @keyframes ifaFall { to { transform: translateY(110vh) rotate(720deg); opacity: 0.9; } }
 
   @media (max-width: 600px) {
-    .free-header {
-      height: 66px;
-      padding: 0 1rem;
-    }
-
-    .free-logo {
-      width: 38px;
-      height: 38px;
-    }
-
-    .free-brand-name {
-      font-size: 0.82rem;
-    }
-
-    .free-home {
-      font-size: 0.68rem;
-    }
-
-    .free-intro {
-      padding-top: 3.2rem;
-    }
-
-    .free-card-body {
-      padding: 1.7rem 1.2rem 1.5rem;
-    }
-
-    .free-question {
-      font-size: 1.3rem;
-    }
-
-    .free-option {
-      padding: 0.85rem;
-    }
-
-    .result-body {
-      padding: 2rem 1.2rem;
-    }
+    .free-header { height: 66px; padding: 0 1rem; }
+    .free-logo { width: 38px; height: 38px; }
+    .free-brand-name { font-size: 0.82rem; }
+    .free-home { font-size: 0.68rem; }
+    .free-intro { padding-top: 3.2rem; }
+    .free-card-body { padding: 1.7rem 1.2rem 1.5rem; }
+    .free-question { font-size: 1.3rem; }
+    .free-option { padding: 0.85rem; }
+    .result-body { padding: 2rem 1.2rem; }
   }
 `;
 
-const LEVEL_LABELS = {
-  en: {
-    A1: "Beginner",
-    A2: "Elementary",
-    B1: "Intermediate",
-    B2: "Upper Intermediate",
-    C1: "Advanced",
-    C2: "Mastery",
-  },
-  fr: {
-    A1: "Débutant",
-    A2: "Élémentaire",
-    B1: "Intermédiaire",
-    B2: "Intermédiaire supérieur",
-    C1: "Avancé",
-    C2: "Maîtrise",
-  },
-};
-
-function getLevel(score) {
-  if (score <= 1) return "A1";
-  if (score <= 3) return "A2";
-  if (score <= 5) return "B1";
-  if (score <= 7) return "B2";
-  if (score === 8) return "C1";
-  return "C2";
-}
-
-function getLevelDescription(level, lang) {
-  const descriptions = {
-    en: {
-      A1: "You are at an introductory level. You can understand and use very basic French expressions.",
-      A2: "You have elementary French skills and can handle simple everyday communication.",
-      B1: "You have an intermediate level and can communicate in familiar situations with reasonable independence.",
-      B2: "You have a strong intermediate level and can communicate effectively in many professional and social situations.",
-      C1: "You have an advanced level and can express yourself fluently and precisely in complex situations.",
-      C2: "Your result suggests a very advanced command of French, close to full professional and academic proficiency.",
-    },
-    fr: {
-      A1: "Vous êtes au niveau débutant. Vous pouvez comprendre et utiliser des expressions françaises très simples.",
-      A2: "Vous avez un niveau élémentaire et pouvez communiquer dans des situations quotidiennes simples.",
-      B1: "Vous avez un niveau intermédiaire et pouvez communiquer avec une certaine autonomie dans des situations familières.",
-      B2: "Vous avez un bon niveau intermédiaire et pouvez communiquer efficacement dans de nombreuses situations professionnelles et sociales.",
-      C1: "Vous avez un niveau avancé et pouvez vous exprimer avec aisance et précision dans des situations complexes.",
-      C2: "Votre résultat indique une très bonne maîtrise du français, proche d'une compétence professionnelle et académique complète.",
-    },
-  };
-
-  return descriptions[lang][level];
-}
-
-function Flag() {
-  return (
-    <span
-      aria-hidden="true"
-      style={{
-        display: "inline-flex",
-        width: "1.3em",
-        height: "0.9em",
-        borderRadius: "2px",
-        overflow: "hidden",
-        verticalAlign: "-0.1em",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
-      }}
-    >
-      <span style={{ flex: 1, background: "#002395" }} />
-      <span style={{ flex: 1, background: "#fff" }} />
-      <span style={{ flex: 1, background: "#ED2939" }} />
-    </span>
-  );
-}
-
-const WELCOME_MSG = {
-  en: {
-    A1: "Every great journey starts with a first step. Let's take it together.",
-    A2: "You already know the basics. Let's build real confidence.",
-    B1: "You have a solid foundation in French. Now let's help you go further.",
-    B2: "Impressive! You are close to fluency. Let's refine and certify it.",
-    C1: "Excellent command of French. Let's polish it to perfection.",
-    C2: "Outstanding. You are at the top of the scale. Let's certify it.",
-  },
-  fr: {
-    A1: "Tout grand voyage commence par un premier pas. Faisons-le ensemble.",
-    A2: "Vous connaissez déjà les bases. Construisons une vraie confiance.",
-    B1: "Vous avez une base solide en français. Allons plus loin ensemble.",
-    B2: "Impressionnant ! Vous êtes proche de l'aisance. Affinons et certifions.",
-    C1: "Excellente maîtrise du français. Peaufinons-la à la perfection.",
-    C2: "Remarquable. Vous êtes au sommet de l'échelle. Certifions-le.",
-  },
-};
-
-export default function FreeFrenchTest({ lang = "en", setLang }) {
+export default function FreeFrenchTest({ lang = "en" }) {
   const navigate = useNavigate();
   const [analyzing, setAnalyzing] = useState(false);
   const [shown, setShown] = useState(0);
@@ -944,24 +876,28 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
 
   useEffect(() => {
     if (!analyzing) return;
+
     const timer = setTimeout(() => {
       setAnalyzing(false);
       setShown(0);
       setDone(false);
       setFinished(true);
     }, 3200);
+
     return () => clearTimeout(timer);
   }, [analyzing]);
 
   const level = getLevel(score);
-  const finalIdx = LEVELS.findIndex((l) => l.name === level);
+  const finalIdx = LEVELS.findIndex((item) => item.name === level);
 
   useEffect(() => {
     if (!finished) return;
+
     if (shown >= finalIdx) {
       setDone(true);
       return;
     }
+
     const timer = setTimeout(() => setShown((n) => n + 1), 450);
     return () => clearTimeout(timer);
   }, [finished, shown, finalIdx]);
@@ -996,8 +932,7 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
           kicker: "Test en ligne gratuit",
           title1: "Découvrez votre",
           title2: "niveau de français",
-          intro:
-            "Répondez à quelques questions et obtenez une indication rapide de votre niveau de français, de A1 à C2.",
+          intro: "Répondez à 5 questions rapides et obtenez une indication de votre niveau de français.",
           free: "100 % Gratuit",
           online: "En ligne",
           levels: "A1 → C2",
@@ -1006,8 +941,7 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
           resultKicker: "Votre résultat",
           resultTitle: "Votre niveau estimé",
           score: "Score",
-          official:
-            "Ce test gratuit donne une indication rapide de votre niveau. Pour une évaluation complète et officielle, nous vous recommandons de passer notre test de niveau IFA.",
+          official: "Ce mini-test donne une indication rapide, pas une certification officielle. Pour une évaluation complète, passez notre test de niveau IFA.",
           officialBtn: "Passer le test officiel",
           retry: "Recommencer",
           analyzing: "Analyse de votre français…",
@@ -1028,8 +962,7 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
           kicker: "Free Online Test",
           title1: "Discover your",
           title2: "French level",
-          intro:
-            "Answer a few questions and get a quick indication of your French level, from A1 to C2.",
+          intro: "Answer 5 quick questions to get an indication of your French level.",
           free: "100% Free",
           online: "Online",
           levels: "A1 → C2",
@@ -1038,8 +971,7 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
           resultKicker: "Your Result",
           resultTitle: "Your Estimated Level",
           score: "Score",
-          official:
-            "This free test gives you a quick indication of your level. For a complete and official assessment, we recommend taking the IFA official level test.",
+          official: "This mini-test gives a quick indication, not an official certification. For a complete assessment, take the IFA level test.",
           officialBtn: "Take Official Level Test",
           retry: "Try Again",
           analyzing: "Analyzing your French skills…",
@@ -1058,7 +990,7 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
 
   return (
     <div className="free-page">
-      <style>{styles}</style>
+      <style>{styles}{additionalStyles}</style>
 
       <header className="free-header">
         <Link to="/" className="free-brand">
@@ -1067,7 +999,6 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
             alt="International French Academy"
             className="free-logo"
           />
-
           <div className="free-brand-name">
             International French Academy
             <small>Kigali, Rwanda</small>
@@ -1085,10 +1016,9 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
             <div className="analyzing-spin" />
             <h2>{labels.analyzing}</h2>
             <div className="analyzing-skills">
-              {labels.skills.map((sk, i) => (
-                <span key={sk} style={{ animationDelay: `${0.4 + i * 0.6}s` }}>
-                  {sk}
-                  {i < labels.skills.length - 1 ? " •" : ""}
+              {labels.skills.map((skill, i) => (
+                <span key={skill} style={{ animationDelay: `${0.4 + i * 0.6}s` }}>
+                  {skill}{i < labels.skills.length - 1 ? " •" : ""}
                 </span>
               ))}
             </div>
@@ -1111,20 +1041,9 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
             <p>{labels.intro}</p>
 
             <div className="free-features">
-              <span className="free-feature">
-                <strong>✓</strong>
-                {labels.free}
-              </span>
-
-              <span className="free-feature">
-                <strong>✓</strong>
-                {labels.online}
-              </span>
-
-              <span className="free-feature">
-                <strong>✓</strong>
-                {labels.levels}
-              </span>
+              <span className="free-feature"><strong>✓</strong>{labels.free}</span>
+              <span className="free-feature"><strong>✓</strong>{labels.online}</span>
+              <span className="free-feature"><strong>✓</strong>{labels.levels}</span>
             </div>
           </div>
 
@@ -1135,52 +1054,35 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
                   <span className="free-progress-text">
                     {labels.question} {current + 1} / {QUESTIONS.length}
                   </span>
-
-                  <span className="free-question-level">
-                    {q.level}
-                  </span>
+                  <span className="free-question-level">{q.level}</span>
                 </div>
 
                 <div className="free-progress">
                   <div
                     className="free-progress-fill"
-                    style={{
-                      width: `${((current + 1) / QUESTIONS.length) * 100}%`,
-                    }}
+                    style={{ width: `${((current + 1) / QUESTIONS.length) * 100}%` }}
                   />
                 </div>
               </div>
 
               <div className="free-card-body">
-                <div className="free-question-number">
-                  International French Academy
-                </div>
-
-                <h2 className="free-question">
-                  {q.question}
-                </h2>
+                <div className="free-question-number">International French Academy</div>
+                <h2 className="free-question">{q.question}</h2>
 
                 <div className="free-options">
-                  {q.options.map((option, index) => {
-                    const letter = String.fromCharCode(65 + index);
-
-                    return (
-                      <button
-                        key={option}
-                        type="button"
-                        className={`free-option ${
-                          selected === option ? "selected" : ""
-                        }`}
-                        onClick={() => setSelected(option)}
-                      >
-                        <span className="free-option-letter">
-                          {letter}
-                        </span>
-
-                        <span>{option}</span>
-                      </button>
-                    );
-                  })}
+                  {q.options.map((option, index) => (
+                    <button
+                      key={option}
+                      type="button"
+                      className={`free-option ${selected === option ? "selected" : ""}`}
+                      onClick={() => setSelected(option)}
+                    >
+                      <span className="free-option-letter">
+                        {String.fromCharCode(65 + index)}
+                      </span>
+                      <span>{option}</span>
+                    </button>
+                  ))}
                 </div>
 
                 <button
@@ -1197,33 +1099,29 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
         </>
       ) : (
         <main className="free-result">
-          {done &&
-            confetti.map((c, i) => (
-              <span
-                key={i}
-                className="confetti-piece"
-                style={{
-                  left: `${c.left}%`,
-                  background: c.color,
-                  animationDelay: `${c.delay}s`,
-                  animationDuration: `${c.dur}s`,
-                }}
-              />
-            ))}
+          {done && confetti.map((piece, i) => (
+            <span
+              key={i}
+              className="confetti-piece"
+              style={{
+                left: `${piece.left}%`,
+                background: piece.color,
+                animationDelay: `${piece.delay}s`,
+                animationDuration: `${piece.dur}s`,
+              }}
+            />
+          ))}
 
           <div className="result-card">
             <div className="result-top">
               <div className="result-small">{labels.resultKicker}</div>
-
               <h1 className="result-title">{labels.resultTitle}</h1>
-
               <div className={`result-level${done ? " pop" : ""}`}>
                 {LEVELS[shown].name}
               </div>
-
               <div className="result-ladder">
-                {LEVELS.map((l, i) => (
-                  <span key={l.name} className={i <= shown ? "on" : ""} />
+                {LEVELS.map((item, i) => (
+                  <span key={item.name} className={i <= shown ? "on" : ""} />
                 ))}
               </div>
             </div>
@@ -1233,17 +1131,15 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
                 <div className="result-congrats">
                   🎉 {labels.congrats} {level}
                 </div>
-
-                <div className="result-levelname">{LEVEL_LABELS[lang]?.[level] || LEVELS[finalIdx].label}</div>
-
+                <div className="result-levelname">
+                  {LEVEL_LABELS[lang]?.[level] || LEVELS[finalIdx].label}
+                </div>
                 <div className="result-score">
                   {labels.score}: {score} / {QUESTIONS.length}
                 </div>
-
                 <p className="result-description">
                   {getLevelDescription(level, lang)} {WELCOME_MSG[lang][level]}
                 </p>
-
                 <div className="result-notice">{labels.official}</div>
 
                 <div className="welcome-block">
@@ -1251,22 +1147,17 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
                     {labels.welcomeTitle1}
                     <span>{labels.welcomeTitle2}</span> <Flag />
                   </h2>
-
                   <p>{labels.welcomeText}</p>
-
                   <div className="welcome-why-title">{labels.whyTitle}</div>
-
                   <div className="welcome-why">
-                    {labels.why.map(([ic, tx]) => (
-                      <div key={tx}>
-                        <b>{ic}</b>
-                        {tx}
+                    {labels.why.map(([icon, text]) => (
+                      <div key={text}>
+                        <b>{icon}</b>
+                        {text}
                       </div>
                     ))}
                   </div>
-
                   <div className="welcome-ready">{labels.ready}</div>
-
                   <div className="result-actions">
                     <button
                       type="button"
@@ -1275,7 +1166,6 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
                     >
                       {labels.enroll}
                     </button>
-
                     <button
                       type="button"
                       className="result-btn result-btn-ghost"
@@ -1284,13 +1174,9 @@ export default function FreeFrenchTest({ lang = "en", setLang }) {
                       {labels.courses}
                     </button>
                   </div>
-
                   <div className="welcome-links">
                     <Link to="/tests">{labels.officialBtn}</Link>
-
-                    <button type="button" onClick={restart}>
-                      {labels.retry}
-                    </button>
+                    <button type="button" onClick={restart}>{labels.retry}</button>
                   </div>
                 </div>
               </div>

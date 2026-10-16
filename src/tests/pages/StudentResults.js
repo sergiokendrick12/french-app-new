@@ -80,7 +80,7 @@ export default function StudentResults() {
     }
 
     if (testType === "comprehension_ecrite") {
-      return "Examen de français";
+      return "Compréhension écrite";
     }
 
     if (testType === "expression_ecrite") {
@@ -595,14 +595,16 @@ export default function StudentResults() {
                   </div>
 
                   {[
+                    
                     {
                       label: "Compréhension orale",
                       result: comprehensionSummary.oral,
                     },
                     {
-                      label: "Examen de français",
+                      label: "Compréhension écrite",
                       result: comprehensionSummary.written,
                     },
+
                   ].map((item) => (
                     <div
                       key={item.label}
@@ -1251,7 +1253,7 @@ export default function StudentResults() {
                                     fontWeight: "700",
                                   }}
                                 >
-                                  {expressionScore} / 3
+                                  {expressionScore} / 30
                                 </div>
 
                                 <div
@@ -1323,7 +1325,7 @@ export default function StudentResults() {
                                     fontSize: "18px",
                                   }}
                                 >
-                                  {result.grading_task1} / 1
+                                  {result.grading_task1} / 10
                                 </strong>
                               </div>
 
@@ -1350,7 +1352,7 @@ export default function StudentResults() {
                                     fontSize: "18px",
                                   }}
                                 >
-                                  {result.grading_task2} / 1
+                                  {result.grading_task2} / 10
                                 </strong>
                               </div>
 
@@ -1377,7 +1379,7 @@ export default function StudentResults() {
                                     fontSize: "18px",
                                   }}
                                 >
-                                  {result.grading_task3} / 1
+                                  {result.grading_task3} / 10
                                 </strong>
                               </div>
                             </div>

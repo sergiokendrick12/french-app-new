@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
@@ -18,6 +19,7 @@ export default function StudentDashboard() {
 
   // SPECIAL EXAMS
   const [hasCompletedKeynesExam, setHasCompletedKeynesExam] = useState(false);
+  const [examAssignments, setExamAssignments] = useState([]);
 
   useEffect(() => {
     const checkStudent = async () => {
@@ -53,6 +55,24 @@ export default function StudentDashboard() {
         }
 
         setStudentProfile(profile);
+
+        // LOAD THIS STUDENT'S EXAM ASSIGNMENTS
+        const { data: assignments, error: assignmentsError } =
+          await supabase
+            .from("exam_assignments")
+            .select("exam_type, status")
+            .eq("student_id", user.id);
+
+        if (assignmentsError) {
+          console.error(
+            "Erreur lors du chargement des examens assignés :",
+            assignmentsError
+          );
+        }
+
+        setExamAssignments(
+          assignmentsError ? [] : assignments || []
+        );
 
         // CHECK COMPRÉHENSION ORALE
         const { data: oralResult, error: oralError } = await supabase
@@ -109,7 +129,7 @@ export default function StudentDashboard() {
 
         setHasCompletedExpressionTest(!!expressionResult);
 
-        // CHECK KEYNES EXAM
+        // CHECK KEYNES EXAM RESULT
         const { data: keynesResult, error: keynesError } = await supabase
           .from("test_results")
           .select("id")
@@ -161,12 +181,11 @@ export default function StudentDashboard() {
       localStorage.removeItem("ifa_listening_test_result_saved");
       localStorage.removeItem("ifa_written_test_attempt");
 
-      // Clear Keynes local answer data for this student's current attempts.
+      // Clear Keynes local answer data.
       Object.keys(localStorage)
         .filter((key) => key.startsWith("ifa_exam_keynes_answers_"))
         .forEach((key) => localStorage.removeItem(key));
 
-      // Force clean navigation to student login.
       window.location.href = "/student-login";
     } catch (error) {
       console.error("Erreur lors de la déconnexion :", error);
@@ -178,18 +197,13 @@ export default function StudentDashboard() {
   const handleStartOralTest = () => {
     if (
       studentProfile?.status !== "approved" ||
-      studentProfile?.payment_status !== "paid"
+      studentProfile?.payment_status !== "paid" ||
+      hasCompletedOralTest
     ) {
       return;
     }
 
-    if (hasCompletedOralTest) {
-      return;
-    }
-
-    // Do not restore an old local attempt when starting a new approved test.
     localStorage.removeItem("ifa_listening_test_attempt");
-
     navigate("/tests/level-test");
   };
 
@@ -197,17 +211,13 @@ export default function StudentDashboard() {
   const handleStartWrittenTest = () => {
     if (
       studentProfile?.status !== "approved" ||
-      studentProfile?.payment_status !== "paid"
+      studentProfile?.payment_status !== "paid" ||
+      hasCompletedWrittenTest
     ) {
       return;
     }
 
-    if (hasCompletedWrittenTest) {
-      return;
-    }
-
     localStorage.removeItem("ifa_written_test_attempt");
-
     navigate("/tests/written-test");
   };
 
@@ -215,12 +225,9 @@ export default function StudentDashboard() {
   const handleStartExpressionTest = () => {
     if (
       studentProfile?.status !== "approved" ||
-      studentProfile?.payment_status !== "paid"
+      studentProfile?.payment_status !== "paid" ||
+      hasCompletedExpressionTest
     ) {
-      return;
-    }
-
-    if (hasCompletedExpressionTest) {
       return;
     }
 
@@ -231,12 +238,14 @@ export default function StudentDashboard() {
   const handleStartKeynesExam = () => {
     if (
       studentProfile?.status !== "approved" ||
-      studentProfile?.payment_status !== "paid"
+      studentProfile?.payment_status !== "paid" ||
+      hasCompletedKeynesExam ||
+      !examAssignments.some(
+        (assignment) =>
+          assignment.exam_type === "exam_keynes" &&
+          assignment.status === "released"
+      )
     ) {
-      return;
-    }
-
-    if (hasCompletedKeynesExam) {
       return;
     }
 
@@ -255,12 +264,7 @@ export default function StudentDashboard() {
           fontFamily: "Arial, sans-serif",
         }}
       >
-        <p
-          style={{
-            color: "#0d1b2a",
-            fontSize: "18px",
-          }}
-        >
+        <p style={{ color: "#0d1b2a", fontSize: "18px" }}>
           Chargement...
         </p>
       </div>
@@ -277,10 +281,20 @@ export default function StudentDashboard() {
   const isApproved = status === "approved";
   const isRejected = status === "rejected";
   const isPending = status === "pending";
-
   const isPaid = paymentStatus === "paid";
-
   const isApprovedAndPaid = isApproved && isPaid;
+
+  
+  
+  
+  // SHOW KEYNES WHEN ASSIGNED OR RELEASED
+  const isKeynesExamReleased = examAssignments.some(
+    (assignment) =>
+      assignment.exam_type === "exam_keynes" &&
+      ["assigned", "released"].includes(assignment.status)
+  );
+
+
 
   // COMMON TEST ACCESS MESSAGE
   const getTestMessage = (completed, defaultMessage) => {
@@ -326,13 +340,7 @@ export default function StudentDashboard() {
             gap: "20px",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "15px",
-            }}
-          >
+          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
             <img
               src="/IFA logo.jpg"
               alt="International French Academy"
@@ -347,21 +355,10 @@ export default function StudentDashboard() {
             />
 
             <div>
-              <div
-                style={{
-                  fontSize: "20px",
-                  fontWeight: "bold",
-                }}
-              >
+              <div style={{ fontSize: "20px", fontWeight: "bold" }}>
                 International French Academy
               </div>
-
-              <div
-                style={{
-                  fontSize: "13px",
-                  color: "#d9e2ec",
-                }}
-              >
+              <div style={{ fontSize: "13px", color: "#d9e2ec" }}>
                 Espace étudiant
               </div>
             </div>
@@ -395,11 +392,7 @@ export default function StudentDashboard() {
         }}
       >
         {/* WELCOME */}
-        <div
-          style={{
-            marginBottom: "35px",
-          }}
-        >
+        <div style={{ marginBottom: "35px" }}>
           <p
             style={{
               color: "#c9a84c",
@@ -423,13 +416,7 @@ export default function StudentDashboard() {
             Bienvenue dans votre espace étudiant 👋
           </h1>
 
-          <p
-            style={{
-              margin: 0,
-              color: "#667085",
-              fontSize: "16px",
-            }}
-          >
+          <p style={{ margin: 0, color: "#667085", fontSize: "16px" }}>
             {user.email}
           </p>
         </div>
@@ -476,18 +463,10 @@ export default function StudentDashboard() {
                 : "#a15c00",
             }}
           >
-            {isApprovedAndPaid &&
-              "✓ Compte approuvé et paiement confirmé"}
-
-            {isApproved &&
-              !isPaid &&
-              "✓ Compte approuvé — paiement en attente"}
-
-            {isPending &&
-              "⏳ En attente de validation"}
-
-            {isRejected &&
-              "✕ Demande rejetée"}
+            {isApprovedAndPaid && "✓ Compte approuvé et paiement confirmé"}
+            {isApproved && !isPaid && "✓ Compte approuvé — paiement en attente"}
+            {isPending && "⏳ En attente de validation"}
+            {isRejected && "✕ Demande rejetée"}
           </div>
 
           <p
@@ -500,25 +479,18 @@ export default function StudentDashboard() {
           >
             {isApprovedAndPaid &&
               "Votre compte est validé et votre paiement est confirmé. Vous pouvez maintenant passer les tests disponibles."}
-
             {isApproved &&
               !isPaid &&
               "Votre compte a été validé par International French Academy. L'accès aux tests sera disponible après confirmation de votre paiement."}
-
             {isPending &&
               "Votre compte est en cours de vérification par International French Academy. L'accès aux tests sera disponible après validation."}
-
             {isRejected &&
               "Votre demande d'accès n'a pas été approuvée. Veuillez contacter International French Academy pour plus d'informations."}
           </p>
         </div>
 
         {/* TESTS HEADER */}
-        <div
-          style={{
-            marginBottom: "25px",
-          }}
-        >
+        <div style={{ marginBottom: "25px" }}>
           <h2
             style={{
               margin: "0 0 8px",
@@ -529,13 +501,7 @@ export default function StudentDashboard() {
             Vos tests
           </h2>
 
-          <p
-            style={{
-              margin: 0,
-              color: "#667085",
-              fontSize: "15px",
-            }}
-          >
+          <p style={{ margin: 0, color: "#667085", fontSize: "15px" }}>
             Complétez les différentes parties de votre test de niveau.
           </p>
         </div>
@@ -554,9 +520,7 @@ export default function StudentDashboard() {
             disabled={!isApprovedAndPaid || hasCompletedOralTest}
             style={{
               background:
-                isApprovedAndPaid && !hasCompletedOralTest
-                  ? "white"
-                  : "#f8f9fa",
+                isApprovedAndPaid && !hasCompletedOralTest ? "white" : "#f8f9fa",
               border: "none",
               borderRadius: "18px",
               padding: "30px",
@@ -587,48 +551,24 @@ export default function StudentDashboard() {
               {hasCompletedOralTest ? "🔒" : "🎧"}
             </div>
 
-            <h2
-              style={{
-                margin: "0 0 10px",
-                color: "#0d1b2a",
-                fontSize: "21px",
-              }}
-            >
+            <h2 style={{ margin: "0 0 10px", color: "#0d1b2a", fontSize: "21px" }}>
               {hasCompletedOralTest
                 ? "Compréhension orale terminée"
                 : "Compréhension orale"}
             </h2>
 
-            <p
-              style={{
-                margin: "0 0 20px",
-                color: "#667085",
-                lineHeight: "1.6",
-              }}
-            >
+            <p style={{ margin: "0 0 20px", color: "#667085", lineHeight: "1.6" }}>
               {getTestMessage(
                 hasCompletedOralTest,
                 "Écoutez les enregistrements et répondez aux questions de compréhension."
               )}
             </p>
 
-            <span
-              style={{
-                color: "#0d1b2a",
-                fontWeight: "bold",
-              }}
-            >
+            <span style={{ color: "#0d1b2a", fontWeight: "bold" }}>
               {!isApproved && "Accès verrouillé 🔒"}
-
               {isApproved && !isPaid && "Paiement requis 🔒"}
-
-              {isApprovedAndPaid &&
-                !hasCompletedOralTest &&
-                "Commencer →"}
-
-              {isApprovedAndPaid &&
-                hasCompletedOralTest &&
-                "Terminé ✓"}
+              {isApprovedAndPaid && !hasCompletedOralTest && "Commencer →"}
+              {isApprovedAndPaid && hasCompletedOralTest && "Terminé ✓"}
             </span>
           </button>
 
@@ -638,9 +578,7 @@ export default function StudentDashboard() {
             disabled={!isApprovedAndPaid || hasCompletedWrittenTest}
             style={{
               background:
-                isApprovedAndPaid && !hasCompletedWrittenTest
-                  ? "white"
-                  : "#f8f9fa",
+                isApprovedAndPaid && !hasCompletedWrittenTest ? "white" : "#f8f9fa",
               border: "none",
               borderRadius: "18px",
               padding: "30px",
@@ -652,9 +590,7 @@ export default function StudentDashboard() {
               boxShadow: "0 6px 25px rgba(0,0,0,0.08)",
               borderTop: "5px solid #0d1b2a",
               opacity:
-                isApprovedAndPaid && !hasCompletedWrittenTest
-                  ? 1
-                  : 0.65,
+                isApprovedAndPaid && !hasCompletedWrittenTest ? 1 : 0.65,
             }}
           >
             <div
@@ -673,48 +609,24 @@ export default function StudentDashboard() {
               {hasCompletedWrittenTest ? "🔒" : "📖"}
             </div>
 
-            <h2
-              style={{
-                margin: "0 0 10px",
-                color: "#0d1b2a",
-                fontSize: "21px",
-              }}
-            >
+            <h2 style={{ margin: "0 0 10px", color: "#0d1b2a", fontSize: "21px" }}>
               {hasCompletedWrittenTest
                 ? "Compréhension écrite terminée"
                 : "Compréhension écrite"}
             </h2>
 
-            <p
-              style={{
-                margin: "0 0 20px",
-                color: "#667085",
-                lineHeight: "1.6",
-              }}
-            >
+            <p style={{ margin: "0 0 20px", color: "#667085", lineHeight: "1.6" }}>
               {getTestMessage(
                 hasCompletedWrittenTest,
                 "Répondez aux 50 questions de français. Vous avez 30 minutes."
               )}
             </p>
 
-            <span
-              style={{
-                color: "#0d1b2a",
-                fontWeight: "bold",
-              }}
-            >
+            <span style={{ color: "#0d1b2a", fontWeight: "bold" }}>
               {!isApproved && "Accès verrouillé 🔒"}
-
               {isApproved && !isPaid && "Paiement requis 🔒"}
-
-              {isApprovedAndPaid &&
-                !hasCompletedWrittenTest &&
-                "Commencer →"}
-
-              {isApprovedAndPaid &&
-                hasCompletedWrittenTest &&
-                "Terminé ✓"}
+              {isApprovedAndPaid && !hasCompletedWrittenTest && "Commencer →"}
+              {isApprovedAndPaid && hasCompletedWrittenTest && "Terminé ✓"}
             </span>
           </button>
 
@@ -724,9 +636,7 @@ export default function StudentDashboard() {
             disabled={!isApprovedAndPaid || hasCompletedExpressionTest}
             style={{
               background:
-                isApprovedAndPaid && !hasCompletedExpressionTest
-                  ? "white"
-                  : "#f8f9fa",
+                isApprovedAndPaid && !hasCompletedExpressionTest ? "white" : "#f8f9fa",
               border: "none",
               borderRadius: "18px",
               padding: "30px",
@@ -738,9 +648,7 @@ export default function StudentDashboard() {
               boxShadow: "0 6px 25px rgba(0,0,0,0.08)",
               borderTop: "5px solid #c9a84c",
               opacity:
-                isApprovedAndPaid && !hasCompletedExpressionTest
-                  ? 1
-                  : 0.65,
+                isApprovedAndPaid && !hasCompletedExpressionTest ? 1 : 0.65,
             }}
           >
             <div
@@ -759,134 +667,27 @@ export default function StudentDashboard() {
               {hasCompletedExpressionTest ? "🔒" : "✍️"}
             </div>
 
-            <h2
-              style={{
-                margin: "0 0 10px",
-                color: "#0d1b2a",
-                fontSize: "21px",
-              }}
-            >
+            <h2 style={{ margin: "0 0 10px", color: "#0d1b2a", fontSize: "21px" }}>
               {hasCompletedExpressionTest
                 ? "Expression écrite terminée"
                 : "Expression écrite"}
             </h2>
 
-            <p
-              style={{
-                margin: "0 0 20px",
-                color: "#667085",
-                lineHeight: "1.6",
-              }}
-            >
+            <p style={{ margin: "0 0 20px", color: "#667085", lineHeight: "1.6" }}>
               {getTestMessage(
                 hasCompletedExpressionTest,
                 "Rédigez vos réponses aux trois tâches d'expression écrite."
               )}
             </p>
 
-            <span
-              style={{
-                color: "#0d1b2a",
-                fontWeight: "bold",
-              }}
-            >
+            <span style={{ color: "#0d1b2a", fontWeight: "bold" }}>
               {!isApproved && "Accès verrouillé 🔒"}
-
               {isApproved && !isPaid && "Paiement requis 🔒"}
-
-              {isApprovedAndPaid &&
-                !hasCompletedExpressionTest &&
-                "Commencer →"}
-
-              {isApprovedAndPaid &&
-                hasCompletedExpressionTest &&
-                "Terminé ✓"}
+              {isApprovedAndPaid && !hasCompletedExpressionTest && "Commencer →"}
+              {isApprovedAndPaid && hasCompletedExpressionTest && "Terminé ✓"}
             </span>
           </button>
 
-          {/* KEYNES SPECIAL EXAM */}
-          <button
-            onClick={handleStartKeynesExam}
-            disabled={!isApprovedAndPaid || hasCompletedKeynesExam}
-            style={{
-              background:
-                isApprovedAndPaid && !hasCompletedKeynesExam
-                  ? "white"
-                  : "#f8f9fa",
-              border: "none",
-              borderRadius: "18px",
-              padding: "30px",
-              textAlign: "left",
-              cursor:
-                isApprovedAndPaid && !hasCompletedKeynesExam
-                  ? "pointer"
-                  : "not-allowed",
-              boxShadow: "0 6px 25px rgba(0,0,0,0.08)",
-              borderTop: "5px solid #c9a84c",
-              opacity:
-                isApprovedAndPaid && !hasCompletedKeynesExam ? 1 : 0.65,
-            }}
-          >
-            <div
-              style={{
-                width: "60px",
-                height: "60px",
-                borderRadius: "14px",
-                background: "#f8f4ee",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "30px",
-                marginBottom: "20px",
-              }}
-            >
-              {hasCompletedKeynesExam ? "🔒" : "📝"}
-            </div>
-
-            <h2
-              style={{
-                margin: "0 0 10px",
-                color: "#0d1b2a",
-                fontSize: "21px",
-              }}
-            >
-              {hasCompletedKeynesExam
-                ? "Examen B1 — Keynes terminé"
-                : "Examen B1 — Keynes"}
-            </h2>
-
-            <p
-              style={{
-                margin: "0 0 20px",
-                color: "#667085",
-                lineHeight: "1.6",
-              }}
-            >
-              {getTestMessage(
-                hasCompletedKeynesExam,
-                "Examen personnalisé B1 — 50 activités, 1 h 30."
-              )}
-            </p>
-
-            <span
-              style={{
-                color: "#0d1b2a",
-                fontWeight: "bold",
-              }}
-            >
-              {!isApproved && "Accès verrouillé 🔒"}
-
-              {isApproved && !isPaid && "Paiement requis 🔒"}
-
-              {isApprovedAndPaid &&
-                !hasCompletedKeynesExam &&
-                "Commencer →"}
-
-              {isApprovedAndPaid &&
-                hasCompletedKeynesExam &&
-                "Terminé ✓"}
-            </span>
-          </button>
 
           {/* RESULTS */}
           <button
@@ -918,32 +719,15 @@ export default function StudentDashboard() {
               📊
             </div>
 
-            <h2
-              style={{
-                margin: "0 0 10px",
-                color: "#0d1b2a",
-                fontSize: "21px",
-              }}
-            >
+            <h2 style={{ margin: "0 0 10px", color: "#0d1b2a", fontSize: "21px" }}>
               Mes résultats
             </h2>
 
-            <p
-              style={{
-                margin: "0 0 20px",
-                color: "#667085",
-                lineHeight: "1.6",
-              }}
-            >
+            <p style={{ margin: "0 0 20px", color: "#667085", lineHeight: "1.6" }}>
               Consultez vos résultats et l'historique de vos tests.
             </p>
 
-            <span
-              style={{
-                color: "#0d1b2a",
-                fontWeight: "bold",
-              }}
-            >
+            <span style={{ color: "#0d1b2a", fontWeight: "bold" }}>
               Voir mes résultats →
             </span>
           </button>
@@ -959,57 +743,30 @@ export default function StudentDashboard() {
             boxShadow: "0 6px 25px rgba(0,0,0,0.06)",
           }}
         >
-          <h2
-            style={{
-              margin: "0 0 20px",
-              color: "#0d1b2a",
-              fontSize: "20px",
-            }}
-          >
+          <h2 style={{ margin: "0 0 20px", color: "#0d1b2a", fontSize: "20px" }}>
             Informations du compte
           </h2>
 
           <div
             style={{
               display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(250px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
               gap: "15px",
             }}
           >
             <div>
-              <p
-                style={{
-                  margin: "0 0 5px",
-                  color: "#667085",
-                  fontSize: "13px",
-                }}
-              >
+              <p style={{ margin: "0 0 5px", color: "#667085", fontSize: "13px" }}>
                 Adresse e-mail
               </p>
-
-              <p
-                style={{
-                  margin: 0,
-                  color: "#0d1b2a",
-                  fontWeight: "bold",
-                }}
-              >
+              <p style={{ margin: 0, color: "#0d1b2a", fontWeight: "bold" }}>
                 {user.email}
               </p>
             </div>
 
             <div>
-              <p
-                style={{
-                  margin: "0 0 5px",
-                  color: "#667085",
-                  fontSize: "13px",
-                }}
-              >
+              <p style={{ margin: "0 0 5px", color: "#667085", fontSize: "13px" }}>
                 Statut
               </p>
-
               <p
                 style={{
                   margin: 0,
@@ -1021,18 +778,10 @@ export default function StudentDashboard() {
                   fontWeight: "bold",
                 }}
               >
-                {isApprovedAndPaid &&
-                  "✓ APPROUVÉ — PAYÉ"}
-
-                {isApproved &&
-                  !isPaid &&
-                  "✓ APPROUVÉ — PAIEMENT EN ATTENTE"}
-
-                {isPending &&
-                  "⏳ EN ATTENTE"}
-
-                {isRejected &&
-                  "✕ REJETÉ"}
+                {isApprovedAndPaid && "✓ APPROUVÉ — PAYÉ"}
+                {isApproved && !isPaid && "✓ APPROUVÉ — PAIEMENT EN ATTENTE"}
+                {isPending && "⏳ EN ATTENTE"}
+                {isRejected && "✕ REJETÉ"}
               </p>
             </div>
           </div>

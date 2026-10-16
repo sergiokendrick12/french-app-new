@@ -657,7 +657,13 @@ function buildAttemptAnswerSnapshot(answers, writingAnswers) {
   };
 }
 
-function restoreStoredState(attemptId, setAnswers, setWritingAnswers) {
+function restoreStoredState(
+  attemptId,
+  setAnswers,
+  setWritingAnswers,
+  latestAnswersRef,
+  latestWritingAnswersRef
+) {
   if (!attemptId) {
     return;
   }
@@ -671,17 +677,32 @@ function restoreStoredState(attemptId, setAnswers, setWritingAnswers) {
 
     const parsed = JSON.parse(raw);
 
+    let restoredAnswers = {};
+    let restoredWritingAnswers = {
+      task1: "",
+      task2: "",
+      task3: "",
+      task4: "",
+    };
+
     if (
       parsed &&
       typeof parsed === "object" &&
       ("answers" in parsed || "writingAnswers" in parsed)
     ) {
-      setAnswers(parsed.answers || {});
-      setWritingAnswers(normalizeWritingAnswers(parsed.writingAnswers));
+      restoredAnswers = parsed.answers || {};
+      restoredWritingAnswers = normalizeWritingAnswers(
+        parsed.writingAnswers
+      );
     } else {
-      // Backward compatibility with the previous storage format.
-      setAnswers(parsed || {});
+      restoredAnswers = parsed || {};
     }
+
+    latestAnswersRef.current = restoredAnswers;
+    latestWritingAnswersRef.current = restoredWritingAnswers;
+
+    setAnswers(restoredAnswers);
+    setWritingAnswers(restoredWritingAnswers);
   } catch (error) {
     console.error("Unable to restore saved exam state:", error);
   }
@@ -719,11 +740,22 @@ export default function ExamKeynes() {
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [accessBlocked, setAccessBlocked] = useState(false);
   const [writingSection, setWritingSection] = useState(false);
 
+  
   const timeoutRef = useRef(false);
   const submittingRef = useRef(false);
   const visibilityHandledRef = useRef(false);
+  const pendingAnswerSaveRef = useRef(Promise.resolve());
+
+  const latestAnswersRef = useRef({});
+  const latestWritingAnswersRef = useRef({
+    task1: "",
+    task2: "",
+    task3: "",
+    task4: "",
+  });
 
   const allActivities = useMemo(() => [...questions], []);
 
@@ -846,14 +878,52 @@ export default function ExamKeynes() {
           return;
         }
 
+       
         setStudent(profile);
+
+        // --------------------------------------------------------
+        // CHECK STUDENT APPROVAL AND PAYMENT
+        // --------------------------------------------------------
 
         if (
           profile.status !== "approved" ||
           profile.payment_status !== "paid"
         ) {
+          setAccessBlocked(true);
           setErrorMessage(
             "Vous devez être approuvé et avoir un paiement confirmé pour accéder à cet examen."
+          );
+          return;
+        }
+
+        // --------------------------------------------------------
+        // CHECK EXAM ASSIGNMENT
+        // --------------------------------------------------------
+
+        const { data: examAssignment, error: assignmentError } =
+          await supabase
+            .from("exam_assignments")
+            .select("id, status")
+            .eq("student_id", currentUser.id)
+            .eq("exam_type", EXAM_TYPE)
+            .maybeSingle();
+
+        if (assignmentError) {
+          console.error(
+            "Exam assignment check failed:",
+            assignmentError
+          );
+          setAccessBlocked(true);
+          setErrorMessage(
+            "Impossible de vérifier votre autorisation. Veuillez contacter l’administration."
+          );
+          return;
+        }
+
+        if (!examAssignment) {
+          setAccessBlocked(true);
+          setErrorMessage(
+            "Cet examen ne vous a pas été attribué. Veuillez contacter l’administration."
           );
           return;
         }
@@ -862,12 +932,13 @@ export default function ExamKeynes() {
         // CHECK IF EXAM WAS ALREADY COMPLETED
         // --------------------------------------------------------
 
-        const { data: existingResult, error: resultError } = await supabase
-          .from("test_results")
-          .select("id, completed_at, score, percentage")
-          .eq("student_id", currentUser.id)
-          .eq("test_type", EXAM_TYPE)
-          .maybeSingle();
+        const { data: existingResult, error: resultError } =
+          await supabase
+            .from("test_results")
+            .select("id, completed_at, score, percentage")
+            .eq("student_id", currentUser.id)
+            .eq("test_type", EXAM_TYPE)
+            .maybeSingle();
 
         if (resultError && resultError.code !== "PGRST116") {
           throw resultError;
@@ -882,12 +953,13 @@ export default function ExamKeynes() {
         // CHECK EXISTING ATTEMPT
         // --------------------------------------------------------
 
-        const { data: existingAttempt, error: attemptError } = await supabase
-          .from(EXAM_TABLE_ATTEMPTS)
-          .select("*")
-          .eq("student_id", currentUser.id)
-          .eq("status", "in_progress")
-          .maybeSingle();
+        const { data: existingAttempt, error: attemptError } =
+          await supabase
+            .from(EXAM_TABLE_ATTEMPTS)
+            .select("*")
+            .eq("student_id", currentUser.id)
+            .eq("status", "in_progress")
+            .maybeSingle();
 
         if (attemptError && attemptError.code !== "PGRST116") {
           throw attemptError;
@@ -896,9 +968,24 @@ export default function ExamKeynes() {
         let activeAttempt = existingAttempt;
 
         // --------------------------------------------------------
-        // RESUME EXISTING ATTEMPT
+        // BLOCK NEW ATTEMPTS UNTIL THE EXAM IS RELEASED
+        // Existing attempts can still be resumed.
         // --------------------------------------------------------
 
+        if (
+          !activeAttempt &&
+          examAssignment.status !== "released"
+        ) {
+          setAccessBlocked(true);
+          setErrorMessage(
+            "Votre examen vous a été attribué, mais il n’est pas encore ouvert. Veuillez attendre sa publication par l’administration."
+          );
+          return;
+        }
+
+        // --------------------------------------------------------
+        // RESUME EXISTING ATTEMPT
+        // --------------------------------------------------------
         if (activeAttempt) {
           setAttemptId(activeAttempt.id);
 
@@ -911,7 +998,9 @@ export default function ExamKeynes() {
           restoreStoredState(
             activeAttempt.id,
             setAnswers,
-            setWritingAnswers
+            setWritingAnswers,
+            latestAnswersRef,
+            latestWritingAnswersRef
           );
 
           const elapsedSeconds = Math.floor(
@@ -945,10 +1034,10 @@ export default function ExamKeynes() {
             student_id: currentUser.id,
             status: "in_progress",
             started_at: now,
-            tab_switches: 0,
-          })
-          .select("*")
-          .single();
+          tab_switches: 0,
+     })
+     .select("*")
+     .single();
 
         if (createError) {
           throw createError;
@@ -971,7 +1060,9 @@ export default function ExamKeynes() {
         restoreStoredState(
           newAttempt.id,
           setAnswers,
-          setWritingAnswers
+          setWritingAnswers,
+          latestAnswersRef,
+          latestWritingAnswersRef
         );
       } catch (error) {
         console.error("Exam initialization error:", error);
@@ -1127,28 +1218,83 @@ export default function ExamKeynes() {
   // ============================================================
   // ANSWER HANDLERS
   // ============================================================
-
+  
   const handleAnswerChange = (questionId, value) => {
     const nextAnswers = {
-      ...answers,
+      ...latestAnswersRef.current,
       [questionId]: value,
     };
 
+    latestAnswersRef.current = nextAnswers;
     setAnswers(nextAnswers);
 
-    saveExamState(nextAnswers, writingAnswers);
+    const currentWritingAnswers = {
+      ...latestWritingAnswersRef.current,
+    };
+
+    saveExamState(nextAnswers, currentWritingAnswers);
+
+    
+if (attemptId) {
+  pendingAnswerSaveRef.current = pendingAnswerSaveRef.current
+    .catch(() => {})
+    .then(async () => {
+      const { error } = await supabase
+        .from(EXAM_TABLE_ATTEMPTS)
+        .update({
+          answers: buildAttemptAnswerSnapshot(
+            nextAnswers,
+            currentWritingAnswers
+          ),
+        })
+        .eq("id", attemptId)
+        .eq("status", "in_progress");
+
+      if (error) {
+        console.error("Unable to save language answer:", error);
+      }
+    });
+}
+
   };
 
   const handleWritingChange = (taskId, value) => {
     const nextWritingAnswers = {
-      ...writingAnswers,
+      ...latestWritingAnswersRef.current,
       [taskId]: value,
     };
 
+    latestWritingAnswersRef.current = nextWritingAnswers;
     setWritingAnswers(nextWritingAnswers);
 
-    saveExamState(answers, nextWritingAnswers);
-  };
+    const currentAnswers = {
+      ...latestAnswersRef.current,
+    };
+
+    saveExamState(currentAnswers, nextWritingAnswers);
+
+    
+if (attemptId) {
+  pendingAnswerSaveRef.current = pendingAnswerSaveRef.current
+    .catch(() => {})
+    .then(async () => {
+      const { error } = await supabase
+        .from(EXAM_TABLE_ATTEMPTS)
+        .update({
+          answers: buildAttemptAnswerSnapshot(
+            currentAnswers,
+            nextWritingAnswers
+          ),
+        })
+        .eq("id", attemptId)
+        .eq("status", "in_progress");
+
+      if (error) {
+        console.error("Unable to save writing answer:", error);
+      }
+    });
+}
+ };
 
   // ============================================================
   // TAB SWITCH TERMINATION
@@ -1162,6 +1308,9 @@ export default function ExamKeynes() {
     submittingRef.current = true;
     setSaving(true);
     setShowTabWarning(false);
+    await pendingAnswerSaveRef.current.catch((error) => {
+      console.error("Pending answer save failed:", error);
+    });
 
     try {
       const {
@@ -1172,7 +1321,54 @@ export default function ExamKeynes() {
         throw new Error("Session utilisateur introuvable.");
       }
 
-      const partialLanguageScore = calculateLanguageScore(answers);
+      // Use the latest answers held in refs.
+      let finalAnswers = {
+        ...answers,
+        ...latestAnswersRef.current,
+      };
+
+      let finalWritingAnswers = {
+        ...writingAnswers,
+        ...latestWritingAnswersRef.current,
+      };
+
+      // Recover the latest local backup if available.
+      if (attemptId) {
+        try {
+          const stored = localStorage.getItem(getStorageKey(attemptId));
+
+          if (stored) {
+            const parsed = JSON.parse(stored);
+
+            if (parsed.answers && typeof parsed.answers === "object") {
+              finalAnswers = {
+                ...finalAnswers,
+                ...parsed.answers,
+              };
+            }
+
+            if (
+              parsed.writingAnswers &&
+              typeof parsed.writingAnswers === "object"
+            ) {
+              finalWritingAnswers = {
+                ...finalWritingAnswers,
+                ...parsed.writingAnswers,
+              };
+            }
+          }
+        } catch (storageError) {
+          console.error("Unable to recover local exam answers:", storageError);
+        }
+      }
+
+      // Keep React state and refs synchronized.
+      latestAnswersRef.current = finalAnswers;
+      latestWritingAnswersRef.current = finalWritingAnswers;
+      setAnswers(finalAnswers);
+      setWritingAnswers(finalWritingAnswers);
+
+      const partialLanguageScore = calculateLanguageScore(finalAnswers);
 
       const { error: resultError } = await supabase
         .from("test_results")
@@ -1182,27 +1378,22 @@ export default function ExamKeynes() {
           total_questions: 100,
           percentage: partialLanguageScore,
           test_type: EXAM_TYPE,
-          task1_answer: writingAnswers.task1.trim(),
-          task2_answer: writingAnswers.task2.trim(),
-          task3_answer: writingAnswers.task3.trim(),
-          task4_answer: writingAnswers.task4.trim(),
+          task1_answer: (finalWritingAnswers.task1 || "").trim(),
+          task2_answer: (finalWritingAnswers.task2 || "").trim(),
+          task3_answer: (finalWritingAnswers.task3 || "").trim(),
+          task4_answer: (finalWritingAnswers.task4 || "").trim(),
           grading_status: "pending",
-          answers_detail: buildAnswerDetails(answers),
+          answers_detail: buildAnswerDetails(finalAnswers),
         });
 
       if (resultError && resultError.code !== "23505") {
         throw resultError;
       }
 
-      // --------------------------------------------------------
-      // NEW:
-      // Save ALL answers into exam_keynes_attempts.answers
-      // --------------------------------------------------------
-
       if (attemptId) {
         const answerSnapshot = buildAttemptAnswerSnapshot(
-          answers,
-          writingAnswers
+          finalAnswers,
+          finalWritingAnswers
         );
 
         const { error: updateAttemptError } = await supabase
@@ -1217,14 +1408,9 @@ export default function ExamKeynes() {
           .eq("id", attemptId);
 
         if (updateAttemptError) {
-          console.error(
-            "Unable to save tab-switch attempt answers:",
-            updateAttemptError
-          );
+          throw updateAttemptError;
         }
-      }
 
-      if (attemptId) {
         localStorage.removeItem(getStorageKey(attemptId));
       }
 
@@ -1238,7 +1424,6 @@ export default function ExamKeynes() {
       );
     } finally {
       submittingRef.current = false;
-
       setSaving(false);
     }
   }
@@ -1254,13 +1439,50 @@ export default function ExamKeynes() {
 
     const isTimeout = reason === "time";
 
-    // ----------------------------------------------------------
-    // MANUAL SUBMISSION VALIDATION
-    // ----------------------------------------------------------
+    // Use the latest answers held in refs.
+    let finalAnswers = {
+      ...answers,
+      ...latestAnswersRef.current,
+    };
+
+    let finalWritingAnswers = {
+      ...writingAnswers,
+      ...latestWritingAnswersRef.current,
+    };
+
+    // Recover the latest local backup if available.
+    if (attemptId) {
+      try {
+        const stored = localStorage.getItem(getStorageKey(attemptId));
+
+        if (stored) {
+          const parsed = JSON.parse(stored);
+
+          if (parsed.answers && typeof parsed.answers === "object") {
+            finalAnswers = {
+              ...finalAnswers,
+              ...parsed.answers,
+            };
+          }
+
+          if (
+            parsed.writingAnswers &&
+            typeof parsed.writingAnswers === "object"
+          ) {
+            finalWritingAnswers = {
+              ...finalWritingAnswers,
+              ...parsed.writingAnswers,
+            };
+          }
+        }
+      } catch (storageError) {
+        console.error("Unable to recover local exam answers:", storageError);
+      }
+    }
 
     if (!isTimeout) {
       const unansweredQuestions = questions.filter((question) => {
-        const value = answers[question.id];
+        const value = finalAnswers[question.id];
 
         return value === undefined || String(value).trim() === "";
       });
@@ -1273,18 +1495,17 @@ export default function ExamKeynes() {
         setWritingSection(false);
 
         setCurrentQuestion(
-          questions.findIndex(
-            (question) =>
-              answers[question.id] === undefined ||
-              String(answers[question.id]).trim() === ""
-          )
+          questions.findIndex((question) => {
+            const value = finalAnswers[question.id];
+            return value === undefined || String(value).trim() === "";
+          })
         );
 
         return;
       }
 
       const missingWritingTasks = writingTasks.filter(
-        (task) => String(writingAnswers[task.id] || "").trim() === ""
+        (task) => String(finalWritingAnswers[task.id] || "").trim() === ""
       );
 
       if (missingWritingTasks.length > 0) {
@@ -1307,11 +1528,15 @@ export default function ExamKeynes() {
     }
 
     submittingRef.current = true;
-
     setSaving(true);
     setErrorMessage("");
 
+    await pendingAnswerSaveRef.current.catch((error) => {
+      console.error("Pending answer save failed:", error);
+    });
+
     try {
+
       const {
         data: { user: currentUser },
         error: authError,
@@ -1325,10 +1550,7 @@ export default function ExamKeynes() {
         throw new Error("Session utilisateur introuvable.");
       }
 
-      // --------------------------------------------------------
-      // RECHECK PROFILE
-      // --------------------------------------------------------
-
+      // Recheck student profile and payment.
       const { data: profile, error: profileError } = await supabase
         .from("student_profiles")
         .select("id, full_name, email, status, payment_status")
@@ -1350,10 +1572,7 @@ export default function ExamKeynes() {
         throw new Error("Votre accès à cet examen n’est plus autorisé.");
       }
 
-      // --------------------------------------------------------
-      // PREVENT DUPLICATE RESULT
-      // --------------------------------------------------------
-
+      // Prevent duplicate results.
       const { data: existingResult, error: existingResultError } =
         await supabase
           .from("test_results")
@@ -1374,22 +1593,14 @@ export default function ExamKeynes() {
         return;
       }
 
-      // --------------------------------------------------------
-      // CALCULATE LANGUAGE SCORE
-      // --------------------------------------------------------
+      // Synchronize refs and React state.
+      latestAnswersRef.current = finalAnswers;
+      latestWritingAnswersRef.current = finalWritingAnswers;
+      setAnswers(finalAnswers);
+      setWritingAnswers(finalWritingAnswers);
 
-      const finalLanguageScore = calculateLanguageScore(answers);
-
-      // --------------------------------------------------------
-      // INSERT RESULT
-      //
-      // score / percentage represent the automatically graded
-      // language section for now.
-      //
-      // Writing is manually graded later.
-      // answers_detail keeps every question, the student's answer,
-      // the correct answer and the points awarded.
-      // --------------------------------------------------------
+      // Calculate the automatically graded language score.
+      const finalLanguageScore = calculateLanguageScore(finalAnswers);
 
       const { error: insertError } = await supabase
         .from("test_results")
@@ -1399,33 +1610,25 @@ export default function ExamKeynes() {
           total_questions: 100,
           percentage: finalLanguageScore,
           test_type: EXAM_TYPE,
-          task1_answer: writingAnswers.task1.trim(),
-          task2_answer: writingAnswers.task2.trim(),
-          task3_answer: writingAnswers.task3.trim(),
-          task4_answer: writingAnswers.task4.trim(),
+          task1_answer: (finalWritingAnswers.task1 || "").trim(),
+          task2_answer: (finalWritingAnswers.task2 || "").trim(),
+          task3_answer: (finalWritingAnswers.task3 || "").trim(),
+          task4_answer: (finalWritingAnswers.task4 || "").trim(),
           grading_status: "pending",
-          answers_detail: buildAnswerDetails(answers),
+          answers_detail: buildAnswerDetails(finalAnswers),
         });
 
       if (insertError && insertError.code !== "23505") {
         throw insertError;
       }
 
-      // --------------------------------------------------------
-      // FINISH ATTEMPT
-      //
-      // NEW:
-      // Save the complete language + writing answers in the
-      // exam_keynes_attempts.answers JSONB column.
-      // --------------------------------------------------------
-
+      // Save the full answer snapshot and finish the attempt.
       if (attemptId) {
-        const terminationReason =
-          reason === "time" ? "timeout" : "manual";
+        const terminationReason = isTimeout ? "timeout" : "manual";
 
         const answerSnapshot = buildAttemptAnswerSnapshot(
-          answers,
-          writingAnswers
+          finalAnswers,
+          finalWritingAnswers
         );
 
         const { error: updateAttemptError } = await supabase
@@ -1440,10 +1643,7 @@ export default function ExamKeynes() {
           .eq("id", attemptId);
 
         if (updateAttemptError) {
-          console.error(
-            "Unable to finish attempt and save answers:",
-            updateAttemptError
-          );
+          throw updateAttemptError;
         }
 
         localStorage.removeItem(getStorageKey(attemptId));
@@ -1459,7 +1659,6 @@ export default function ExamKeynes() {
       );
     } finally {
       submittingRef.current = false;
-
       setSaving(false);
     }
   }
@@ -1543,7 +1742,10 @@ export default function ExamKeynes() {
   // ACCESS ERROR
   // ============================================================
 
-  if (errorMessage && !student && !alreadySubmitted) {
+    if (
+    (accessBlocked || (errorMessage && !student)) &&
+    !alreadySubmitted
+  ) {
     return (
       <div style={styles.page}>
         <div style={styles.centerCard}>

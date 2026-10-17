@@ -19,6 +19,7 @@ export default function StudentDashboard() {
 
   // SPECIAL EXAMS
   const [hasCompletedKeynesExam, setHasCompletedKeynesExam] = useState(false);
+  const [hasCompletedYvesB1Exam, setHasCompletedYvesB1Exam] = useState(false);
   const [examAssignments, setExamAssignments] = useState([]);
 
   useEffect(() => {
@@ -129,23 +130,23 @@ export default function StudentDashboard() {
 
         setHasCompletedExpressionTest(!!expressionResult);
 
-        // CHECK KEYNES EXAM RESULT
-        const { data: keynesResult, error: keynesError } = await supabase
+        // CHECK YVES B1 EXAM RESULT
+        const { data: yvesB1Result, error: yvesB1Error } = await supabase
           .from("test_results")
           .select("id")
           .eq("student_id", user.id)
-          .eq("test_type", "exam_keynes")
+          .eq("test_type", "exam_yves_b1")
           .limit(1)
           .maybeSingle();
 
-        if (keynesError) {
+        if (yvesB1Error) {
           console.error(
-            "Erreur lors de la vérification du résultat Keynes :",
-            keynesError
+            "Erreur lors de la vérification du résultat Yves B1 :",
+            yvesB1Error
           );
         }
 
-        setHasCompletedKeynesExam(!!keynesResult);
+        setHasCompletedYvesB1Exam(!!yvesB1Result);
       } catch (error) {
         console.error(
           "Erreur lors de la vérification de l'étudiant :",
@@ -234,23 +235,27 @@ export default function StudentDashboard() {
     navigate("/tests/expression-ecrite");
   };
 
+  
   // KEYNES EXAM
   const handleStartKeynesExam = () => {
+    const isKeynesAssigned = examAssignments.some(
+      (assignment) =>
+        assignment.exam_type === "exam_keynes" &&
+        ["assigned", "released"].includes(assignment.status)
+    );
+
     if (
       studentProfile?.status !== "approved" ||
       studentProfile?.payment_status !== "paid" ||
       hasCompletedKeynesExam ||
-      !examAssignments.some(
-        (assignment) =>
-          assignment.exam_type === "exam_keynes" &&
-          assignment.status === "released"
-      )
+      !isKeynesAssigned
     ) {
       return;
     }
 
     navigate("/tests/exam-keynes");
   };
+
 
   if (loading) {
     return (
@@ -283,17 +288,6 @@ export default function StudentDashboard() {
   const isPending = status === "pending";
   const isPaid = paymentStatus === "paid";
   const isApprovedAndPaid = isApproved && isPaid;
-
-  
-  
-  
-  // SHOW KEYNES WHEN ASSIGNED OR RELEASED
-  const isKeynesExamReleased = examAssignments.some(
-    (assignment) =>
-      assignment.exam_type === "exam_keynes" &&
-      ["assigned", "released"].includes(assignment.status)
-  );
-
 
 
   // COMMON TEST ACCESS MESSAGE
@@ -515,6 +509,77 @@ export default function StudentDashboard() {
           }}
         >
           {/* COMPRÉHENSION ORALE */}
+
+                    {/* ASSIGNED YVES B1 EXAM */}
+          {examAssignments
+            .filter(
+              (assignment) =>
+                ["assigned", "released"].includes(assignment.status) &&
+                assignment.exam_type === "exam_yves_b1"
+            )
+            .map((assignment, index) => (
+              <button
+                key={`${assignment.exam_type}-${index}`}
+                onClick={() => navigate("/tests/exam-yves-b1")}
+                disabled={!isApprovedAndPaid || hasCompletedYvesB1Exam}
+                style={{
+                  background:
+                    isApprovedAndPaid && !hasCompletedYvesB1Exam
+                      ? "white"
+                      : "#f8f9fa",
+                  border: "none",
+                  borderRadius: "18px",
+                  padding: "24px",
+                  textAlign: "left",
+                  cursor:
+                    isApprovedAndPaid && !hasCompletedYvesB1Exam
+                      ? "pointer"
+                      : "not-allowed",
+                  boxShadow: "0 6px 25px rgba(0,0,0,0.08)",
+                  borderTop: "5px solid #c9a84c",
+                  opacity:
+                    isApprovedAndPaid && !hasCompletedYvesB1Exam
+                      ? 1
+                      : 0.65,
+                }}
+              >
+                <div style={{ fontSize: "28px", marginBottom: "12px" }}>
+                  {hasCompletedYvesB1Exam ? "🔒" : "📝"}
+                </div>
+
+                <h2
+                  style={{
+                    margin: "0 0 10px",
+                    color: "#0d1b2a",
+                    fontSize: "20px",
+                  }}
+                >
+                  Examen de français — Niveau B1
+                </h2>
+
+                <p
+                  style={{
+                    margin: "0 0 16px",
+                    color: "#667085",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  {hasCompletedYvesB1Exam
+                    ? "Vous avez déjà terminé cet examen."
+                    : !isApprovedAndPaid
+                    ? "L'accès sera disponible après validation du compte et confirmation du paiement."
+                    : "Cliquez ici pour accéder à votre examen assigné."}
+                </p>
+
+                <span style={{ color: "#0d1b2a", fontWeight: "bold" }}>
+                  {hasCompletedYvesB1Exam
+                    ? "Terminé ✓"
+                    : !isApprovedAndPaid
+                    ? "Accès verrouillé 🔒"
+                    : "Ouvrir l'examen →"}
+                </span>
+              </button>
+            ))}
           <button
             onClick={handleStartOralTest}
             disabled={!isApprovedAndPaid || hasCompletedOralTest}

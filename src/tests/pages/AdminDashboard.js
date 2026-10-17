@@ -36,6 +36,8 @@ export default function AdminDashboard() {
   const [keynesAttempt, setKeynesAttempt] = useState(null);
   const [keynesGrade, setKeynesGrade] = useState("");
   const [keynesSavingGrade, setKeynesSavingGrade] = useState(false);
+  const [yvesB1Grades, setYvesB1Grades] = useState({});
+  const [yvesB1SavingGrade, setYvesB1SavingGrade] = useState(false);
 
   const [keynesOpenTasks, setKeynesOpenTasks] = useState({
     task1: false,
@@ -254,6 +256,40 @@ export default function AdminDashboard() {
       const loadedResults = data || [];
 
       setStudentResults(loadedResults);
+            // LOAD EXISTING YVES B1 MANUAL GRADES
+      const yvesResult = loadedResults.find(
+        (result) => result.test_type === "exam_yves_b1"
+      );
+
+      let yvesAnswers = yvesResult?.answers_detail;
+
+      if (typeof yvesAnswers === "string") {
+        try {
+          yvesAnswers = JSON.parse(yvesAnswers);
+        } catch {
+          yvesAnswers = [];
+        }
+      }
+
+      const savedYvesGrades = {};
+
+      if (Array.isArray(yvesAnswers)) {
+        yvesAnswers.forEach((item) => {
+          const key = item.question_id ?? item.id;
+
+          if (
+            key !== undefined &&
+            item.manual_points !== undefined &&
+            item.manual_points !== null
+          ) {
+            savedYvesGrades[String(key)] = String(
+              item.manual_points
+            );
+          }
+        });
+      }
+
+      setYvesB1Grades(savedYvesGrades);
 
       // -------------------------------------------------------
       // LOAD KEYNES ATTEMPT
@@ -431,6 +467,57 @@ export default function AdminDashboard() {
   };
 
   // =========================================================
+  // AUTOMATIC YVES B1 ASSIGNMENT
+  // =========================================================
+
+  const ensureYvesB1Assignment = async (studentId) => {
+    const { data: existingAssignment, error: lookupError } =
+      await supabase
+        .from("exam_assignments")
+        .select("id, status")
+        .eq("student_id", studentId)
+        .eq("exam_type", "exam_yves_b1")
+        .limit(1)
+        .maybeSingle();
+
+    if (lookupError) {
+      throw lookupError;
+    }
+
+    if (!existingAssignment) {
+      const { error: insertError } = await supabase
+        .from("exam_assignments")
+        .insert({
+          student_id: studentId,
+          exam_type: "exam_yves_b1",
+          status: "released",
+        });
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      return;
+    }
+
+    if (existingAssignment.status === "assigned") {
+      const { error: releaseError } = await supabase
+        .from("exam_assignments")
+        .update({ status: "released" })
+        .eq("id", existingAssignment.id);
+
+      if (releaseError) {
+        throw releaseError;
+      }
+    }
+  };
+
+  // =========================================================
+  // UPDATE ACCOUNT STATUS
+  // =========================================================
+
+  
+  // =========================================================
   // UPDATE ACCOUNT STATUS
   // =========================================================
 
@@ -473,8 +560,19 @@ export default function AdminDashboard() {
         setSelectedStudent(updatedStudent);
       }
 
+      // Assign Yves B1 when the student is approved and paid.
+      if (
+        newStatus === "approved" &&
+        updatedStudent.payment_status === "paid"
+      ) {
+        await ensureYvesB1Assignment(student.id);
+      }
+
       setSuccessMessage(
-        `Statut du compte mis à jour : ${newStatus}.`
+        newStatus === "approved" &&
+          updatedStudent.payment_status === "paid"
+          ? "Compte approuvé et examen Yves B1 attribué ou déjà disponible."
+          : `Statut du compte mis à jour : ${newStatus}.`
       );
     } catch (error) {
       console.error(
@@ -489,10 +587,12 @@ export default function AdminDashboard() {
     }
   };
 
+
   // =========================================================
   // UPDATE PAYMENT STATUS
   // =========================================================
 
+  
   const updatePaymentStatus = async (
     student,
     newPaymentStatus
@@ -532,8 +632,30 @@ export default function AdminDashboard() {
         setSelectedStudent(updatedStudent);
       }
 
+      
+if (
+        updatedStudent.status === "approved" &&
+        newPaymentStatus === "paid"
+      ) {
+        console.log(
+          "YVES B1: attempting assignment for",
+          student.id
+        );
+
+        await ensureYvesB1Assignment(student.id);
+
+        console.log(
+          "YVES B1: assignment helper finished for",
+          student.id
+        );
+      }
+
+
       setSuccessMessage(
-        `Statut de paiement mis à jour : ${newPaymentStatus}.`
+        updatedStudent.status === "approved" &&
+          newPaymentStatus === "paid"
+          ? "Paiement confirmé et examen Yves B1 attribué ou déjà disponible."
+          : `Statut de paiement mis à jour : ${newPaymentStatus}.`
       );
     } catch (error) {
       console.error(
@@ -543,7 +665,7 @@ export default function AdminDashboard() {
 
       setErrorMessage(
         error?.message ||
-          "Impossible de modifier le statut de paiement."
+          "Impossible de modifier le statut de paiement ou d'attribuer l'examen."
       );
     }
   };
@@ -851,6 +973,138 @@ export default function AdminDashboard() {
   // LOGOUT
   // =========================================================
 
+    // =========================================================
+  // SAVE YVES B1 MANUAL GRADING
+  // =========================================================
+
+  const saveYvesB1Grade = async (examResult) => {
+    if (!examResult || examResult.test_type !== "exam_yves_b1") {
+      setErrorMessage("Résultat Yves B1 introuvable.");
+      return;
+    }
+
+    let answers = examResult.answers_detail;
+
+    if (typeof answers === "string") {
+      try {
+        answers = JSON.parse(answers);
+      } catch {
+        setErrorMessage("Impossible de lire les réponses.");
+        return;
+      }
+    }
+
+    if (!Array.isArray(answers)) {
+      setErrorMessage("Les réponses de l'examen sont invalides.");
+      return;
+    }
+
+    const manualQuestions = answers.filter(
+      (item) =>
+        item.automatically_marked === false ||
+        item.correct === null
+    );
+
+    for (const item of manualQuestions) {
+      const key = String(item.question_id ?? item.id);
+
+      if (
+        yvesB1Grades[key] === undefined ||
+        yvesB1Grades[key] === ""
+      ) {
+        setErrorMessage(
+          "Veuillez noter toutes les réponses manuelles avant d'enregistrer."
+        );
+        return;
+      }
+
+      const grade = Number(yvesB1Grades[key]);
+
+      if (!Number.isInteger(grade) || grade < 0 || grade > 2) {
+        setErrorMessage("Chaque note doit être comprise entre 0 et 2.");
+        return;
+      }
+    }
+
+    setYvesB1SavingGrade(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const previousManualPoints = manualQuestions.reduce(
+        (sum, item) => sum + (Number(item.manual_points) || 0),
+        0
+      );
+
+      const automaticScore =
+        (Number(examResult.score) || 0) - previousManualPoints;
+
+      let newManualPoints = 0;
+
+      const updatedAnswers = answers.map((item) => {
+        const isManual =
+          item.automatically_marked === false ||
+          item.correct === null;
+
+        if (!isManual) {
+          return item;
+        }
+
+        const key = String(item.question_id ?? item.id);
+        const grade = Number(yvesB1Grades[key]);
+
+        newManualPoints += grade;
+
+        return {
+          ...item,
+          manual_points: grade,
+        };
+      });
+
+      const finalScore = automaticScore + newManualPoints;
+
+      const { data, error } = await supabase
+        .from("test_results")
+        .update({
+          score: finalScore,
+          percentage: finalScore,
+          answers_detail: updatedAnswers,
+          grading_status: "graded",
+          graded_at: new Date().toISOString(),
+        })
+        .eq("id", examResult.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setStudentResults((current) =>
+        current.map((item) =>
+          item.id === examResult.id ? data : item
+        )
+      );
+
+      setResults((current) =>
+        current.map((item) =>
+          item.id === examResult.id ? data : item
+        )
+      );
+
+      setSuccessMessage(
+        `Correction Yves B1 enregistrée : ${finalScore}/100.`
+      );
+    } catch (error) {
+      console.error("Erreur correction Yves B1 :", error);
+
+      setErrorMessage(
+        error?.message ||
+          "Impossible d'enregistrer la correction Yves B1."
+      );
+    } finally {
+      setYvesB1SavingGrade(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
@@ -1011,7 +1265,7 @@ export default function AdminDashboard() {
     const labels = {
       exam_kim: "Examen Kim",
       exam_leonille: "Examen Leonille",
-      exam_keynes: "Examen Keynes — B1",
+      exam_keynes: "Examen de français — B1",
     };
 
     if (labels[testType]) {
@@ -2032,7 +2286,7 @@ export default function AdminDashboard() {
                         styles.sectionHeading
                       }
                     >
-                      Examen Keynes — B1
+                      Examen de français — B1
                     </div>
 
                     <div
@@ -2061,7 +2315,7 @@ export default function AdminDashboard() {
                               styles.keynesTitle
                             }
                           >
-                            Examen Keynes
+                            Examen de français — B1
                           </h2>
 
                           <div
@@ -2550,6 +2804,26 @@ export default function AdminDashboard() {
                     >
                       {selectedOtherExamResults.map(
                         (examResult) => {
+                          let yvesAnswers =
+                            examResult.answers_detail;
+
+                          if (typeof yvesAnswers === "string") {
+                            try {
+                              yvesAnswers = JSON.parse(yvesAnswers);
+                            } catch {
+                              yvesAnswers = [];
+                            }
+                          }
+
+                          const yvesManualQuestions =
+                            examResult.test_type === "exam_yves_b1" &&
+                            Array.isArray(yvesAnswers)
+                              ? yvesAnswers.filter(
+                                  (item) =>
+                                    item.automatically_marked === false ||
+                                    item.correct === null
+                                )
+                              : [];
                           const hasScore =
                             examResult.score !==
                               null &&
@@ -2685,16 +2959,116 @@ export default function AdminDashboard() {
                                 }
                               </div>
 
+                              
                               <div
-                                style={
-                                  styles.resultDate
-                                }
+                                style={styles.resultDate}
                               >
                                 {formatDateTime(
                                   examResult.completed_at
                                 )}
                               </div>
+
+                              {examResult.test_type === "exam_yves_b1" && (
+                                <div
+                                  style={{
+                                    marginTop: "20px",
+                                    paddingTop: "16px",
+                                    borderTop: "1px solid #e5e7eb",
+                                    gridColumn: "1 / -1",
+                                  }}
+                                >
+                                  <h4>Correction manuelle — Yves B1</h4>
+
+                                  <p style={{ fontSize: "13px", color: "#64748b" }}>
+                                    Attribuez 0, 1 ou 2 points à chaque réponse.
+                                  </p>
+
+                                  {yvesManualQuestions.length === 0 ? (
+                                    <p>Aucune réponse à corriger manuellement.</p>
+                                  ) : (
+                                    yvesManualQuestions.map((item, index) => {
+                                      const questionKey = String(
+                                        item.question_id ?? item.id
+                                      );
+
+                                      const studentAnswer =
+                                        item.answer ??
+                                        item.student_answer ??
+                                        item.response ??
+                                        item.user_answer ??
+                                        "";
+
+                                      return (
+                                        <div
+                                          key={questionKey}
+                                          style={{
+                                            marginBottom: "16px",
+                                            padding: "12px",
+                                            border: "1px solid #e5e7eb",
+                                            borderRadius: "8px",
+                                          }}
+                                        >
+                                          <strong>Question {index + 1}</strong>
+
+                                          <p
+                                            style={{
+                                              whiteSpace: "pre-wrap",
+                                              overflowWrap: "anywhere",
+                                            }}
+                                          >
+                                            {String(studentAnswer).trim()
+                                              ? String(studentAnswer)
+                                              : "Réponse non disponible dans ce champ."}
+                                          </p>
+
+                                          <label
+                                            style={{
+                                              display: "block",
+                                              marginBottom: "6px",
+                                            }}
+                                          >
+                                            Note
+                                          </label>
+
+                                          <select
+                                            value={yvesB1Grades[questionKey] ?? ""}
+                                            onChange={(event) =>
+                                              setYvesB1Grades((current) => ({
+                                                ...current,
+                                                [questionKey]: event.target.value,
+                                              }))
+                                            }
+                                            style={styles.select}
+                                          >
+                                            <option value="">Choisir une note</option>
+                                            <option value="0">0 / 2</option>
+                                            <option value="1">1 / 2</option>
+                                            <option value="2">2 / 2</option>
+                                          </select>
+                                        </div>
+                                      );
+                                    })
+                                  )}
+
+                                  {yvesManualQuestions.length > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => saveYvesB1Grade(examResult)}
+                                      disabled={yvesB1SavingGrade}
+                                      style={{
+                                        ...styles.primaryButton,
+                                        opacity: yvesB1SavingGrade ? 0.6 : 1,
+                                      }}
+                                    >
+                                      {yvesB1SavingGrade
+                                        ? "Enregistrement..."
+                                        : "Enregistrer les notes Yves B1"}
+                                    </button>
+                                  )}
+                                </div>
+                              )}
                             </div>
+
                           );
                         }
                       )}

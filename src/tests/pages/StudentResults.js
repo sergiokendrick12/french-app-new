@@ -7,6 +7,7 @@ export default function StudentResults() {
 
   const [user, setUser] = useState(null);
   const [results, setResults] = useState([]);
+  const [keynesVerificationPending, setKeynesVerificationPending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -57,6 +58,27 @@ export default function StudentResults() {
         }
 
         setResults(data || []);
+        const {
+  data: keynesAttempt,
+  error: keynesAttemptError,
+} = await supabase
+  .from("exam_keynes_attempts")
+  .select("termination_reason")
+  .eq("student_id", currentUser.id)
+  .order("finished_at", { ascending: false })
+  .limit(1)
+  .maybeSingle();
+
+if (keynesAttemptError) {
+  console.error(
+    "Erreur lors de la vérification de l'examen B1 :",
+    keynesAttemptError
+  );
+} else {
+  setKeynesVerificationPending(
+    keynesAttempt?.termination_reason === "tab_switch"
+  );
+}
       } catch (error) {
         console.error(
           "Erreur lors du chargement des résultats :",
@@ -88,8 +110,8 @@ export default function StudentResults() {
     }
 
     if (testType === "exam_keynes") {
-      return "Examen Keynes — Niveau B1";
-    }
+  return "Examen de français — Niveau B1";
+}
 
     return testType || "Test de niveau";
   };
@@ -825,7 +847,7 @@ export default function StudentResults() {
                                   "Playfair Display, Georgia, serif",
                               }}
                             >
-                              Examen Keynes — Niveau B1
+                              Examen de français — Niveau B1
                             </h2>
                           </div>
 
@@ -873,9 +895,11 @@ export default function StudentResults() {
                               fontWeight: "700",
                             }}
                           >
-                            {graded
-                              ? "✓ Examen entièrement corrigé"
-                              : "⏳ Correction en cours"}
+                            {keynesVerificationPending
+  ? "⏳ Vérification en attente"
+  : graded
+  ? "✓ Examen entièrement corrigé"
+  : "⏳ Correction en cours"}
                           </div>
 
                           {!graded && (
@@ -928,7 +952,9 @@ export default function StudentResults() {
                                 fontWeight: "700",
                               }}
                             >
-                              {languageScore} / 75
+                              {keynesVerificationPending
+                                ? "Vérification en attente"
+                                : `${languageScore} / 75`}
                             </div>
 
                             <div
@@ -1110,7 +1136,9 @@ export default function StudentResults() {
                               color: "#0d1b2a",
                             }}
                           >
-                            {languageScore} / 75
+                            {keynesVerificationPending
+                              ? "Vérification en attente"
+                              : `${languageScore} / 75`}
                           </strong>
 
                           <br />

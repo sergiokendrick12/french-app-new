@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   BrowserRouter,
@@ -20,6 +21,7 @@ import ExamIdriss from "./tests/pages/ExamIdriss";
 import ExamJoan from "./tests/pages/ExamJoan";
 import ExamKim from "./tests/pages/ExamKim";
 import ExamKeynes from "./tests/pages/ExamKeynes";
+import ExamYvesB1 from "./tests/pages/ExamYvesB1";
 import ExamVerification from "./tests/pages/ExamVerification";
 
 import StudentLogin from "./tests/pages/StudentLogin";
@@ -37,10 +39,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-
-        {/* =========================
-            HOME
-        ========================== */}
+        {/* HOME */}
         <Route
           path="/"
           element={
@@ -51,9 +50,7 @@ export default function App() {
           }
         />
 
-        {/* =========================
-            FREE FRENCH TEST
-        ========================== */}
+        {/* FREE FRENCH TEST */}
         <Route
           path="/free-test"
           element={
@@ -64,9 +61,7 @@ export default function App() {
           }
         />
 
-        {/* =========================
-            TEST LANDING PAGE
-        ========================== */}
+        {/* TEST LANDING PAGE */}
         <Route
           path="/tests"
           element={
@@ -77,9 +72,7 @@ export default function App() {
           }
         />
 
-        {/* =========================
-            STUDENT AUTHENTICATION
-        ========================== */}
+        {/* STUDENT AUTHENTICATION */}
         <Route
           path="/student-login"
           element={<StudentLogin />}
@@ -90,39 +83,29 @@ export default function App() {
           element={<StudentRegister />}
         />
 
-        {/* =========================
-            STUDENT DASHBOARD
-        ========================== */}
+        {/* STUDENT DASHBOARD */}
         <Route
           path="/student-dashboard"
           element={<StudentDashboard />}
         />
 
-        {/* =========================
-            OFFICIAL LEVEL TESTS
-        ========================== */}
-
-        {/* Listening / Oral */}
+        {/* OFFICIAL LEVEL TESTS */}
         <Route
           path="/tests/level-test"
           element={<ListeningTest />}
         />
 
-        {/* Written comprehension */}
         <Route
           path="/tests/written-test"
           element={<WrittenTest />}
         />
 
-        {/* Written expression */}
         <Route
           path="/tests/expression-ecrite"
           element={<WrittenExpressionTest />}
         />
 
-        {/* =========================
-            SPECIAL EXAMS
-        ========================== */}
+        {/* SPECIAL EXAMS */}
 
         {/* Leonille */}
         <Route
@@ -169,25 +152,30 @@ export default function App() {
           element={<ExamKeynes />}
         />
 
-        {/* =========================
-            TEACHER VERIFICATION TEST
-        ========================== */}
+        {/* Yves B1 — Separate Exam */}
+        <Route
+          path="/tests/exam-yves-b1"
+          element={<ExamYvesB1 />}
+        />
+
+        <Route
+          path="/tests/exam-yves-b1/"
+          element={<ExamYvesB1 />}
+        />
+
+        {/* TEACHER VERIFICATION TEST */}
         <Route
           path="/tests/exam-verification"
           element={<ExamVerification />}
         />
 
-        {/* =========================
-            STUDENT RESULTS
-        ========================== */}
+        {/* STUDENT RESULTS */}
         <Route
           path="/tests/results"
           element={<StudentResults />}
         />
 
-        {/* =========================
-            ADMIN
-        ========================== */}
+        {/* ADMIN */}
         <Route
           path="/admin-login"
           element={<AdminLogin />}
@@ -198,29 +186,18 @@ export default function App() {
           element={<AdminDashboard />}
         />
 
-        {/* =========================
-            PASSWORD RESET
-        ========================== */}
+        {/* PASSWORD RESET */}
         <Route
           path="/reset-password"
           element={<ResetPassword />}
         />
 
-        {/* =========================
-            UNKNOWN ROUTES
-        ========================== */}
+        {/* UNKNOWN ROUTES */}
         <Route
           path="*"
-          element={
-            <Navigate
-              to="/"
-              replace
-            />
-          }
+          element={<Navigate to="/" replace />}
         />
-
       </Routes>
     </BrowserRouter>
   );
 }
-

@@ -3919,6 +3919,7 @@ export default function Home({ lang, setLang }) {
               {name:"Joas Irahoza",role:lang==="en"?"Multi-skilled Agent":"Agent Polyvalent",photo:"staff-joas.jpeg",featured:true,badge:false,linkedin:"https://www.linkedin.com/in/joas-irahoza-873870208/"},
               {name:"DELPHIN KAHETO Josué",role:lang==="en"?"Teacher & Exam Supervisor":"Professeur et Surveillant d'examen",photo:"staff-josue.jpeg",featured:true,badge:false},
               {name:"PRIMO Akila",role:lang==="en"?"Teacher & Guidance Coordinator":"Professeur et Responsable d'Orientation",photo:"staff-akila.jpeg",featured:true,badge:false},
+              {name:"Eris Zoe Girijambo",role:lang==="en"?"Teacher":"Professeur",photo:"staff-eris.jpeg",featured:true,badge:false,linkedin:"https://www.linkedin.com/in/eris-zoe-girijambo-6897622a4"},
             ].map((m,i)=>(
               <FadeIn key={i} delay={i*80}>
                 <div style={{background:m.featured?"var(--navy)":"var(--cream)",borderRadius:"16px",overflow:"hidden",border:m.featured?"2px solid var(--gold)":"1px solid var(--cream-dark)",transition:"all 0.3s",textAlign:"center",position:"relative"}} className="team-card">

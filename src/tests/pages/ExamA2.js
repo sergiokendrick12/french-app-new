@@ -1049,7 +1049,7 @@ if (reason === "submitted" && !allAnswered) {
         <div style={styles.messageCard}>
           <div style={styles.logoMark}>IFA</div>
           <h1 style={styles.messageTitle}>
-            Examen de français — A2
+            Examen de français — A1 & A2
           </h1>
           <p style={styles.errorText}>{error}</p>
           <button
@@ -1162,7 +1162,7 @@ if (reason === "submitted" && !allAnswered) {
           <div>
             <div style={styles.eyebrow}>EXAMEN INDIVIDUEL</div>
             <h1 style={styles.pageTitle}>
-              Examen de français — Niveau A2
+              Examen de français — Niveau A1 & A2
             </h1>
             <p style={styles.introText}>
               Répondez attentivement aux questions. Vos réponses
@@ -1237,7 +1237,7 @@ if (reason === "submitted" && !allAnswered) {
                 {currentQuestion.section}
               </span>
               <span style={styles.levelBadge}>
-                Niveau {currentQuestion.level || "A2"}
+                Niveau {currentQuestion.level || "A1 & A2"}
               </span>
             </div>
 

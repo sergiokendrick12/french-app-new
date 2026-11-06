@@ -110,7 +110,7 @@ if (keynesAttemptError) {
     }
 
     if (testType === "exam_a2") {
-      return "Examen de français — Niveau A2";
+      return "Examen de français — Niveau A1 & A2";
     }
 
     if (testType === "exam_keynes") {

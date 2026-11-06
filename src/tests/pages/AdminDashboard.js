@@ -5,7 +5,7 @@ import { supabase } from "../../supabaseClient";
 // Exams whose written answers are graded by hand (0, 1 or 2 points each).
 const MANUAL_GRADED_EXAMS = {
   exam_yves_b1: "Examen B1",
-  exam_a2: "Examen A2",
+  exam_a2: "Examen A1 & A2",
 };
 
 // Grades are keyed by exam type + question id, so a student who has
@@ -543,12 +543,12 @@ export default function AdminDashboard() {
       }
 
       setSuccessMessage(
-        `Examen A2 attribué et ouvert pour ${student.full_name || "cet étudiant"}.`
+        `Examen A1 & A2 attribué et ouvert pour ${student.full_name || "cet étudiant"}.`
       );
     } catch (error) {
       console.error("Erreur attribution examen A2 :", error);
       setErrorMessage(
-        error?.message || "Impossible d'attribuer l'examen A2."
+        error?.message || "Impossible d'attribuer l'examen A1 & A2."
       );
     } finally {
       setA2Assigning(false);
@@ -1358,7 +1358,7 @@ if (
       exam_leonille: "Examen Leonille",
       exam_keynes: "Examen de français — B1",
       exam_yves_b1: "Examen de français — B1",
-      exam_a2: "Examen de français — A2",
+      exam_a2: "Examen de français — A1 & A2",
     };
 
     if (labels[testType]) {
@@ -2023,7 +2023,7 @@ if (
                 }}
               >
                 <div>
-                  <strong>Examen de français — A2</strong>
+                  <strong>Examen de français — A1 & A2</strong>
                   <div style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>
                     {a2Assignment?.status === "released"
                       ? "✓ Attribué et ouvert : l'étudiant peut passer l'examen."
@@ -2046,8 +2046,8 @@ if (
                     {a2Assigning
                       ? "Attribution..."
                       : a2Assignment
-                      ? "Ouvrir l'examen A2"
-                      : "Attribuer l'examen A2"}
+                      ? "Ouvrir l'examen A1 & A2"
+                      : "Attribuer l'examen A1 & A2"}
                   </button>
                 )}
               </div>

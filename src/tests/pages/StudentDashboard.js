@@ -573,7 +573,7 @@ export default function StudentDashboard() {
                     fontSize: "20px",
                   }}
                 >
-                  Examen A2 — Lundi 9 novembre
+                  Examen A1 & A2 — Lundi 9 novembre
                 </h2>
 
                 <p

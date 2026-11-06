@@ -109,6 +109,10 @@ if (keynesAttemptError) {
       return "Expression écrite";
     }
 
+    if (testType === "exam_a2") {
+      return "Examen de français — Niveau A2";
+    }
+
     if (testType === "exam_keynes") {
   return "Examen de français — Niveau B1";
 }
@@ -167,6 +171,12 @@ if (keynesAttemptError) {
 
     return Number(result.score || 0);
   };
+
+  // The A2 exam has written answers graded by hand: hide the partial
+  // automatic score until the teacher has saved the grades.
+  const isAwaitingManualGrading = (result) =>
+    result?.test_type === "exam_a2" &&
+    result?.grading_status !== "graded";
 
   const getKeynesWritingScore = (result) => {
     if (!isKeynesExam(result)) {
@@ -1447,8 +1457,9 @@ if (keynesAttemptError) {
                                 fontWeight: "700",
                               }}
                             >
-                              {result.score} /{" "}
-                              {result.total_questions}
+                              {isAwaitingManualGrading(result)
+                                ? "⏳ Correction en cours"
+                                : `${result.score} / ${result.total_questions}`}
                             </div>
                           </div>
 
@@ -1477,7 +1488,9 @@ if (keynesAttemptError) {
                                 fontWeight: "700",
                               }}
                             >
-                              {result.percentage}%
+                              {isAwaitingManualGrading(result)
+                                ? "—"
+                                : `${result.percentage}%`}
                             </div>
                           </div>
                         </div>

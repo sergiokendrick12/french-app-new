@@ -20,6 +20,7 @@ export default function StudentDashboard() {
   // SPECIAL EXAMS
   const [hasCompletedKeynesExam, setHasCompletedKeynesExam] = useState(false);
   const [hasCompletedYvesB1Exam, setHasCompletedYvesB1Exam] = useState(false);
+  const [hasCompletedA2Exam, setHasCompletedA2Exam] = useState(false);
   const [examAssignments, setExamAssignments] = useState([]);
 
   useEffect(() => {
@@ -147,6 +148,24 @@ export default function StudentDashboard() {
         }
 
         setHasCompletedYvesB1Exam(!!yvesB1Result);
+
+        // CHECK A2 EXAM RESULT
+        const { data: a2Result, error: a2Error } = await supabase
+          .from("test_results")
+          .select("id")
+          .eq("student_id", user.id)
+          .eq("test_type", "exam_a2")
+          .limit(1)
+          .maybeSingle();
+
+        if (a2Error) {
+          console.error(
+            "Erreur lors de la vérification du résultat A2 :",
+            a2Error
+          );
+        }
+
+        setHasCompletedA2Exam(!!a2Result);
       } catch (error) {
         console.error(
           "Erreur lors de la vérification de l'étudiant :",
@@ -510,12 +529,86 @@ export default function StudentDashboard() {
         >
           {/* COMPRÉHENSION ORALE */}
 
+                    {/* ASSIGNED A2 EXAM */}
+          {examAssignments
+            .filter(
+              (assignment) =>
+                ["assigned", "released"].includes(assignment.status) &&
+                assignment.exam_type === "exam_a2"
+            )
+            .map((assignment, index) => (
+              <button
+                key={`${assignment.exam_type}-${index}`}
+                onClick={() => navigate("/tests/exam-a2")}
+                disabled={!isApprovedAndPaid || hasCompletedA2Exam}
+                style={{
+                  background:
+                    isApprovedAndPaid && !hasCompletedA2Exam
+                      ? "white"
+                      : "#f8f9fa",
+                  border: "none",
+                  borderRadius: "18px",
+                  padding: "24px",
+                  textAlign: "left",
+                  cursor:
+                    isApprovedAndPaid && !hasCompletedA2Exam
+                      ? "pointer"
+                      : "not-allowed",
+                  boxShadow: "0 6px 25px rgba(0,0,0,0.08)",
+                  borderTop: "5px solid #c9a84c",
+                  opacity:
+                    isApprovedAndPaid && !hasCompletedA2Exam
+                      ? 1
+                      : 0.65,
+                }}
+              >
+                <div style={{ fontSize: "28px", marginBottom: "12px" }}>
+                  {hasCompletedA2Exam ? "🔒" : "📝"}
+                </div>
+
+                <h2
+                  style={{
+                    margin: "0 0 10px",
+                    color: "#0d1b2a",
+                    fontSize: "20px",
+                  }}
+                >
+                  Examen A2 — Lundi 9 novembre
+                </h2>
+
+                <p
+                  style={{
+                    margin: "0 0 16px",
+                    color: "#667085",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  {hasCompletedA2Exam
+                    ? "Vous avez déjà terminé cet examen."
+                    : !isApprovedAndPaid
+                    ? "L'accès sera disponible après validation du compte et confirmation du paiement."
+                    : "Votre examen de français du lundi. Durée : 2 heures. Cliquez ici pour commencer."}
+                </p>
+
+                <span style={{ color: "#0d1b2a", fontWeight: "bold" }}>
+                  {hasCompletedA2Exam
+                    ? "Terminé ✓"
+                    : !isApprovedAndPaid
+                    ? "Accès verrouillé 🔒"
+                    : "Ouvrir l'examen →"}
+                </span>
+              </button>
+            ))}
                     {/* ASSIGNED YVES B1 EXAM */}
           {examAssignments
             .filter(
               (assignment) =>
                 ["assigned", "released"].includes(assignment.status) &&
-                assignment.exam_type === "exam_yves_b1"
+                assignment.exam_type === "exam_yves_b1" &&
+                // A2 students only see their A2 exam, not the B1 one.
+                !examAssignments.some(
+                  (other) => other.exam_type === "exam_a2"
+                )
             )
             .map((assignment, index) => (
               <button

@@ -22,6 +22,7 @@ import ExamJoan from "./tests/pages/ExamJoan";
 import ExamKim from "./tests/pages/ExamKim";
 import ExamKeynes from "./tests/pages/ExamKeynes";
 import ExamYvesB1 from "./tests/pages/ExamYvesB1";
+import ExamA2 from "./tests/pages/ExamA2";
 import ExamVerification from "./tests/pages/ExamVerification";
 
 import StudentLogin from "./tests/pages/StudentLogin";
@@ -161,6 +162,12 @@ export default function App() {
         <Route
           path="/tests/exam-yves-b1/"
           element={<ExamYvesB1 />}
+        />
+
+        {/* A2 — Eric, Queen, Christian */}
+        <Route
+          path="/tests/exam-a2"
+          element={<ExamA2 />}
         />
 
         {/* TEACHER VERIFICATION TEST */}

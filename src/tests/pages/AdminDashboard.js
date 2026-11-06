@@ -2,6 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 
+// Exams whose written answers are graded by hand (0, 1 or 2 points each).
+const MANUAL_GRADED_EXAMS = {
+  exam_yves_b1: "Examen B1",
+  exam_a2: "Examen A2",
+};
+
+// Grades are keyed by exam type + question id, so a student who has
+// several manually graded exams never mixes up the grades.
+const manualGradeKey = (testType, questionId) =>
+  `${testType}:${questionId}`;
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
@@ -38,6 +49,8 @@ export default function AdminDashboard() {
   const [keynesSavingGrade, setKeynesSavingGrade] = useState(false);
   const [yvesB1Grades, setYvesB1Grades] = useState({});
   const [yvesB1SavingGrade, setYvesB1SavingGrade] = useState(false);
+  const [a2Assignment, setA2Assignment] = useState(null);
+  const [a2Assigning, setA2Assigning] = useState(false);
 
   const [keynesOpenTasks, setKeynesOpenTasks] = useState({
     task1: false,
@@ -235,6 +248,26 @@ export default function AdminDashboard() {
       }
 
       // -------------------------------------------------------
+      // LOAD A2 EXAM ASSIGNMENT
+      // -------------------------------------------------------
+
+      setA2Assignment(null);
+
+      const { data: a2Data, error: a2Error } = await supabase
+        .from("exam_assignments")
+        .select("id, status")
+        .eq("student_id", studentId)
+        .eq("exam_type", "exam_a2")
+        .limit(1)
+        .maybeSingle();
+
+      if (a2Error) {
+        console.error("Erreur chargement examen A2 :", a2Error);
+      } else {
+        setA2Assignment(a2Data || null);
+      }
+
+      // -------------------------------------------------------
       // LOAD TEST RESULTS
       // -------------------------------------------------------
 
@@ -256,38 +289,38 @@ export default function AdminDashboard() {
       const loadedResults = data || [];
 
       setStudentResults(loadedResults);
-            // LOAD EXISTING YVES B1 MANUAL GRADES
-      const yvesResult = loadedResults.find(
-        (result) => result.test_type === "exam_yves_b1"
-      );
-
-      let yvesAnswers = yvesResult?.answers_detail;
-
-      if (typeof yvesAnswers === "string") {
-        try {
-          yvesAnswers = JSON.parse(yvesAnswers);
-        } catch {
-          yvesAnswers = [];
-        }
-      }
-
+      // LOAD EXISTING MANUAL GRADES (YVES B1, A2)
       const savedYvesGrades = {};
 
-      if (Array.isArray(yvesAnswers)) {
-        yvesAnswers.forEach((item) => {
-          const key = item.question_id ?? item.id;
+      loadedResults
+        .filter((result) => MANUAL_GRADED_EXAMS[result.test_type])
+        .forEach((result) => {
+          let manualAnswers = result.answers_detail;
 
-          if (
-            key !== undefined &&
-            item.manual_points !== undefined &&
-            item.manual_points !== null
-          ) {
-            savedYvesGrades[String(key)] = String(
-              item.manual_points
-            );
+          if (typeof manualAnswers === "string") {
+            try {
+              manualAnswers = JSON.parse(manualAnswers);
+            } catch {
+              manualAnswers = [];
+            }
           }
+
+          if (!Array.isArray(manualAnswers)) return;
+
+          manualAnswers.forEach((item) => {
+            const key = item.question_id ?? item.id;
+
+            if (
+              key !== undefined &&
+              item.manual_points !== undefined &&
+              item.manual_points !== null
+            ) {
+              savedYvesGrades[
+                manualGradeKey(result.test_type, key)
+              ] = String(item.manual_points);
+            }
+          });
         });
-      }
 
       setYvesB1Grades(savedYvesGrades);
 
@@ -469,6 +502,58 @@ export default function AdminDashboard() {
   // =========================================================
   // AUTOMATIC YVES B1 ASSIGNMENT
   // =========================================================
+
+  // =========================================================
+  // A2 EXAM ASSIGNMENT (manual, per student)
+  // =========================================================
+
+  const assignA2Exam = async (student) => {
+    const studentId = student?.user_id || student?.id;
+
+    if (!studentId) return;
+
+    setA2Assigning(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      if (a2Assignment?.id) {
+        const { data, error } = await supabase
+          .from("exam_assignments")
+          .update({ status: "released" })
+          .eq("id", a2Assignment.id)
+          .select("id, status")
+          .single();
+
+        if (error) throw error;
+        setA2Assignment(data);
+      } else {
+        const { data, error } = await supabase
+          .from("exam_assignments")
+          .insert({
+            student_id: studentId,
+            exam_type: "exam_a2",
+            status: "released",
+          })
+          .select("id, status")
+          .single();
+
+        if (error) throw error;
+        setA2Assignment(data);
+      }
+
+      setSuccessMessage(
+        `Examen A2 attribué et ouvert pour ${student.full_name || "cet étudiant"}.`
+      );
+    } catch (error) {
+      console.error("Erreur attribution examen A2 :", error);
+      setErrorMessage(
+        error?.message || "Impossible d'attribuer l'examen A2."
+      );
+    } finally {
+      setA2Assigning(false);
+    }
+  };
 
   const ensureYvesB1Assignment = async (studentId) => {
     const { data: existingAssignment, error: lookupError } =
@@ -978,8 +1063,8 @@ if (
   // =========================================================
 
   const saveYvesB1Grade = async (examResult) => {
-    if (!examResult || examResult.test_type !== "exam_yves_b1") {
-      setErrorMessage("Résultat Yves B1 introuvable.");
+    if (!examResult || !MANUAL_GRADED_EXAMS[examResult.test_type]) {
+      setErrorMessage("Résultat d'examen introuvable.");
       return;
     }
 
@@ -1006,7 +1091,10 @@ if (
     );
 
     for (const item of manualQuestions) {
-      const key = String(item.question_id ?? item.id);
+      const key = manualGradeKey(
+        examResult.test_type,
+        item.question_id ?? item.id
+      );
 
       if (
         yvesB1Grades[key] === undefined ||
@@ -1050,7 +1138,10 @@ if (
           return item;
         }
 
-        const key = String(item.question_id ?? item.id);
+        const key = manualGradeKey(
+          examResult.test_type,
+          item.question_id ?? item.id
+        );
         const grade = Number(yvesB1Grades[key]);
 
         newManualPoints += grade;
@@ -1091,7 +1182,7 @@ if (
       );
 
       setSuccessMessage(
-        `Correction Yves B1 enregistrée : ${finalScore}/100.`
+        `Correction ${MANUAL_GRADED_EXAMS[examResult.test_type]} enregistrée : ${finalScore}/100.`
       );
     } catch (error) {
       console.error("Erreur correction Yves B1 :", error);
@@ -1266,6 +1357,8 @@ if (
       exam_kim: "Examen Kim",
       exam_leonille: "Examen Leonille",
       exam_keynes: "Examen de français — B1",
+      exam_yves_b1: "Examen de français — B1",
+      exam_a2: "Examen de français — A2",
     };
 
     if (labels[testType]) {
@@ -1286,7 +1379,8 @@ if (
     if (
       testType === "exam_kim" ||
       testType === "exam_leonille" ||
-      testType === "exam_keynes"
+      testType === "exam_keynes" ||
+      testType === "exam_a2"
     ) {
       return "📝";
     }
@@ -1913,6 +2007,49 @@ if (
                 l'étudiant doit être{" "}
                 <strong>approuvé</strong> et{" "}
                 <strong>payé</strong>.
+              </div>
+
+              <div
+                style={{
+                  marginTop: "16px",
+                  padding: "16px",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "10px",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                }}
+              >
+                <div>
+                  <strong>Examen de français — A2</strong>
+                  <div style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>
+                    {a2Assignment?.status === "released"
+                      ? "✓ Attribué et ouvert : l'étudiant peut passer l'examen."
+                      : a2Assignment
+                      ? "Attribué mais verrouillé."
+                      : "Non attribué."}
+                  </div>
+                </div>
+
+                {a2Assignment?.status !== "released" && (
+                  <button
+                    type="button"
+                    onClick={() => assignA2Exam(selectedStudent)}
+                    disabled={a2Assigning}
+                    style={{
+                      ...styles.primaryButton,
+                      opacity: a2Assigning ? 0.6 : 1,
+                    }}
+                  >
+                    {a2Assigning
+                      ? "Attribution..."
+                      : a2Assignment
+                      ? "Ouvrir l'examen A2"
+                      : "Attribuer l'examen A2"}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -2816,7 +2953,7 @@ if (
                           }
 
                           const yvesManualQuestions =
-                            examResult.test_type === "exam_yves_b1" &&
+                            MANUAL_GRADED_EXAMS[examResult.test_type] &&
                             Array.isArray(yvesAnswers)
                               ? yvesAnswers.filter(
                                   (item) =>
@@ -2968,7 +3105,7 @@ if (
                                 )}
                               </div>
 
-                              {examResult.test_type === "exam_yves_b1" && (
+                              {MANUAL_GRADED_EXAMS[examResult.test_type] && (
                                 <div
                                   style={{
                                     marginTop: "20px",
@@ -2977,7 +3114,7 @@ if (
                                     gridColumn: "1 / -1",
                                   }}
                                 >
-                                  <h4>Correction manuelle — Yves B1</h4>
+                                  <h4>Correction manuelle — {MANUAL_GRADED_EXAMS[examResult.test_type]}</h4>
 
                                   <p style={{ fontSize: "13px", color: "#64748b" }}>
                                     Attribuez 0, 1 ou 2 points à chaque réponse.
@@ -2987,7 +3124,8 @@ if (
                                     <p>Aucune réponse à corriger manuellement.</p>
                                   ) : (
                                     yvesManualQuestions.map((item, index) => {
-                                      const questionKey = String(
+                                      const questionKey = manualGradeKey(
+                                        examResult.test_type,
                                         item.question_id ?? item.id
                                       );
 
@@ -3009,6 +3147,12 @@ if (
                                           }}
                                         >
                                           <strong>Question {index + 1}</strong>
+
+                                          {item.question && (
+                                            <p style={{ fontSize: "13px", color: "#64748b", margin: "6px 0 0" }}>
+                                              {item.question}
+                                            </p>
+                                          )}
 
                                           <p
                                             style={{
@@ -3062,7 +3206,7 @@ if (
                                     >
                                       {yvesB1SavingGrade
                                         ? "Enregistrement..."
-                                        : "Enregistrer les notes Yves B1"}
+                                        : `Enregistrer les notes — ${MANUAL_GRADED_EXAMS[examResult.test_type]}`}
                                     </button>
                                   )}
                                 </div>

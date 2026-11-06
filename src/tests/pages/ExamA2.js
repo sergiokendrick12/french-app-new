@@ -4,6 +4,7 @@ import { supabase } from "../../supabaseClient";
 
 // Examen A2 — Eric, Queen et Christian
 // Contenu basé sur les cours : passé composé, imparfait / futur proche,
+// verbes pronominaux, négation, articles / adjectifs / pluriel,
 // adjectifs possessifs et démonstratifs, adverbes en -ment, COD / COI,
 // les jours, les mois et la date, se déplacer en ville, faire des achats,
 // compréhension écrite.
@@ -14,6 +15,14 @@ const EXAM_DURATION_SECONDS = 2 * 60 * 60;
 const TOTAL_POINTS = 100;
 const ANSWERS_STORAGE_PREFIX = "ifa_exam_a2_answers_";
 const READING_SECTION = "La compréhension écrite";
+
+// Local preview for the teacher: http://localhost:3000/tests/exam-a2?preview
+// Only exists in development (npm start); it is removed from the live site
+// build. Shows the exam screen without an account and saves nothing.
+const PREVIEW_MODE =
+  process.env.NODE_ENV === "development" &&
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).has("preview");
 
 // Multiple-choice helper: the stored answer is the full option text.
 function choice(id, section, question, options, correctIndex, extra = {}) {
@@ -54,6 +63,9 @@ function manual(id, section, question, extra = {}) {
 
 const PC = "Le passé composé";
 const TEMPS = "Imparfait et futur proche";
+const PRON = "Les verbes pronominaux";
+const NEG = "La négation";
+const ART = "Les articles, les adjectifs et le pluriel";
 const POSS = "Les adjectifs possessifs";
 const DEM = "Les adjectifs démonstratifs";
 const ADV = "Les adverbes en -ment";
@@ -63,361 +75,107 @@ const VILLE = "Se déplacer en ville";
 const ACHATS = "Faire des achats";
 
 const questions = [
-  // PARTIE I — LE PASSÉ COMPOSÉ (16 points)
-  text(
-    1,
-    PC,
-    "Hier soir, nous ______ un film au cinéma. (voir — passé composé)",
-    ["avons vu"]
-  ),
-  text(
-    2,
-    PC,
-    "Ce matin, Marie ______ au marché. (aller — passé composé)",
-    ["est allée"]
-  ),
-  choice(
-    3,
-    PC,
-    "Ils ______ le bus pour aller à l'école.",
-    ["ont pris", "sont pris", "ont prendu", "avons pris"],
-    0
-  ),
-  text(
-    4,
-    PC,
-    "Tu ______ tes devoirs hier ? (faire — passé composé)",
-    ["as fait"]
-  ),
-  choice(
-    5,
-    PC,
-    "Mes sœurs ______ à la maison tout le week-end.",
-    ["ont resté", "sont restés", "sont restées", "est restée"],
-    2
-  ),
-  choice(
-    6,
-    PC,
-    "Quelle phrase négative est correcte ?",
-    [
-      "Je ne suis pas mangé.",
-      "Je n'ai pas mangé.",
-      "Je n'ai mangé pas.",
-      "Je ne pas ai mangé.",
-    ],
-    1
-  ),
-  text(
-    7,
-    PC,
-    "Elle ______ une lettre à sa grand-mère. (écrire — passé composé)",
-    ["a écrit"]
-  ),
-  manual(
-    8,
-    PC,
+  // PARTIE I — LE PASSÉ COMPOSÉ (12 points)
+  text(1, PC, "Hier soir, nous ______ un film au cinéma. (voir — passé composé)", ["avons vu"]),
+  text(2, PC, "Ce matin, Marie ______ au marché. (aller — passé composé)", ["est allée"]),
+  choice(3, PC, "Ils ______ le bus pour aller à l'école.",
+    ["ont pris", "sont pris", "ont prendu", "avons pris"], 0),
+  choice(4, PC, "Mes sœurs ______ à la maison tout le week-end.",
+    ["ont resté", "sont restés", "sont restées", "est restée"], 2),
+  choice(5, PC, "Quelle phrase négative est correcte ?",
+    ["Je ne suis pas mangé.", "Je n'ai pas mangé.", "Je n'ai mangé pas.", "Je ne pas ai mangé."], 1),
+  manual(6, PC,
     "Qu'est-ce que tu as fait le week-end dernier ? Écris trois phrases au passé composé.",
-    { multiline: true }
-  ),
+    { multiline: true }),
 
-  // PARTIE II — IMPARFAIT ET FUTUR PROCHE (12 points)
-  text(
-    9,
-    TEMPS,
-    "Quand j'étais petit, je ______ souvent au foot avec mon frère. (jouer — imparfait)",
-    ["jouais"]
-  ),
-  text(
-    10,
-    TEMPS,
-    "Hier, il ______ très beau. (faire — imparfait)",
-    ["faisait"]
-  ),
-  text(
-    11,
-    TEMPS,
-    "Demain, nous ______ nos grands-parents. (visiter — futur proche)",
-    ["allons visiter"]
-  ),
-  choice(
-    12,
-    TEMPS,
-    "Il pleuvait quand je ______ de la maison.",
-    ["sortais", "suis sorti", "vais sortir", "sors"],
-    1
-  ),
-  choice(
-    13,
-    TEMPS,
-    "Ce soir, elle ______ un film à la télévision.",
-    ["va regarder", "va regardé", "vais regarder", "allait regardé"],
-    0
-  ),
-  choice(
-    14,
-    TEMPS,
-    "Autrefois, mes parents ______ à la campagne.",
-    ["habitent", "habitaient", "vont habiter", "sont habités"],
-    1
-  ),
+  // PARTIE II — IMPARFAIT ET FUTUR PROCHE (6 points)
+  text(7, TEMPS, "Quand j'étais petit, je ______ souvent au foot avec mon frère. (jouer — imparfait)", ["jouais"]),
+  text(8, TEMPS, "Ce soir, nous ______ un film. (regarder — futur proche)", ["allons regarder"]),
+  choice(9, TEMPS, "Il pleuvait quand je ______ de la maison.",
+    ["sortais", "suis sorti", "vais sortir", "sors"], 1),
 
-  // PARTIE III — LES ADJECTIFS POSSESSIFS (10 points)
-  choice(
-    15,
-    POSS,
-    "(je) ______ amie s'appelle Inès.",
-    ["Ma", "Mon", "Mes", "Ta"],
-    1
-  ),
-  text(
-    16,
-    POSS,
-    "(nous) Nous aimons beaucoup ______ professeurs.",
-    ["nos"]
-  ),
-  choice(
-    17,
-    POSS,
-    "(elles) Elles adorent ______ nouvelle maison.",
-    ["leurs", "sa", "leur", "ses"],
-    2
-  ),
-  text(
-    18,
-    POSS,
-    "(il) Paul a perdu ______ clés ce matin.",
-    ["ses"]
-  ),
-  choice(
-    19,
-    POSS,
-    "(vous) Vous avez apporté ______ cahier ?",
-    ["vos", "votre", "notre", "ton"],
-    1
-  ),
+  // PARTIE III — LES VERBES PRONOMINAUX (8 points)
+  text(10, PRON, "Le matin, je ______ à six heures. (se réveiller — présent)", ["me réveille"]),
+  choice(11, PRON, "Bonjour ! Tu ______ comment ? (s'appeler — présent)",
+    ["t'appelles", "te appelles", "s'appelles", "t'appeles"], 0),
+  text(12, PRON, "Ils sont en retard : ils ______ ! (se dépêcher — présent)", ["se dépêchent"]),
+  choice(13, PRON, "Le dimanche, nous ______ à la maison. (se reposer)",
+    ["nous reposons", "se reposons", "nous nous reposons", "reposons nous"], 2),
 
-  // PARTIE IV — LES ADJECTIFS DÉMONSTRATIFS (10 points)
-  choice(
-    20,
-    DEM,
-    "______ hôtel est très confortable.",
-    ["Ce", "Cet", "Cette", "Ces"],
-    1
-  ),
-  text(
-    21,
-    DEM,
-    "______ fille chante très bien. (ce / cet / cette / ces)",
-    ["cette"]
-  ),
-  choice(
-    22,
-    DEM,
-    "Regarde ______ fleurs, elles sont magnifiques !",
-    ["ce", "cet", "cette", "ces"],
-    3
-  ),
-  text(
-    23,
-    DEM,
-    "Mets au pluriel : cet ami → ______ amis",
-    ["ces"]
-  ),
-  choice(
-    24,
-    DEM,
-    "Je préfère ce livre-ci, pas ce livre-______.",
-    ["là", "ci", "ce", "cet"],
-    0
-  ),
+  // PARTIE IV — LA NÉGATION (8 points)
+  choice(14, NEG, "Avant, Paul fumait. Maintenant, il ______ fume ______.",
+    ["ne … pas encore", "ne … plus", "ne … jamais", "ne … rien"], 1),
+  text(15, NEG, "J'ai un stylo. → Je n'ai pas ______ stylo.", ["de"]),
+  choice(16, NEG, "Quelle phrase est correcte ?",
+    ["Je ne mange pas jamais de viande.", "Je ne mange jamais de viande.",
+     "Je mange ne jamais de viande.", "Je ne jamais mange de viande."], 1),
+  choice(17, NEG, "— Tu ne viens pas ? — ______, je viens !",
+    ["Oui", "Si", "Non", "Pas"], 1),
 
-  // PARTIE V — LES ADVERBES EN -MENT (10 points)
-  text(
-    25,
-    ADV,
-    "Forme l'adverbe : rapide → ______",
-    ["rapidement"]
-  ),
-  text(
-    26,
-    ADV,
-    "Forme l'adverbe : heureux → ______",
-    ["heureusement"]
-  ),
-  text(
-    27,
-    ADV,
-    "Forme l'adverbe : prudent → ______",
-    ["prudemment"]
-  ),
-  choice(
-    28,
-    ADV,
-    "Il parle toujours très ______ à ses parents.",
-    ["poli", "poliment", "polie", "polément"],
-    1
-  ),
-  choice(
-    29,
-    ADV,
-    "Quel est l'adverbe de « constant » ?",
-    ["constantement", "constamment", "constemment", "constantment"],
-    1
-  ),
+  // PARTIE V — LES ARTICLES, LES ADJECTIFS ET LE PLURIEL (8 points)
+  choice(18, ART, "J'aime beaucoup ______ café.",
+    ["un", "le", "du", "des"], 1),
+  text(19, ART, "Mets au pluriel : un journal → des ______", ["journaux"]),
+  text(20, ART, "Elle porte une robe ______. (blanc)", ["blanche"]),
+  choice(21, ART, "Quelle phrase est correcte ?",
+    ["J'ai une rouge voiture.", "J'ai une voiture rouge.", "J'ai un voiture rouge.", "J'ai une voiture rouges."], 1),
 
-  // PARTIE VI — LE COMPLÉMENT D'OBJET (8 points)
-  choice(
-    30,
-    COMP,
-    "« Je regarde la télévision. » — « la télévision » est :",
-    ["un COD", "un COI", "le sujet", "un complément du nom"],
-    0
-  ),
-  choice(
-    31,
-    COMP,
-    "« Divine téléphone à son père. » — « à son père » est :",
-    ["un COD", "un COI", "le sujet", "un complément du nom"],
-    1
-  ),
-  choice(
-    32,
-    COMP,
-    "« J'ai besoin de repos. » — Quelle question permet de trouver le complément ?",
-    ["Qui ?", "Quoi ?", "À qui ?", "De quoi ?"],
-    3
-  ),
-  choice(
-    33,
-    COMP,
-    "« Je parle à ma mère. » → Je ______ parle.",
-    ["la", "le", "lui", "les"],
-    2
-  ),
+  // PARTIE VI — LES ADJECTIFS POSSESSIFS (8 points)
+  choice(22, POSS, "(je) ______ amie s'appelle Inès.", ["Ma", "Mon", "Mes", "Ta"], 1),
+  text(23, POSS, "(nous) Nous aimons beaucoup ______ professeurs.", ["nos"]),
+  choice(24, POSS, "(elles) Elles adorent ______ nouvelle maison.", ["leurs", "sa", "leur", "ses"], 2),
+  choice(25, POSS, "(vous) Vous avez apporté ______ cahier ?", ["vos", "votre", "notre", "ton"], 1),
 
-  // PARTIE VII — LES JOURS, LES MOIS ET LA DATE (10 points)
-  choice(
-    34,
-    DATE,
-    "Le 25 décembre est un jour ______ : on ne travaille pas.",
-    ["ouvrable", "férié", "scolaire", "tardif"],
-    1
-  ),
-  choice(
-    35,
-    DATE,
-    "J'habite ici ______ trois ans.",
-    ["pendant", "il y a", "depuis", "dans"],
-    2
-  ),
-  choice(
-    36,
-    DATE,
-    "Le cours commence ______ dix minutes.",
-    ["il y a", "dans", "depuis", "pendant"],
-    1
-  ),
-  choice(
-    37,
-    DATE,
-    "Il est arrivé ______ une semaine.",
-    ["dans", "depuis", "il y a", "en"],
-    2
-  ),
-  choice(
-    38,
-    DATE,
-    "Un trimestre est une période de :",
-    ["six mois", "trois mois", "quinze jours", "cent ans"],
-    1
-  ),
+  // PARTIE VII — LES ADJECTIFS DÉMONSTRATIFS (8 points)
+  choice(26, DEM, "______ hôtel est très confortable.", ["Ce", "Cet", "Cette", "Ces"], 1),
+  text(27, DEM, "______ fille chante très bien. (adjectif démonstratif)", ["cette"]),
+  choice(28, DEM, "Regarde ______ fleurs, elles sont magnifiques !", ["ce", "cet", "cette", "ces"], 3),
+  choice(29, DEM, "Je préfère ce livre-ci, pas ce livre-______.", ["là", "ci", "ce", "cet"], 0),
 
-  // PARTIE VIII — SE DÉPLACER EN VILLE (8 points)
-  choice(
-    39,
-    VILLE,
-    "Je vais au travail ______ vélo.",
-    ["en", "à", "au", "par"],
-    1
-  ),
-  choice(
-    40,
-    VILLE,
-    "Le musée est près ______ parc.",
-    ["de le", "du", "de la", "des"],
-    1
-  ),
-  text(
-    41,
-    VILLE,
-    "Nous ______ le métro chaque matin. (prendre — présent)",
-    ["prenons"]
-  ),
-  choice(
-    42,
-    VILLE,
+  // PARTIE VIII — LES ADVERBES EN -MENT (8 points)
+  text(30, ADV, "Forme l'adverbe : rapide → ______", ["rapidement"]),
+  text(31, ADV, "Forme l'adverbe : prudent → ______", ["prudemment"]),
+  choice(32, ADV, "Il parle toujours très ______ à ses parents.", ["poli", "poliment", "polie", "polément"], 1),
+  choice(33, ADV, "Quel est l'adverbe de « constant » ?",
+    ["constantement", "constamment", "constemment", "constantment"], 1),
+
+  // PARTIE IX — LE COMPLÉMENT D'OBJET (6 points)
+  choice(34, COMP, "« Je regarde la télévision. » — « la télévision » est :",
+    ["un COD", "un COI", "le sujet", "un complément du nom"], 0),
+  choice(35, COMP, "« Divine téléphone à son père. » — « à son père » est :",
+    ["un COD", "un COI", "le sujet", "un complément du nom"], 1),
+  choice(36, COMP, "« Je parle à ma mère. » → Je ______ parle.", ["la", "le", "lui", "les"], 2),
+
+  // PARTIE X — LES JOURS, LES MOIS ET LA DATE (8 points)
+  choice(37, DATE, "Le 25 décembre est un jour ______ : on ne travaille pas.",
+    ["ouvrable", "férié", "scolaire", "tardif"], 1),
+  choice(38, DATE, "J'habite ici ______ trois ans.", ["pendant", "il y a", "depuis", "dans"], 2),
+  choice(39, DATE, "Le cours commence ______ dix minutes.", ["il y a", "dans", "depuis", "pendant"], 1),
+  choice(40, DATE, "Il est arrivé ______ une semaine.", ["dans", "depuis", "il y a", "en"], 2),
+
+  // PARTIE XI — SE DÉPLACER EN VILLE (6 points)
+  choice(41, VILLE, "Je vais au travail ______ vélo.", ["en", "à", "au", "par"], 1),
+  choice(42, VILLE, "Le musée est près ______ parc.", ["de le", "du", "de la", "des"], 1),
+  choice(43, VILLE,
     "— Pour aller à la gare, s'il vous plaît ? — Allez tout droit, puis ______ à gauche.",
-    ["tournez", "montez", "descendez", "prenez"],
-    0
-  ),
+    ["tournez", "montez", "descendez", "traversez"], 0),
 
-  // PARTIE IX — FAIRE DES ACHATS (8 points)
-  choice(
-    43,
-    ACHATS,
-    "Je voudrais un kilo ______ tomates, s'il vous plaît.",
-    ["des", "de", "du", "les"],
-    1
-  ),
-  choice(
-    44,
-    ACHATS,
-    "Une douzaine d'œufs, c'est combien d'œufs ?",
-    ["10", "12", "15", "20"],
-    1
-  ),
-  choice(
-    45,
-    ACHATS,
-    "Je donne 20 €. Le total est 11,45 €. Combien de monnaie est-ce que je reçois ?",
-    ["9,55 €", "8,55 €", "8,45 €", "9,45 €"],
-    1
-  ),
-  choice(
-    46,
-    ACHATS,
-    "Comment écrit-on 80 € en lettres ?",
-    [
-      "quatre-vingt euros",
-      "quatre-vingts euros",
-      "huitante euros",
-      "quatre-vingts euro",
-    ],
-    1
-  ),
+  // PARTIE XII — FAIRE DES ACHATS (6 points)
+  choice(44, ACHATS, "Je voudrais un kilo ______ tomates, s'il vous plaît.", ["des", "de", "du", "les"], 1),
+  choice(45, ACHATS, "Je donne 20 €. Le total est 11,45 €. Combien de monnaie est-ce que je reçois ?",
+    ["9,55 €", "8,55 €", "8,45 €", "9,45 €"], 1),
+  choice(46, ACHATS, "Comment écrit-on 80 € en lettres ?",
+    ["quatre-vingt euros", "quatre-vingts euros", "huitante euros", "quatre-vingts euro"], 1),
 
-  // PARTIE X — LA COMPRÉHENSION ÉCRITE (8 points)
-  manual(
-    47,
-    READING_SECTION,
-    "Depuis quand Aline habite-t-elle à Lyon ? À quelle heure s'est-elle levée samedi dernier ?"
-  ),
-  manual(
-    48,
-    READING_SECTION,
-    "Qu'est-ce qu'Aline et Grâce ont acheté au marché ? Combien ont-elles payé ?"
-  ),
-  manual(
-    49,
-    READING_SECTION,
-    "Comment les deux sœurs sont-elles rentrées à la maison ? Pourquoi ?"
-  ),
-  manual(
-    50,
-    READING_SECTION,
-    "Que va faire Aline samedi prochain ? Pourquoi est-elle contente ?"
-  ),
+  // PARTIE XIII — LA COMPRÉHENSION ÉCRITE (8 points)
+  manual(47, READING_SECTION,
+    "Depuis quand Aline habite-t-elle à Lyon ? À quelle heure s'est-elle levée samedi dernier ?"),
+  manual(48, READING_SECTION,
+    "Qu'est-ce qu'Aline et Grâce ont acheté au marché ? Combien ont-elles payé ?"),
+  manual(49, READING_SECTION,
+    "Comment les deux sœurs sont-elles rentrées à la maison ? Pourquoi ?"),
+  manual(50, READING_SECTION,
+    "Que va faire Aline samedi prochain ? Pourquoi est-elle contente ?"),
 ];
 
 const readingText = `Le samedi d'Aline
@@ -429,6 +187,15 @@ Au marché, les deux sœurs ont acheté un kilo de tomates, une douzaine d'œufs
 Ensuite, elles sont rentrées à pied, parce qu'il faisait très beau. L'après-midi, Aline a lu un livre pendant deux heures. Le soir, ses amis sont venus dîner à la maison.
 
 Samedi prochain, Aline va prendre le train pour rendre visite à ses grands-parents. Elle est très contente, parce qu'elle ne les a pas vus depuis trois mois.`;
+
+// "Hier soir, nous ______ un film. (voir — passé composé)"
+//   → title "Hier soir, nous ______ un film." + hint "voir — passé composé"
+function splitQuestion(question) {
+  const match = String(question).match(/^(.*?)\s*\(([^()]*)\)\s*$/);
+  return match
+    ? { title: match[1], hint: match[2] }
+    : { title: question, hint: null };
+}
 
 function normalizeAnswer(value) {
   return String(value ?? "")
@@ -448,9 +215,18 @@ function isQuestionCorrect(question, value) {
     return false;
   }
 
-  return question.acceptedAnswers.some(
-    (answer) => normalizeAnswer(answer) === normalized
-  );
+  return question.acceptedAnswers.some((answer) => {
+    if (normalizeAnswer(answer) === normalized) return true;
+
+    // A student who writes the whole sentence with the blank filled in
+    // ("Hier soir, nous avons vu un film au cinéma.") is also correct.
+    const { title } = splitQuestion(question.question);
+    if (!/_{3,}/.test(title)) return false;
+    const fullSentence = title
+      .replace(/^[«»"\s—-]+/, "")
+      .replace(/_{3,}/, answer);
+    return normalizeAnswer(fullSentence) === normalized;
+  });
 }
 
 // Shuffle the A/B/C/D options per student so neighbours in the same room
@@ -511,6 +287,15 @@ export default function ExamA2() {
   const [examStarted, setExamStarted] = useState(false);
   const [warning, setWarning] = useState("");
   const [tabSwitches, setTabSwitches] = useState(0);
+  const [isNarrow, setIsNarrow] = useState(
+    typeof window !== "undefined" && window.innerWidth < 900
+  );
+
+  useEffect(() => {
+    const handleResize = () => setIsNarrow(window.innerWidth < 900);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const startedAtRef = useRef(null);
   const attemptIdRef = useRef(null);
@@ -748,6 +533,14 @@ if (reason === "submitted" && !allAnswered) {
     let cancelled = false;
 
     async function initializeExam() {
+      if (PREVIEW_MODE) {
+        setCurrentUser({ id: "preview-student" });
+        setAttemptId("preview");
+        setExamStarted(true);
+        setLoading(false);
+        return;
+      }
+
       try {
         const {
           data: { user },
@@ -952,8 +745,8 @@ if (reason === "submitted" && !allAnswered) {
       };
 
       answersRef.current = updatedAnswers;
-      console.log("IFA DEBUG — answers updated:", updatedAnswers);
       setAnswers(updatedAnswers);
+      setError("");
 
       if (currentUser?.id) {
         try {
@@ -1010,7 +803,7 @@ if (reason === "submitted" && !allAnswered) {
   // --------------------------------------------------
 
   useEffect(() => {
-    if (!examStarted || !currentUser?.id) return undefined;
+    if (!examStarted || !currentUser?.id || PREVIEW_MODE) return undefined;
 
     const handleVisibilityChange = () => {
       if (document.visibilityState !== "hidden") return;
@@ -1132,21 +925,26 @@ if (reason === "submitted" && !allAnswered) {
     );
 
     if (unanswered.length > 0) {
-      const shouldSubmit = window.confirm(
-        `Il reste ${unanswered.length} question(s) sans réponse. Voulez-vous vraiment soumettre l'examen ?`
+      const firstUnansweredIndex = questions.findIndex(
+        (question) =>
+          String(answersRef.current[question.id] ?? "").trim()
+            .length === 0
       );
 
-      if (!shouldSubmit) {
-        const firstUnansweredIndex = questions.findIndex(
-          (question) =>
-            String(
-              answersRef.current[question.id] ?? ""
-            ).trim().length === 0
-        );
+      setError(
+        `Il reste ${unanswered.length} question(s) sans réponse (en blanc dans la navigation rapide). Répondez à toutes les questions avant de soumettre.`
+      );
+      setCurrentQuestionIndex(firstUnansweredIndex);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
 
-        setCurrentQuestionIndex(firstUnansweredIndex);
-        return;
-      }
+    if (
+      !window.confirm(
+        "Vous avez répondu aux 50 questions. Soumettre l'examen maintenant ? Vous ne pourrez plus modifier vos réponses."
+      )
+    ) {
+      return;
     }
 
     finishExam("submitted");
@@ -1261,7 +1059,12 @@ if (reason === "submitted" && !allAnswered) {
           </div>
         </section>
 
-        <div style={styles.examLayout}>
+        <div
+          style={{
+            ...styles.examLayout,
+            ...(isNarrow ? { gridTemplateColumns: "minmax(0, 1fr)" } : {}),
+          }}
+        >
           <section style={styles.questionPanel}>
             <div style={styles.questionMeta}>
               <span style={styles.sectionBadge}>
@@ -1290,8 +1093,14 @@ if (reason === "submitted" && !allAnswered) {
             </div>
 
             <h2 style={styles.questionTitle}>
-              {currentQuestion.question}
+              {splitQuestion(currentQuestion.question).title}
             </h2>
+
+            {splitQuestion(currentQuestion.question).hint && (
+              <p style={styles.questionInstruction}>
+                Indication : {splitQuestion(currentQuestion.question).hint}
+              </p>
+            )}
 
             {currentQuestion.instruction && (
               <p style={styles.questionInstruction}>
@@ -1365,23 +1174,43 @@ if (reason === "submitted" && !allAnswered) {
                 >
                   Votre réponse
                 </label>
-                <textarea
-                  id={`answer-${currentQuestion.id}`}
-                  style={styles.answerTextarea}
-                  value={answers[currentQuestion.id] ?? ""}
-                  onChange={(event) =>
-                    handleAnswerChange(
-                      currentQuestion.id,
-                      event.target.value
-                    )
-                  }
-                  placeholder="Écrivez votre réponse ici..."
-                  rows={currentQuestion.multiline ? 7 : 3}
-                />
+                {currentQuestion.acceptedAnswers ? (
+                  <input
+                    type="text"
+                    id={`answer-${currentQuestion.id}`}
+                    style={styles.answerTextarea}
+                    value={answers[currentQuestion.id] ?? ""}
+                    onChange={(event) =>
+                      handleAnswerChange(
+                        currentQuestion.id,
+                        event.target.value
+                      )
+                    }
+                    placeholder="Le mot ou les mots qui manquent..."
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                  />
+                ) : (
+                  <textarea
+                    id={`answer-${currentQuestion.id}`}
+                    style={styles.answerTextarea}
+                    value={answers[currentQuestion.id] ?? ""}
+                    onChange={(event) =>
+                      handleAnswerChange(
+                        currentQuestion.id,
+                        event.target.value
+                      )
+                    }
+                    placeholder="Répondez par des phrases complètes..."
+                    rows={currentQuestion.multiline ? 7 : 4}
+                    spellCheck={false}
+                  />
+                )}
                 <p style={styles.answerHint}>
                   {currentQuestion.acceptedAnswers
-                    ? "Relisez votre réponse avant de continuer."
-                    : "Cette réponse sera évaluée par l'équipe pédagogique."}
+                    ? "Écrivez seulement le mot ou les mots qui manquent à la place de ______."
+                    : "Cette réponse sera évaluée par votre professeur."}
                 </p>
               </div>
             )}

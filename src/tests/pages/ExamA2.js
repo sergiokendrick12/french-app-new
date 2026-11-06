@@ -287,6 +287,7 @@ export default function ExamA2() {
   const [examStarted, setExamStarted] = useState(false);
   const [warning, setWarning] = useState("");
   const [tabSwitches, setTabSwitches] = useState(0);
+  const [confirmingSubmit, setConfirmingSubmit] = useState(false);
   const [isNarrow, setIsNarrow] = useState(
     typeof window !== "undefined" && window.innerWidth < 900
   );
@@ -939,19 +940,19 @@ if (reason === "submitted" && !allAnswered) {
       return;
     }
 
-    if (
-      !window.confirm(
-        "Vous avez répondu aux 50 questions. Soumettre l'examen maintenant ? Vous ne pourrez plus modifier vos réponses."
-      )
-    ) {
+    // Confirmation shown inside the page (pop-ups can be blocked).
+    if (!confirmingSubmit) {
+      setConfirmingSubmit(true);
       return;
     }
 
+    setConfirmingSubmit(false);
     finishExam("submitted");
   };
 
   const goToQuestion = (index) => {
     if (index < 0 || index >= questions.length) return;
+    setConfirmingSubmit(false);
     setCurrentQuestionIndex(index);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -1243,16 +1244,37 @@ if (reason === "submitted" && !allAnswered) {
                   Suivant →
                 </button>
               ) : (
-                <button
-                  type="button"
-                  style={styles.submitButton}
-                  disabled={submitting}
-                  onClick={handleSubmit}
-                >
-                  {submitting
-                    ? "Soumission..."
-                    : "Soumettre l'examen"}
-                </button>
+                <div style={styles.submitArea}>
+                  {confirmingSubmit && !submitting && (
+                    <p style={styles.submitConfirmText}>
+                      Vous avez répondu aux 50 questions. Après l'envoi,
+                      vous ne pourrez plus modifier vos réponses.
+                    </p>
+                  )}
+                  <div style={styles.submitButtons}>
+                    {confirmingSubmit && !submitting && (
+                      <button
+                        type="button"
+                        style={styles.secondaryButton}
+                        onClick={() => setConfirmingSubmit(false)}
+                      >
+                        Annuler
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      style={styles.submitButton}
+                      disabled={submitting}
+                      onClick={handleSubmit}
+                    >
+                      {submitting
+                        ? "Soumission..."
+                        : confirmingSubmit
+                        ? "Oui, envoyer mon examen ✓"
+                        : "Soumettre l'examen"}
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </section>
@@ -1370,6 +1392,33 @@ if (reason === "submitted" && !allAnswered) {
 }
 
 const styles = {
+  submitArea: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: "10px",
+    maxWidth: "100%",
+  },
+
+  submitConfirmText: {
+    margin: 0,
+    padding: "10px 14px",
+    background: "#fff8df",
+    border: "1px solid #ead9a7",
+    borderRadius: "10px",
+    color: "#7a5d12",
+    fontSize: "14px",
+    lineHeight: 1.5,
+    textAlign: "right",
+  },
+
+  submitButtons: {
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
+    gap: "10px",
+  },
+
   page: {
     minHeight: "100vh",
     background: "#f5f3ef",

@@ -453,6 +453,37 @@ function isQuestionCorrect(question, value) {
   );
 }
 
+// Shuffle the A/B/C/D options per student so neighbours in the same room
+// don't see the correct answer under the same letter. The order is fixed
+// for a given student + question (same order after a reload). Grading is
+// unaffected: the stored answer is the option text, not its letter.
+function seededRandom(seedText) {
+  let h = 2166136261;
+  for (let i = 0; i < seedText.length; i += 1) {
+    h ^= seedText.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return () => {
+    h += 0x6d2b79f5;
+    let t = h;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function getShuffledOptions(question, studentId) {
+  const options = [...(question.options || [])];
+  if (!studentId) return options;
+
+  const random = seededRandom(`${studentId}:${question.id}`);
+  for (let i = options.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [options[i], options[j]] = [options[j], options[i]];
+  }
+  return options;
+}
+
 function formatTime(seconds) {
   const safeSeconds = Math.max(0, seconds);
   const hours = Math.floor(safeSeconds / 3600);
@@ -1271,7 +1302,10 @@ if (reason === "submitted" && !allAnswered) {
             {currentQuestion.options &&
             currentQuestion.options.length > 0 ? (
               <div style={styles.optionsList}>
-                {currentQuestion.options.map((option, index) => {
+                {getShuffledOptions(
+                  currentQuestion,
+                  currentUser?.id
+                ).map((option, index) => {
                   const optionValue =
                     typeof option === "string"
                       ? option

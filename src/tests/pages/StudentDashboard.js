@@ -624,7 +624,13 @@ export default function StudentDashboard() {
             .filter(
               (assignment) =>
                 ["assigned", "released"].includes(assignment.status) &&
-                assignment.exam_type === "exam_a2"
+                assignment.exam_type === "exam_a2" &&
+                // Monday's exam is over: hide its card once the student has
+                // finished it or has the new exam (result stays in "Mes résultats").
+                !hasCompletedA2Exam &&
+                !examAssignments.some(
+                  (other) => other.exam_type === "exam_inter"
+                )
             )
             .map((assignment, index) => (
               <button

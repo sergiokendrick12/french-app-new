@@ -4192,22 +4192,24 @@ export default function Home({ lang, setLang }) {
             <div style={{color:"rgba(255,255,255,0.9)",fontSize:"0.8rem",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem"}}>Quick Links</div>
             {["about","vision","method","cert","pricing","place","contact"].map(id=>(
               <div key={id} style={{marginBottom:"0.5rem"}}>
-                <button onClick={()=>document.getElementById(id)?.scrollIntoView({behavior:"smooth"})} style={{background:"none",border:"none",color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",padding:0,transition:"color 0.2s",textTransform:"capitalize"}} onMouseEnter={e=>e.currentTarget.style.color="var(--gold)"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.4)"}>{id==="cert"?"Certifications":id==="pricing"?"Pricing":id.charAt(0).toUpperCase()+id.slice(1)}</button>
+                <button onClick={()=>scroll(id)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",padding:0,transition:"color 0.2s",textTransform:"capitalize"}} onMouseEnter={e=>e.currentTarget.style.color="var(--gold)"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.4)"}>{id==="cert"?"Certifications":id==="pricing"?"Pricing":id.charAt(0).toUpperCase()+id.slice(1)}</button>
               </div>
             ))}
           </div>
           <div>
             <div style={{color:"rgba(255,255,255,0.9)",fontSize:"0.8rem",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem"}}>Certifications</div>
             {["DELF A1–B2","DALF C1–C2","TCF Québec","TEF Québec","TCF Canada","DILF","DFP"].map(c=>(
-              <div key={c} style={{color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",marginBottom:"0.5rem"}}>{c}</div>
+              <button type="button" key={c} onClick={()=>{ if(certs.includes(c)){ setFormData(f=>({...f,certificate:c})); scroll("contact"); } else { scroll("cert"); } }} style={{display:"block",background:"none",border:"none",padding:0,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",textAlign:"left",color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",marginBottom:"0.5rem"}}>{c}</button>
             ))}
           </div>
           <div>
             <div style={{color:"rgba(255,255,255,0.9)",fontSize:"0.8rem",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem"}}>Contact</div>
-            {[{ico:"📧",text:"frenchacademyinternational@gmail.com"},{ico:"📞",text:"+250 785 632 172"},{ico:"📍",text:"Norrsken House, Kigali"},{ico:"📍",text:"Sainte Famille, Kigali"}].map((c,i)=>(
+            {[{ico:"📧",text:"frenchacademyinternational@gmail.com",href:"mailto:frenchacademyinternational@gmail.com"},{ico:"📞",text:"+250 785 632 172",href:"tel:+250785632172"},{ico:"📍",text:"Norrsken House, Kigali",href:"https://www.google.com/maps/search/?api=1&query=Norrsken+House+Kigali",external:true},{ico:"📍",text:"Sainte Famille, Kigali"}].map((c,i)=>(
               <div key={i} style={{display:"flex",gap:"0.5rem",marginBottom:"0.7rem",alignItems:"flex-start"}}>
                 <span style={{fontSize:"0.85rem"}}>{c.ico}</span>
-                <span style={{color:"rgba(255,255,255,0.4)",fontSize:"0.78rem",lineHeight:1.5}}>{c.text}</span>
+                {c.href
+                  ? <a href={c.href} {...(c.external?{target:"_blank",rel:"noopener noreferrer"}:{})} style={{color:"rgba(255,255,255,0.65)",fontSize:"0.78rem",lineHeight:1.5,textDecoration:"none"}}>{c.text}</a>
+                  : <span style={{color:"rgba(255,255,255,0.4)",fontSize:"0.78rem",lineHeight:1.5}}>{c.text}</span>}
               </div>
             ))}
           </div>

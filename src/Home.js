@@ -1520,10 +1520,13 @@ const styles = `
     font-size: 0.82rem;
     letter-spacing: 0.08em;
     transition: all 0.25s;
-    cursor: default;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
   }
 
-  .cert-tag:hover {
+  .cert-tag:hover,
+  .cert-tag:focus-visible {
     transform: translateY(-3px);
     background: linear-gradient(135deg, var(--mid-blue), var(--gold));
     box-shadow: 0 6px 18px rgba(13,27,42,0.2);
@@ -2208,9 +2211,19 @@ export default function Home({ lang, setLang }) {
   const scroll = (id) => {
     setMenuOpen(false);
 
-    document
-      .getElementById(id)
-      ?.scrollIntoView({ behavior: "smooth" });
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth" });
+
+    // Sections fade in and images load while scrolling, which moves the
+    // target down. Re-aim a few times so we land on the section itself.
+    [700, 1400, 2100].forEach((ms) =>
+      setTimeout(() => {
+        if (Math.abs(el.getBoundingClientRect().top) > 8) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }, ms)
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -3006,12 +3019,17 @@ export default function Home({ lang, setLang }) {
 
               <div className="cert-tags">
                 {certs.map(c => (
-                  <span
+                  <button
+                    type="button"
                     key={c}
                     className="cert-tag"
+                    onClick={() => {
+                      setFormData(f => ({ ...f, certificate: c }));
+                      scroll("contact");
+                    }}
                   >
                     {c}
-                  </span>
+                  </button>
                 ))}
               </div>
             </FadeIn>

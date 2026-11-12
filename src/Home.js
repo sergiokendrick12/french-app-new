@@ -4029,7 +4029,7 @@ export default function Home({ lang, setLang }) {
                     <div className="c-icon">📍</div>
                     <div className="c-text">
                       <strong>{lang === "en" ? "Address" : "Adresse"}</strong>
-                      <span>📍 Norrsken House, Kigali</span>
+                      <a href="https://www.google.com/maps/search/?api=1&query=Norrsken+House+Kigali" target="_blank" rel="noopener noreferrer">📍 Norrsken House, Kigali</a>
               <span style={{display:"block",marginTop:"0.3rem"}}>📍 Sainte Famille Charité House, Kigali</span>
                     </div>
                   </div>

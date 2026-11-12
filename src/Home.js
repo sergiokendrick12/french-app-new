@@ -4199,7 +4199,7 @@ export default function Home({ lang, setLang }) {
           <div>
             <div style={{color:"rgba(255,255,255,0.9)",fontSize:"0.8rem",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem"}}>Certifications</div>
             {["DELF A1–B2","DALF C1–C2","TCF Québec","TEF Québec","TCF Canada","DILF","DFP"].map(c=>(
-              <button type="button" key={c} onClick={()=>{ if(certs.includes(c)){ setFormData(f=>({...f,certificate:c})); scroll("contact"); } else { scroll("cert"); } }} style={{display:"block",background:"none",border:"none",padding:0,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",textAlign:"left",color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",marginBottom:"0.5rem"}}>{c}</button>
+              <button type="button" key={c} onClick={()=>{ const pick=certs.includes(c)?c:({"DELF A1–B2":"DELF A1","DALF C1–C2":"DALF C1"})[c]; if(pick) setFormData(f=>({...f,certificate:pick})); scroll("contact"); }} style={{display:"block",background:"none",border:"none",padding:0,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",textAlign:"left",color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",marginBottom:"0.5rem"}}>{c}</button>
             ))}
           </div>
           <div>

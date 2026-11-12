@@ -21,6 +21,7 @@ export default function StudentDashboard() {
   const [hasCompletedKeynesExam, setHasCompletedKeynesExam] = useState(false);
   const [hasCompletedYvesB1Exam, setHasCompletedYvesB1Exam] = useState(false);
   const [hasCompletedA2Exam, setHasCompletedA2Exam] = useState(false);
+  const [hasCompletedInterExam, setHasCompletedInterExam] = useState(false);
   const [examAssignments, setExamAssignments] = useState([]);
 
   useEffect(() => {
@@ -166,6 +167,24 @@ export default function StudentDashboard() {
         }
 
         setHasCompletedA2Exam(!!a2Result);
+
+        // CHECK INTERMÉDIAIRE AVANCÉ EXAM RESULT
+        const { data: interResult, error: interError } = await supabase
+          .from("test_results")
+          .select("id")
+          .eq("student_id", user.id)
+          .eq("test_type", "exam_inter")
+          .limit(1)
+          .maybeSingle();
+
+        if (interError) {
+          console.error(
+            "Erreur lors de la vérification du résultat intermédiaire :",
+            interError
+          );
+        }
+
+        setHasCompletedInterExam(!!interResult);
       } catch (error) {
         console.error(
           "Erreur lors de la vérification de l'étudiant :",
@@ -529,7 +548,78 @@ export default function StudentDashboard() {
         >
           {/* COMPRÉHENSION ORALE */}
 
-                    {/* ASSIGNED A2 EXAM */}
+                    {/* ASSIGNED INTERMÉDIAIRE AVANCÉ EXAM */}
+          {examAssignments
+            .filter(
+              (assignment) =>
+                ["assigned", "released"].includes(assignment.status) &&
+                assignment.exam_type === "exam_inter"
+            )
+            .map((assignment, index) => (
+              <button
+                key={`${assignment.exam_type}-${index}`}
+                onClick={() => navigate("/tests/exam-inter")}
+                disabled={!isApprovedAndPaid || hasCompletedInterExam}
+                style={{
+                  background:
+                    isApprovedAndPaid && !hasCompletedInterExam
+                      ? "white"
+                      : "#f8f9fa",
+                  border: "none",
+                  borderRadius: "18px",
+                  padding: "24px",
+                  textAlign: "left",
+                  cursor:
+                    isApprovedAndPaid && !hasCompletedInterExam
+                      ? "pointer"
+                      : "not-allowed",
+                  boxShadow: "0 6px 25px rgba(0,0,0,0.08)",
+                  borderTop: "5px solid #c9a84c",
+                  opacity:
+                    isApprovedAndPaid && !hasCompletedInterExam
+                      ? 1
+                      : 0.65,
+                }}
+              >
+                <div style={{ fontSize: "28px", marginBottom: "12px" }}>
+                  {hasCompletedInterExam ? "🔒" : "📝"}
+                </div>
+
+                <h2
+                  style={{
+                    margin: "0 0 10px",
+                    color: "#0d1b2a",
+                    fontSize: "20px",
+                  }}
+                >
+                  Examen de français — Intermédiaire avancé
+                </h2>
+
+                <p
+                  style={{
+                    margin: "0 0 16px",
+                    color: "#667085",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  {hasCompletedInterExam
+                    ? "Vous avez déjà terminé cet examen."
+                    : !isApprovedAndPaid
+                    ? "L'accès sera disponible après validation du compte et confirmation du paiement."
+                    : "Votre examen de français. Durée : 2 heures. Cliquez ici pour commencer."}
+                </p>
+
+                <span style={{ color: "#0d1b2a", fontWeight: "bold" }}>
+                  {hasCompletedInterExam
+                    ? "Terminé ✓"
+                    : !isApprovedAndPaid
+                    ? "Accès verrouillé 🔒"
+                    : "Ouvrir l'examen →"}
+                </span>
+              </button>
+            ))}
+
+          {/* ASSIGNED A2 EXAM */}
           {examAssignments
             .filter(
               (assignment) =>
@@ -606,8 +696,8 @@ export default function StudentDashboard() {
                 ["assigned", "released"].includes(assignment.status) &&
                 assignment.exam_type === "exam_yves_b1" &&
                 // A2 students only see their A2 exam, not the B1 one.
-                !examAssignments.some(
-                  (other) => other.exam_type === "exam_a2"
+                !examAssignments.some((other) =>
+                  ["exam_a2", "exam_inter"].includes(other.exam_type)
                 )
             )
             .map((assignment, index) => (

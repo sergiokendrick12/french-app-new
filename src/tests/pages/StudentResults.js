@@ -109,6 +109,10 @@ if (keynesAttemptError) {
       return "Expression écrite";
     }
 
+    if (testType === "exam_inter") {
+      return "Examen de français — Intermédiaire avancé";
+    }
+
     if (testType === "exam_a2") {
       return "Examen de français — Niveau A1 & A2";
     }
@@ -175,7 +179,7 @@ if (keynesAttemptError) {
   // The A2 exam has written answers graded by hand: hide the partial
   // automatic score until the teacher has saved the grades.
   const isAwaitingManualGrading = (result) =>
-    result?.test_type === "exam_a2" &&
+    ["exam_a2", "exam_inter"].includes(result?.test_type) &&
     result?.grading_status !== "graded";
 
   const getKeynesWritingScore = (result) => {

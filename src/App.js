@@ -23,6 +23,7 @@ import ExamKim from "./tests/pages/ExamKim";
 import ExamKeynes from "./tests/pages/ExamKeynes";
 import ExamYvesB1 from "./tests/pages/ExamYvesB1";
 import ExamA2 from "./tests/pages/ExamA2";
+import ExamInter from "./tests/pages/ExamInter";
 import ExamVerification from "./tests/pages/ExamVerification";
 
 import StudentLogin from "./tests/pages/StudentLogin";
@@ -168,6 +169,12 @@ export default function App() {
         <Route
           path="/tests/exam-a2"
           element={<ExamA2 />}
+        />
+
+        {/* Intermédiaire avancé — Chris et Kim */}
+        <Route
+          path="/tests/exam-inter"
+          element={<ExamInter />}
         />
 
         {/* TEACHER VERIFICATION TEST */}

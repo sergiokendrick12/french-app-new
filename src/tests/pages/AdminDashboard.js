@@ -6,7 +6,18 @@ import { supabase } from "../../supabaseClient";
 const MANUAL_GRADED_EXAMS = {
   exam_yves_b1: "Examen B1",
   exam_a2: "Examen A1 & A2",
+  exam_inter: "Examen intermédiaire avancé",
 };
+
+// Exams the teacher assigns by hand from a student's file.
+const ASSIGNABLE_EXAMS = [
+  { type: "exam_a2", name: "Examen de français — A1 & A2", short: "A1 & A2" },
+  {
+    type: "exam_inter",
+    name: "Examen de français — Intermédiaire avancé",
+    short: "intermédiaire avancé",
+  },
+];
 
 // Grades are keyed by exam type + question id, so a student who has
 // several manually graded exams never mixes up the grades.
@@ -49,8 +60,9 @@ export default function AdminDashboard() {
   const [keynesSavingGrade, setKeynesSavingGrade] = useState(false);
   const [yvesB1Grades, setYvesB1Grades] = useState({});
   const [yvesB1SavingGrade, setYvesB1SavingGrade] = useState(false);
-  const [a2Assignment, setA2Assignment] = useState(null);
-  const [a2Assigning, setA2Assigning] = useState(false);
+  // { exam_a2: {id, status} | null, exam_inter: … }
+  const [manualAssignments, setManualAssignments] = useState({});
+  const [assigningType, setAssigningType] = useState(null);
 
   const [keynesOpenTasks, setKeynesOpenTasks] = useState({
     task1: false,
@@ -248,23 +260,28 @@ export default function AdminDashboard() {
       }
 
       // -------------------------------------------------------
-      // LOAD A2 EXAM ASSIGNMENT
+      // LOAD MANUALLY ASSIGNED EXAMS (A1 & A2, intermédiaire…)
       // -------------------------------------------------------
 
-      setA2Assignment(null);
+      setManualAssignments({});
 
-      const { data: a2Data, error: a2Error } = await supabase
+      const { data: assignData, error: assignError } = await supabase
         .from("exam_assignments")
-        .select("id, status")
+        .select("id, status, exam_type")
         .eq("student_id", studentId)
-        .eq("exam_type", "exam_a2")
-        .limit(1)
-        .maybeSingle();
+        .in(
+          "exam_type",
+          ASSIGNABLE_EXAMS.map((exam) => exam.type)
+        );
 
-      if (a2Error) {
-        console.error("Erreur chargement examen A2 :", a2Error);
+      if (assignError) {
+        console.error("Erreur chargement des examens attribués :", assignError);
       } else {
-        setA2Assignment(a2Data || null);
+        const byType = {};
+        (assignData || []).forEach((row) => {
+          byType[row.exam_type] = row;
+        });
+        setManualAssignments(byType);
       }
 
       // -------------------------------------------------------
@@ -504,54 +521,63 @@ export default function AdminDashboard() {
   // =========================================================
 
   // =========================================================
-  // A2 EXAM ASSIGNMENT (manual, per student)
+  // MANUAL EXAM ASSIGNMENT (per student, per exam)
   // =========================================================
 
-  const assignA2Exam = async (student) => {
+  const assignManualExam = async (student, exam) => {
     const studentId = student?.user_id || student?.id;
 
     if (!studentId) return;
 
-    setA2Assigning(true);
+    const existing = manualAssignments[exam.type];
+
+    setAssigningType(exam.type);
     setErrorMessage("");
     setSuccessMessage("");
 
     try {
-      if (a2Assignment?.id) {
+      let saved;
+
+      if (existing?.id) {
         const { data, error } = await supabase
           .from("exam_assignments")
           .update({ status: "released" })
-          .eq("id", a2Assignment.id)
-          .select("id, status")
+          .eq("id", existing.id)
+          .select("id, status, exam_type")
           .single();
 
         if (error) throw error;
-        setA2Assignment(data);
+        saved = data;
       } else {
         const { data, error } = await supabase
           .from("exam_assignments")
           .insert({
             student_id: studentId,
-            exam_type: "exam_a2",
+            exam_type: exam.type,
             status: "released",
           })
-          .select("id, status")
+          .select("id, status, exam_type")
           .single();
 
         if (error) throw error;
-        setA2Assignment(data);
+        saved = data;
       }
 
+      setManualAssignments((current) => ({
+        ...current,
+        [exam.type]: saved,
+      }));
+
       setSuccessMessage(
-        `Examen A1 & A2 attribué et ouvert pour ${student.full_name || "cet étudiant"}.`
+        `Examen ${exam.short} attribué et ouvert pour ${student.full_name || "cet étudiant"}.`
       );
     } catch (error) {
-      console.error("Erreur attribution examen A2 :", error);
+      console.error("Erreur attribution examen :", error);
       setErrorMessage(
-        error?.message || "Impossible d'attribuer l'examen A1 & A2."
+        error?.message || `Impossible d'attribuer l'examen ${exam.short}.`
       );
     } finally {
-      setA2Assigning(false);
+      setAssigningType(null);
     }
   };
 
@@ -1158,7 +1184,9 @@ if (
         .from("test_results")
         .update({
           score: finalScore,
-          percentage: finalScore,
+          percentage: Math.round(
+            (finalScore * 100) / (Number(examResult.total_questions) || 100)
+          ),
           answers_detail: updatedAnswers,
           grading_status: "graded",
           graded_at: new Date().toISOString(),
@@ -1182,7 +1210,7 @@ if (
       );
 
       setSuccessMessage(
-        `Correction ${MANUAL_GRADED_EXAMS[examResult.test_type]} enregistrée : ${finalScore}/100.`
+        `Correction ${MANUAL_GRADED_EXAMS[examResult.test_type]} enregistrée : ${finalScore}/${Number(examResult.total_questions) || 100}.`
       );
     } catch (error) {
       console.error("Erreur correction Yves B1 :", error);
@@ -1359,6 +1387,7 @@ if (
       exam_keynes: "Examen de français — B1",
       exam_yves_b1: "Examen de français — B1",
       exam_a2: "Examen de français — A1 & A2",
+      exam_inter: "Examen de français — Intermédiaire avancé",
     };
 
     if (labels[testType]) {
@@ -1380,7 +1409,8 @@ if (
       testType === "exam_kim" ||
       testType === "exam_leonille" ||
       testType === "exam_keynes" ||
-      testType === "exam_a2"
+      testType === "exam_a2" ||
+      testType === "exam_inter"
     ) {
       return "📝";
     }
@@ -2009,48 +2039,56 @@ if (
                 <strong>payé</strong>.
               </div>
 
-              <div
-                style={{
-                  marginTop: "16px",
-                  padding: "16px",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "10px",
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "12px",
-                }}
-              >
-                <div>
-                  <strong>Examen de français — A1 & A2</strong>
-                  <div style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>
-                    {a2Assignment?.status === "released"
-                      ? "✓ Attribué et ouvert : l'étudiant peut passer l'examen."
-                      : a2Assignment
-                      ? "Attribué mais verrouillé."
-                      : "Non attribué."}
-                  </div>
-                </div>
+              {ASSIGNABLE_EXAMS.map((exam) => {
+                const assignment = manualAssignments[exam.type];
+                const assigning = assigningType === exam.type;
 
-                {a2Assignment?.status !== "released" && (
-                  <button
-                    type="button"
-                    onClick={() => assignA2Exam(selectedStudent)}
-                    disabled={a2Assigning}
+                return (
+                  <div
+                    key={exam.type}
                     style={{
-                      ...styles.primaryButton,
-                      opacity: a2Assigning ? 0.6 : 1,
+                      marginTop: "16px",
+                      padding: "16px",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "10px",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "12px",
                     }}
                   >
-                    {a2Assigning
-                      ? "Attribution..."
-                      : a2Assignment
-                      ? "Ouvrir l'examen A1 & A2"
-                      : "Attribuer l'examen A1 & A2"}
-                  </button>
-                )}
-              </div>
+                    <div>
+                      <strong>{exam.name}</strong>
+                      <div style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>
+                        {assignment?.status === "released"
+                          ? "✓ Attribué et ouvert : l'étudiant peut passer l'examen."
+                          : assignment
+                          ? "Attribué mais verrouillé."
+                          : "Non attribué."}
+                      </div>
+                    </div>
+
+                    {assignment?.status !== "released" && (
+                      <button
+                        type="button"
+                        onClick={() => assignManualExam(selectedStudent, exam)}
+                        disabled={Boolean(assigningType)}
+                        style={{
+                          ...styles.primaryButton,
+                          opacity: assigning ? 0.6 : 1,
+                        }}
+                      >
+                        {assigning
+                          ? "Attribution..."
+                          : assignment
+                          ? `Ouvrir l'examen ${exam.short}`
+                          : `Attribuer l'examen ${exam.short}`}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {/* =================================================
@@ -3146,7 +3184,7 @@ if (
                                             borderRadius: "8px",
                                           }}
                                         >
-                                          <strong>Question {index + 1}</strong>
+                                          <strong>Question {item.label || item.question_id || index + 1}</strong>
 
                                           {item.question && (
                                             <p style={{ fontSize: "13px", color: "#64748b", margin: "6px 0 0" }}>
